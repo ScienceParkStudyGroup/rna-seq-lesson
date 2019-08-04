@@ -1,0 +1,454 @@
+region,state,code,park_name,type,visitors,year
+SE,FL,BISC,Biscayne National Park,National Park,78147,1972
+SE,FL,BISC,Biscayne National Park,National Park,243100,1973
+SE,FL,BISC,Biscayne National Park,National Park,409700,1974
+SE,FL,BISC,Biscayne National Park,National Park,351500,1975
+SE,FL,BISC,Biscayne National Park,National Park,339100,1976
+SE,FL,BISC,Biscayne National Park,National Park,205900,1977
+SE,FL,BISC,Biscayne National Park,National Park,177416,1978
+SE,FL,BISC,Biscayne National Park,National Park,202938,1979
+SE,FL,BISC,Biscayne National Park,National Park,248071,1980
+SE,FL,BISC,Biscayne National Park,National Park,305502,1981
+SE,FL,BISC,Biscayne National Park,National Park,348219,1982
+SE,FL,BISC,Biscayne National Park,National Park,369082,1983
+SE,FL,BISC,Biscayne National Park,National Park,340567,1984
+SE,FL,BISC,Biscayne National Park,National Park,460921,1985
+SE,FL,BISC,Biscayne National Park,National Park,578013,1986
+SE,FL,BISC,Biscayne National Park,National Park,607968,1987
+SE,FL,BISC,Biscayne National Park,National Park,531036,1988
+SE,FL,BISC,Biscayne National Park,National Park,589957,1989
+SE,FL,BISC,Biscayne National Park,National Park,573376,1990
+SE,FL,BISC,Biscayne National Park,National Park,488134,1991
+SE,FL,BISC,Biscayne National Park,National Park,307512,1992
+SE,FL,BISC,Biscayne National Park,National Park,19950,1993
+SE,FL,BISC,Biscayne National Park,National Park,25147,1994
+SE,FL,BISC,Biscayne National Park,National Park,584519,1995
+SE,FL,BISC,Biscayne National Park,National Park,338603,1996
+SE,FL,BISC,Biscayne National Park,National Park,392069,1997
+SE,FL,BISC,Biscayne National Park,National Park,403239,1998
+SE,FL,BISC,Biscayne National Park,National Park,442585,1999
+SE,FL,BISC,Biscayne National Park,National Park,393151,2000
+SE,FL,BISC,Biscayne National Park,National Park,489343,2001
+SE,FL,BISC,Biscayne National Park,National Park,513397,2002
+SE,FL,BISC,Biscayne National Park,National Park,490031,2003
+SE,FL,BISC,Biscayne National Park,National Park,478304,2004
+SE,FL,BISC,Biscayne National Park,National Park,563728,2005
+SE,FL,BISC,Biscayne National Park,National Park,608836,2006
+SE,FL,BISC,Biscayne National Park,National Park,517442,2007
+SE,FL,BISC,Biscayne National Park,National Park,686062,2008
+SE,FL,BISC,Biscayne National Park,National Park,437745,2009
+SE,FL,BISC,Biscayne National Park,National Park,467612,2010
+SE,FL,BISC,Biscayne National Park,National Park,476077,2011
+SE,FL,BISC,Biscayne National Park,National Park,495613,2012
+SE,FL,BISC,Biscayne National Park,National Park,486848,2013
+SE,FL,BISC,Biscayne National Park,National Park,525745,2014
+SE,FL,BISC,Biscayne National Park,National Park,508164,2015
+SE,FL,BISC,Biscayne National Park,National Park,514709,2016
+SE,SC,CONG,Congaree National Park,National Park,12332,1985
+SE,SC,CONG,Congaree National Park,National Park,16508,1986
+SE,SC,CONG,Congaree National Park,National Park,20312,1987
+SE,SC,CONG,Congaree National Park,National Park,26257,1988
+SE,SC,CONG,Congaree National Park,National Park,25445,1989
+SE,SC,CONG,Congaree National Park,National Park,23223,1990
+SE,SC,CONG,Congaree National Park,National Park,30975,1991
+SE,SC,CONG,Congaree National Park,National Park,40018,1992
+SE,SC,CONG,Congaree National Park,National Park,54669,1993
+SE,SC,CONG,Congaree National Park,National Park,67756,1994
+SE,SC,CONG,Congaree National Park,National Park,67949,1995
+SE,SC,CONG,Congaree National Park,National Park,62614,1996
+SE,SC,CONG,Congaree National Park,National Park,70716,1997
+SE,SC,CONG,Congaree National Park,National Park,93725,1998
+SE,SC,CONG,Congaree National Park,National Park,82223,1999
+SE,SC,CONG,Congaree National Park,National Park,95619,2000
+SE,SC,CONG,Congaree National Park,National Park,119738,2001
+SE,SC,CONG,Congaree National Park,National Park,101620,2002
+SE,SC,CONG,Congaree National Park,National Park,107114,2003
+SE,SC,CONG,Congaree National Park,National Park,126247,2004
+SE,SC,CONG,Congaree National Park,National Park,84301,2005
+SE,SC,CONG,Congaree National Park,National Park,134045,2006
+SE,SC,CONG,Congaree National Park,National Park,115524,2007
+SE,SC,CONG,Congaree National Park,National Park,104913,2008
+SE,SC,CONG,Congaree National Park,National Park,122970,2009
+SE,SC,CONG,Congaree National Park,National Park,121208,2010
+SE,SC,CONG,Congaree National Park,National Park,120166,2011
+SE,SC,CONG,Congaree National Park,National Park,109685,2012
+SE,SC,CONG,Congaree National Park,National Park,120340,2013
+SE,SC,CONG,Congaree National Park,National Park,120122,2014
+SE,SC,CONG,Congaree National Park,National Park,87513,2015
+SE,SC,CONG,Congaree National Park,National Park,143843,2016
+SE,FL,DRTO,Dry Tortugas National Park,National Park,706,1937
+SE,FL,DRTO,Dry Tortugas National Park,National Park,1130,1938
+SE,FL,DRTO,Dry Tortugas National Park,National Park,1500,1939
+SE,FL,DRTO,Dry Tortugas National Park,National Park,1141,1940
+SE,FL,DRTO,Dry Tortugas National Park,National Park,757,1941
+SE,FL,DRTO,Dry Tortugas National Park,National Park,0,1942
+SE,FL,DRTO,Dry Tortugas National Park,National Park,0,1943
+SE,FL,DRTO,Dry Tortugas National Park,National Park,0,1944
+SE,FL,DRTO,Dry Tortugas National Park,National Park,2154,1945
+SE,FL,DRTO,Dry Tortugas National Park,National Park,8787,1946
+SE,FL,DRTO,Dry Tortugas National Park,National Park,6685,1947
+SE,FL,DRTO,Dry Tortugas National Park,National Park,5968,1948
+SE,FL,DRTO,Dry Tortugas National Park,National Park,7355,1949
+SE,FL,DRTO,Dry Tortugas National Park,National Park,7025,1950
+SE,FL,DRTO,Dry Tortugas National Park,National Park,5405,1951
+SE,FL,DRTO,Dry Tortugas National Park,National Park,4376,1952
+SE,FL,DRTO,Dry Tortugas National Park,National Park,6708,1953
+SE,FL,DRTO,Dry Tortugas National Park,National Park,6200,1954
+SE,FL,DRTO,Dry Tortugas National Park,National Park,4300,1955
+SE,FL,DRTO,Dry Tortugas National Park,National Park,5000,1956
+SE,FL,DRTO,Dry Tortugas National Park,National Park,3600,1957
+SE,FL,DRTO,Dry Tortugas National Park,National Park,4200,1958
+SE,FL,DRTO,Dry Tortugas National Park,National Park,4400,1959
+SE,FL,DRTO,Dry Tortugas National Park,National Park,8900,1960
+SE,FL,DRTO,Dry Tortugas National Park,National Park,14400,1961
+SE,FL,DRTO,Dry Tortugas National Park,National Park,7700,1962
+SE,FL,DRTO,Dry Tortugas National Park,National Park,26200,1963
+SE,FL,DRTO,Dry Tortugas National Park,National Park,43200,1964
+SE,FL,DRTO,Dry Tortugas National Park,National Park,32200,1965
+SE,FL,DRTO,Dry Tortugas National Park,National Park,35300,1966
+SE,FL,DRTO,Dry Tortugas National Park,National Park,22100,1967
+SE,FL,DRTO,Dry Tortugas National Park,National Park,9000,1968
+SE,FL,DRTO,Dry Tortugas National Park,National Park,6900,1969
+SE,FL,DRTO,Dry Tortugas National Park,National Park,12900,1970
+SE,FL,DRTO,Dry Tortugas National Park,National Park,4000,1971
+SE,FL,DRTO,Dry Tortugas National Park,National Park,5066,1972
+SE,FL,DRTO,Dry Tortugas National Park,National Park,6100,1973
+SE,FL,DRTO,Dry Tortugas National Park,National Park,5100,1974
+SE,FL,DRTO,Dry Tortugas National Park,National Park,9700,1975
+SE,FL,DRTO,Dry Tortugas National Park,National Park,8900,1976
+SE,FL,DRTO,Dry Tortugas National Park,National Park,11600,1977
+SE,FL,DRTO,Dry Tortugas National Park,National Park,10361,1978
+SE,FL,DRTO,Dry Tortugas National Park,National Park,9076,1979
+SE,FL,DRTO,Dry Tortugas National Park,National Park,8644,1980
+SE,FL,DRTO,Dry Tortugas National Park,National Park,10150,1981
+SE,FL,DRTO,Dry Tortugas National Park,National Park,10700,1982
+SE,FL,DRTO,Dry Tortugas National Park,National Park,11004,1983
+SE,FL,DRTO,Dry Tortugas National Park,National Park,11900,1984
+SE,FL,DRTO,Dry Tortugas National Park,National Park,13213,1985
+SE,FL,DRTO,Dry Tortugas National Park,National Park,15379,1986
+SE,FL,DRTO,Dry Tortugas National Park,National Park,16315,1987
+SE,FL,DRTO,Dry Tortugas National Park,National Park,16937,1988
+SE,FL,DRTO,Dry Tortugas National Park,National Park,19441,1989
+SE,FL,DRTO,Dry Tortugas National Park,National Park,19402,1990
+SE,FL,DRTO,Dry Tortugas National Park,National Park,18231,1991
+SE,FL,DRTO,Dry Tortugas National Park,National Park,21581,1992
+SE,FL,DRTO,Dry Tortugas National Park,National Park,24020,1993
+SE,FL,DRTO,Dry Tortugas National Park,National Park,16736,1994
+SE,FL,DRTO,Dry Tortugas National Park,National Park,32870,1995
+SE,FL,DRTO,Dry Tortugas National Park,National Park,35127,1996
+SE,FL,DRTO,Dry Tortugas National Park,National Park,47224,1997
+SE,FL,DRTO,Dry Tortugas National Park,National Park,60136,1998
+SE,FL,DRTO,Dry Tortugas National Park,National Park,74186,1999
+SE,FL,DRTO,Dry Tortugas National Park,National Park,83704,2000
+SE,FL,DRTO,Dry Tortugas National Park,National Park,79186,2001
+SE,FL,DRTO,Dry Tortugas National Park,National Park,79582,2002
+SE,FL,DRTO,Dry Tortugas National Park,National Park,74741,2003
+SE,FL,DRTO,Dry Tortugas National Park,National Park,67917,2004
+SE,FL,DRTO,Dry Tortugas National Park,National Park,61765,2005
+SE,FL,DRTO,Dry Tortugas National Park,National Park,64122,2006
+SE,FL,DRTO,Dry Tortugas National Park,National Park,60895,2007
+SE,FL,DRTO,Dry Tortugas National Park,National Park,63947,2008
+SE,FL,DRTO,Dry Tortugas National Park,National Park,52011,2009
+SE,FL,DRTO,Dry Tortugas National Park,National Park,53890,2010
+SE,FL,DRTO,Dry Tortugas National Park,National Park,75171,2011
+SE,FL,DRTO,Dry Tortugas National Park,National Park,60550,2012
+SE,FL,DRTO,Dry Tortugas National Park,National Park,58401,2013
+SE,FL,DRTO,Dry Tortugas National Park,National Park,64865,2014
+SE,FL,DRTO,Dry Tortugas National Park,National Park,70862,2015
+SE,FL,DRTO,Dry Tortugas National Park,National Park,73661,2016
+SE,FL,EVER,Everglades National Park,National Park,7482,1948
+SE,FL,EVER,Everglades National Park,National Park,94927,1949
+SE,FL,EVER,Everglades National Park,National Park,123405,1950
+SE,FL,EVER,Everglades National Park,National Park,142971,1951
+SE,FL,EVER,Everglades National Park,National Park,168621,1952
+SE,FL,EVER,Everglades National Park,National Park,206773,1953
+SE,FL,EVER,Everglades National Park,National Park,218000,1954
+SE,FL,EVER,Everglades National Park,National Park,247100,1955
+SE,FL,EVER,Everglades National Park,National Park,267000,1956
+SE,FL,EVER,Everglades National Park,National Park,344700,1957
+SE,FL,EVER,Everglades National Park,National Park,443300,1958
+SE,FL,EVER,Everglades National Park,National Park,500200,1959
+SE,FL,EVER,Everglades National Park,National Park,579200,1960
+SE,FL,EVER,Everglades National Park,National Park,566800,1961
+SE,FL,EVER,Everglades National Park,National Park,626100,1962
+SE,FL,EVER,Everglades National Park,National Park,669200,1963
+SE,FL,EVER,Everglades National Park,National Park,792600,1964
+SE,FL,EVER,Everglades National Park,National Park,977600,1965
+SE,FL,EVER,Everglades National Park,National Park,1017100,1966
+SE,FL,EVER,Everglades National Park,National Park,1098300,1967
+SE,FL,EVER,Everglades National Park,National Park,1251500,1968
+SE,FL,EVER,Everglades National Park,National Park,1187200,1969
+SE,FL,EVER,Everglades National Park,National Park,1273500,1970
+SE,FL,EVER,Everglades National Park,National Park,1100500,1971
+SE,FL,EVER,Everglades National Park,National Park,1534328,1972
+SE,FL,EVER,Everglades National Park,National Park,1044000,1973
+SE,FL,EVER,Everglades National Park,National Park,781200,1974
+SE,FL,EVER,Everglades National Park,National Park,782400,1975
+SE,FL,EVER,Everglades National Park,National Park,955700,1976
+SE,FL,EVER,Everglades National Park,National Park,948000,1977
+SE,FL,EVER,Everglades National Park,National Park,923714,1978
+SE,FL,EVER,Everglades National Park,National Park,718102,1979
+SE,FL,EVER,Everglades National Park,National Park,744244,1980
+SE,FL,EVER,Everglades National Park,National Park,564721,1981
+SE,FL,EVER,Everglades National Park,National Park,550168,1982
+SE,FL,EVER,Everglades National Park,National Park,577439,1983
+SE,FL,EVER,Everglades National Park,National Park,628658,1984
+SE,FL,EVER,Everglades National Park,National Park,697646,1985
+SE,FL,EVER,Everglades National Park,National Park,739072,1986
+SE,FL,EVER,Everglades National Park,National Park,787493,1987
+SE,FL,EVER,Everglades National Park,National Park,1026188,1988
+SE,FL,EVER,Everglades National Park,National Park,913372,1989
+SE,FL,EVER,Everglades National Park,National Park,957925,1990
+SE,FL,EVER,Everglades National Park,National Park,1292014,1991
+SE,FL,EVER,Everglades National Park,National Park,1025686,1992
+SE,FL,EVER,Everglades National Park,National Park,973706,1993
+SE,FL,EVER,Everglades National Park,National Park,886455,1994
+SE,FL,EVER,Everglades National Park,National Park,820466,1995
+SE,FL,EVER,Everglades National Park,National Park,890167,1996
+SE,FL,EVER,Everglades National Park,National Park,989532,1997
+SE,FL,EVER,Everglades National Park,National Park,1118215,1998
+SE,FL,EVER,Everglades National Park,National Park,1073982,1999
+SE,FL,EVER,Everglades National Park,National Park,995390,2000
+SE,FL,EVER,Everglades National Park,National Park,1049851,2001
+SE,FL,EVER,Everglades National Park,National Park,968909,2002
+SE,FL,EVER,Everglades National Park,National Park,1040648,2003
+SE,FL,EVER,Everglades National Park,National Park,1181355,2004
+SE,FL,EVER,Everglades National Park,National Park,1233837,2005
+SE,FL,EVER,Everglades National Park,National Park,954022,2006
+SE,FL,EVER,Everglades National Park,National Park,1074764,2007
+SE,FL,EVER,Everglades National Park,National Park,822118,2008
+SE,FL,EVER,Everglades National Park,National Park,900882,2009
+SE,FL,EVER,Everglades National Park,National Park,915538,2010
+SE,FL,EVER,Everglades National Park,National Park,934351,2011
+SE,FL,EVER,Everglades National Park,National Park,1141906,2012
+SE,FL,EVER,Everglades National Park,National Park,1047116,2013
+SE,FL,EVER,Everglades National Park,National Park,1110901,2014
+SE,FL,EVER,Everglades National Park,National Park,1077427,2015
+SE,FL,EVER,Everglades National Park,National Park,930907,2016
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,154000,1931
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,300000,1932
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,375000,1933
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,420000,1934
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,500000,1935
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,602222,1936
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,727243,1937
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,694634,1938
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,761567,1939
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,860960,1940
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,1310101,1941
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,728706,1942
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,383116,1943
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,534586,1944
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,750690,1945
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,1157930,1946
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,1204017,1947
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,1469749,1948
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,1539641,1949
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,1843620,1950
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,1945100,1951
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,2322152,1952
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,2250772,1953
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,2526900,1954
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,2581500,1955
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,2885800,1956
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,2943700,1957
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,3168900,1958
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,3162300,1959
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,4528600,1960
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,4762100,1961
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,5209800,1962
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,5258700,1963
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,5321100,1964
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,5954900,1965
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,6466100,1966
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,6710100,1967
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,6667100,1968
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,6331100,1969
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,6778500,1970
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,7173000,1971
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,8034753,1972
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,7586300,1973
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,7807800,1974
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,8541500,1975
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,8991500,1976
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,9173600,1977
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,8695534,1978
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,8019788,1979
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,8440953,1980
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,8312884,1981
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,8177869,1982
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,8435475,1983
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,8508390,1984
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,9319290,1985
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,9836306,1986
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,10209841,1987
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,8770781,1988
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,8333553,1989
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,8151769,1990
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,8654459,1991
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,8931690,1992
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,9283848,1993
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,8628174,1994
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,9080420,1995
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,9265667,1996
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,9965075,1997
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,9989395,1998
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,10283598,1999
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,10175812,2000
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,9197697,2001
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,9316420,2002
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,9366845,2003
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,9167046,2004
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,9192477,2005
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,9289215,2006
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,9372253,2007
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,9044010,2008
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,9491437,2009
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,9463538,2010
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,9008830,2011
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,9685829,2012
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,9354695,2013
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,10099276,2014
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,10712674,2015
+SE,NC,GRSM,Great Smoky Mountains National Park,National Park,11312786,2016
+SE,KY,MACA,Mammoth Cave National Park,National Park,57775,1936
+SE,KY,MACA,Mammoth Cave National Park,National Park,75434,1937
+SE,KY,MACA,Mammoth Cave National Park,National Park,120692,1938
+SE,KY,MACA,Mammoth Cave National Park,National Park,116516,1939
+SE,KY,MACA,Mammoth Cave National Park,National Park,117751,1940
+SE,KY,MACA,Mammoth Cave National Park,National Park,165996,1941
+SE,KY,MACA,Mammoth Cave National Park,National Park,87157,1942
+SE,KY,MACA,Mammoth Cave National Park,National Park,44611,1943
+SE,KY,MACA,Mammoth Cave National Park,National Park,49389,1944
+SE,KY,MACA,Mammoth Cave National Park,National Park,70513,1945
+SE,KY,MACA,Mammoth Cave National Park,National Park,162877,1946
+SE,KY,MACA,Mammoth Cave National Park,National Park,185111,1947
+SE,KY,MACA,Mammoth Cave National Park,National Park,180621,1948
+SE,KY,MACA,Mammoth Cave National Park,National Park,211792,1949
+SE,KY,MACA,Mammoth Cave National Park,National Park,254187,1950
+SE,KY,MACA,Mammoth Cave National Park,National Park,364213,1951
+SE,KY,MACA,Mammoth Cave National Park,National Park,438030,1952
+SE,KY,MACA,Mammoth Cave National Park,National Park,499416,1953
+SE,KY,MACA,Mammoth Cave National Park,National Park,439800,1954
+SE,KY,MACA,Mammoth Cave National Park,National Park,447800,1955
+SE,KY,MACA,Mammoth Cave National Park,National Park,466100,1956
+SE,KY,MACA,Mammoth Cave National Park,National Park,450200,1957
+SE,KY,MACA,Mammoth Cave National Park,National Park,480100,1958
+SE,KY,MACA,Mammoth Cave National Park,National Park,490300,1959
+SE,KY,MACA,Mammoth Cave National Park,National Park,519100,1960
+SE,KY,MACA,Mammoth Cave National Park,National Park,519300,1961
+SE,KY,MACA,Mammoth Cave National Park,National Park,569300,1962
+SE,KY,MACA,Mammoth Cave National Park,National Park,636100,1963
+SE,KY,MACA,Mammoth Cave National Park,National Park,793400,1964
+SE,KY,MACA,Mammoth Cave National Park,National Park,872200,1965
+SE,KY,MACA,Mammoth Cave National Park,National Park,1143800,1966
+SE,KY,MACA,Mammoth Cave National Park,National Park,1282800,1967
+SE,KY,MACA,Mammoth Cave National Park,National Park,1540200,1968
+SE,KY,MACA,Mammoth Cave National Park,National Park,1299700,1969
+SE,KY,MACA,Mammoth Cave National Park,National Park,1726500,1970
+SE,KY,MACA,Mammoth Cave National Park,National Park,1571900,1971
+SE,KY,MACA,Mammoth Cave National Park,National Park,1699782,1972
+SE,KY,MACA,Mammoth Cave National Park,National Park,1754500,1973
+SE,KY,MACA,Mammoth Cave National Park,National Park,1566900,1974
+SE,KY,MACA,Mammoth Cave National Park,National Park,1680700,1975
+SE,KY,MACA,Mammoth Cave National Park,National Park,1748900,1976
+SE,KY,MACA,Mammoth Cave National Park,National Park,1806300,1977
+SE,KY,MACA,Mammoth Cave National Park,National Park,1640488,1978
+SE,KY,MACA,Mammoth Cave National Park,National Park,1384910,1979
+SE,KY,MACA,Mammoth Cave National Park,National Park,1495787,1980
+SE,KY,MACA,Mammoth Cave National Park,National Park,1404317,1981
+SE,KY,MACA,Mammoth Cave National Park,National Park,1526676,1982
+SE,KY,MACA,Mammoth Cave National Park,National Park,1498503,1983
+SE,KY,MACA,Mammoth Cave National Park,National Park,1501450,1984
+SE,KY,MACA,Mammoth Cave National Park,National Park,1507939,1985
+SE,KY,MACA,Mammoth Cave National Park,National Park,1646673,1986
+SE,KY,MACA,Mammoth Cave National Park,National Park,1636340,1987
+SE,KY,MACA,Mammoth Cave National Park,National Park,1735610,1988
+SE,KY,MACA,Mammoth Cave National Park,National Park,1672840,1989
+SE,KY,MACA,Mammoth Cave National Park,National Park,1924538,1990
+SE,KY,MACA,Mammoth Cave National Park,National Park,2158195,1991
+SE,KY,MACA,Mammoth Cave National Park,National Park,2392858,1992
+SE,KY,MACA,Mammoth Cave National Park,National Park,2396234,1993
+SE,KY,MACA,Mammoth Cave National Park,National Park,2009935,1994
+SE,KY,MACA,Mammoth Cave National Park,National Park,1935709,1995
+SE,KY,MACA,Mammoth Cave National Park,National Park,1896829,1996
+SE,KY,MACA,Mammoth Cave National Park,National Park,1997658,1997
+SE,KY,MACA,Mammoth Cave National Park,National Park,2113992,1998
+SE,KY,MACA,Mammoth Cave National Park,National Park,1710983,1999
+SE,KY,MACA,Mammoth Cave National Park,National Park,1749268,2000
+SE,KY,MACA,Mammoth Cave National Park,National Park,1883580,2001
+SE,KY,MACA,Mammoth Cave National Park,National Park,1891307,2002
+SE,KY,MACA,Mammoth Cave National Park,National Park,1869137,2003
+SE,KY,MACA,Mammoth Cave National Park,National Park,1888267,2004
+SE,KY,MACA,Mammoth Cave National Park,National Park,1878006,2005
+SE,KY,MACA,Mammoth Cave National Park,National Park,597934,2006
+SE,KY,MACA,Mammoth Cave National Park,National Park,487305,2007
+SE,KY,MACA,Mammoth Cave National Park,National Park,446174,2008
+SE,KY,MACA,Mammoth Cave National Park,National Park,503856,2009
+SE,KY,MACA,Mammoth Cave National Park,National Park,497225,2010
+SE,KY,MACA,Mammoth Cave National Park,National Park,483319,2011
+SE,KY,MACA,Mammoth Cave National Park,National Park,508054,2012
+SE,KY,MACA,Mammoth Cave National Park,National Park,494541,2013
+SE,KY,MACA,Mammoth Cave National Park,National Park,522628,2014
+SE,KY,MACA,Mammoth Cave National Park,National Park,566895,2015
+SE,KY,MACA,Mammoth Cave National Park,National Park,586514,2016
+SE,VI,VIIS,Virgin Islands National Park,National Park,11900,1957
+SE,VI,VIIS,Virgin Islands National Park,National Park,13900,1958
+SE,VI,VIIS,Virgin Islands National Park,National Park,19800,1959
+SE,VI,VIIS,Virgin Islands National Park,National Park,27200,1960
+SE,VI,VIIS,Virgin Islands National Park,National Park,30600,1961
+SE,VI,VIIS,Virgin Islands National Park,National Park,55400,1962
+SE,VI,VIIS,Virgin Islands National Park,National Park,86200,1963
+SE,VI,VIIS,Virgin Islands National Park,National Park,71600,1964
+SE,VI,VIIS,Virgin Islands National Park,National Park,57400,1965
+SE,VI,VIIS,Virgin Islands National Park,National Park,66000,1966
+SE,VI,VIIS,Virgin Islands National Park,National Park,102700,1967
+SE,VI,VIIS,Virgin Islands National Park,National Park,123800,1968
+SE,VI,VIIS,Virgin Islands National Park,National Park,117000,1969
+SE,VI,VIIS,Virgin Islands National Park,National Park,126600,1970
+SE,VI,VIIS,Virgin Islands National Park,National Park,133700,1971
+SE,VI,VIIS,Virgin Islands National Park,National Park,148626,1972
+SE,VI,VIIS,Virgin Islands National Park,National Park,150100,1973
+SE,VI,VIIS,Virgin Islands National Park,National Park,154800,1974
+SE,VI,VIIS,Virgin Islands National Park,National Park,156900,1975
+SE,VI,VIIS,Virgin Islands National Park,National Park,182600,1976
+SE,VI,VIIS,Virgin Islands National Park,National Park,289100,1977
+SE,VI,VIIS,Virgin Islands National Park,National Park,481662,1978
+SE,VI,VIIS,Virgin Islands National Park,National Park,549732,1979
+SE,VI,VIIS,Virgin Islands National Park,National Park,547918,1980
+SE,VI,VIIS,Virgin Islands National Park,National Park,566528,1981
+SE,VI,VIIS,Virgin Islands National Park,National Park,673480,1982
+SE,VI,VIIS,Virgin Islands National Park,National Park,676800,1983
+SE,VI,VIIS,Virgin Islands National Park,National Park,666435,1984
+SE,VI,VIIS,Virgin Islands National Park,National Park,699398,1985
+SE,VI,VIIS,Virgin Islands National Park,National Park,766458,1986
+SE,VI,VIIS,Virgin Islands National Park,National Park,785354,1987
+SE,VI,VIIS,Virgin Islands National Park,National Park,838684,1988
+SE,VI,VIIS,Virgin Islands National Park,National Park,664032,1989
+SE,VI,VIIS,Virgin Islands National Park,National Park,664735,1990
+SE,VI,VIIS,Virgin Islands National Park,National Park,710180,1991
+SE,VI,VIIS,Virgin Islands National Park,National Park,772470,1992
+SE,VI,VIIS,Virgin Islands National Park,National Park,807093,1993
+SE,VI,VIIS,Virgin Islands National Park,National Park,635291,1994
+SE,VI,VIIS,Virgin Islands National Park,National Park,536058,1995
+SE,VI,VIIS,Virgin Islands National Park,National Park,475942,1996
+SE,VI,VIIS,Virgin Islands National Park,National Park,592537,1997
+SE,VI,VIIS,Virgin Islands National Park,National Park,556849,1998
+SE,VI,VIIS,Virgin Islands National Park,National Park,425345,1999
+SE,VI,VIIS,Virgin Islands National Park,National Park,703992,2000
+SE,VI,VIIS,Virgin Islands National Park,National Park,677401,2001
+SE,VI,VIIS,Virgin Islands National Park,National Park,693494,2002
+SE,VI,VIIS,Virgin Islands National Park,National Park,821681,2003
+SE,VI,VIIS,Virgin Islands National Park,National Park,793590,2004
+SE,VI,VIIS,Virgin Islands National Park,National Park,803040,2005
+SE,VI,VIIS,Virgin Islands National Park,National Park,677289,2006
+SE,VI,VIIS,Virgin Islands National Park,National Park,571382,2007
+SE,VI,VIIS,Virgin Islands National Park,National Park,469034,2008
+SE,VI,VIIS,Virgin Islands National Park,National Park,415847,2009
+SE,VI,VIIS,Virgin Islands National Park,National Park,493477,2010
+SE,VI,VIIS,Virgin Islands National Park,National Park,442414,2011
+SE,VI,VIIS,Virgin Islands National Park,National Park,483341,2012
+SE,VI,VIIS,Virgin Islands National Park,National Park,438601,2013
+SE,VI,VIIS,Virgin Islands National Park,National Park,426930,2014
+SE,VI,VIIS,Virgin Islands National Park,National Park,438372,2015
+SE,VI,VIIS,Virgin Islands National Park,National Park,411343,2016
