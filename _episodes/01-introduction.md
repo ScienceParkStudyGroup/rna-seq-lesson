@@ -1,6 +1,6 @@
 ---
 title: "Introduction"
-teaching: 10
+teaching: 30
 exercises: 0
 questions:
 - "What will I learn during this workshop?"

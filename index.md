@@ -1,6 +1,6 @@
 ---
 layout: lesson
-title: "Introduction to Open Data Science"
+#title: "Introduction to Open Data Science"
 authors: Marc Galland, Tijs Bliek, Zsofia Koma from materials taken from "The Ocean Health Index Team"
 root: .  # Is the only page that doesn't follow the pattern /:path/index.html
 permalink: index.html  # Is the only page that doesn't follow the pattern /:path/index.html
@@ -22,19 +22,6 @@ Before you begin, be sure you are all set up: see the prerequisites in Chapter \
 
 {% include links.md %}
 
---- 
-
-Suggested breakdown for a 2-day workshop: 
-
-|time       |      Day 1|      Day 2|
-|:----------|----------:|----------:|
-|9-10:30    |  [Motivation](#overview), [R & RStudio, Rmarkdown](#rstudio) |  [Data Wrangling: `tidyr`](#tidyr) |
-|break      |  | |
-|11-12:30   | [GitHub](#github) | [Programming](#programming) |
-|lunch      |  ||
-|13:30-15:00 |  [Visualization: `ggplot2`](#ggplot2) | [Collaborating with GitHub](#collaborating) |
-|break      |  |  |
-|15:30-17:00 |  [Data Wrangling: `dplyr`](#dplyr) | Practice, [Be a champion for open data science](#champion) |
 
 ----
 

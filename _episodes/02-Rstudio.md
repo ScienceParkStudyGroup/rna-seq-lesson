@@ -1,7 +1,7 @@
 ---
 title: "R & RStudio, Rmarkdown"
-teaching: 45
-exercises: 45
+teaching: 60
+exercises: 0
 questions:
 - "How do I orient myself in the RStudio interface?"
 - "How can I work with R in the console?"
