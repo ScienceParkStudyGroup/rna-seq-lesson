@@ -17,7 +17,7 @@ keypoints:
 
 Why do we start with data visualization? Not only is data viz a big part of analysis, it’s a way to SEE your progress as you learn to code.
 
-> `ggplot2` implements the grammar of graphics, a coherent system for describing and building graphs. With `ggplot2, you can do more faster by learning one system and applying it in many places. - [Hadley Wickham, R for Data Science](http://r4ds.had.co.nz/data-visualisation.html)
+> `ggplot2` implements the grammar of graphics, a coherent system for describing and building graphs. With `ggplot2`, you can do more faster by learning one system and applying it in many places. - [Hadley Wickham, R for Data Science](http://r4ds.had.co.nz/data-visualisation.html)
 
 This lesson borrows heavily from Hadley Wickham's [R for Data Science book](http://r4ds.had.co.nz/data-visualisation.html), and an EcoDataScience lesson on Data Visualization.
 
