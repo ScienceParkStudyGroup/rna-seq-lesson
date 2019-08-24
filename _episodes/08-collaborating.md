@@ -390,52 +390,6 @@ As you work, you may get merge conflicts. This is part of collaborating in GitHu
 {: .challenge}
 
 
-### Use logicals
-
-
-> ## Exercice 1
->
-> ## Find flights that:
->  1. Had an arrival delay of two or more hours
->  2. Flew to Houston (`IAH` or `HOU`)
->  1. Were operated by United, American, or Delta
->  1. Departed in summer (July, August, and September)
->  1. Arrived more than two hours late, but didn't leave late
->  1. Were delayed by at least an hour, but made up over 30 minutes in flight
->  1. Departed between midnight and 6am (inclusive)
-> 
-{: .challenge}
-
-
-> ## Absolute vs Relative Paths
->
-> Starting from `/Users/amanda/data`,
-> which of the following commands could Amanda use to navigate to her home directory,
-> which is `/Users/amanda`?
->
-> 1. `cd .`
-> 2. `cd /`
-> 3. `cd /home/amanda`
-> 4. `cd ../..`
-> 5. `cd ~`
-> 6. `cd home`
-> 7. `cd ~/data/..`
-> 8. `cd`
-> 9. `cd ..`
->
-> > ## Solution
-> > 1. No: `.` stands for the current directory.
-> > 2. No: `/` stands for the root directory.
-> > 3. No: Amanda's home directory is `/Users/amanda`.
-> > 4. No: this goes up two levels, i.e. ends in `/Users`.
-> > 5. Yes: `~` stands for the user's home directory, in this case `/Users/amanda`.
-> > 6. No: this would navigate into a directory `home` in the current directory if it exists.
-> > 7. Yes: unnecessarily complicated, but correct.
-> > 8. Yes: shortcut to go back to the user's home directory.
-> > 9. Yes: goes up one level.
-> {: .solution}
-{: .challenge}
-
 
 1.  Another useful dplyr filtering helper is `between()`. What does it do?
     Can you use it to simplify the code needed to answer the previous 

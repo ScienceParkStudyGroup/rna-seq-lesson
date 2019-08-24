@@ -702,3 +702,22 @@ gap_cambodia  <- gapminder %>% filter(country == "Cambodia")
 ~~~
 {:.language-r}
 
+
+### Use logicals
+
+
+> ## Find flights that:
+>
+>  1. Had an arrival delay of two or more hours
+>  2. Flew to Houston (`IAH` or `HOU`)
+>  1. Were operated by United, American, or Delta
+>  1. Departed in summer (July, August, and September)
+>  1. Arrived more than two hours late, but didn't leave late
+>  1. Were delayed by at least an hour, but made up over 30 minutes in flight
+>  1. Departed between midnight and 6am (inclusive)
+> 
+> > ## Solution
+> > 2. No: `/` stands for the root directory.
+> > 3. No: Amanda's home directory is `/Users/amanda`.
+> {: .solution}
+{: .challenge}
