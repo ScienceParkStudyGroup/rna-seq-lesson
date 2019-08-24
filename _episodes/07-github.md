@@ -4,11 +4,11 @@ teaching: 30
 exercises: 60 
 questions:
 - "What is version control? How do I use it?"
-- ""
-- ""
+- "What is the difference between `git`and Github?"
+- "What benefits does a version control system brings in for my research?"
 objectives:
 - "Understand the benefits of using a version control system such as `git`."
-- "Understand the basics of `git` and its usage in RStudio."
+- "Understand the basics of `git` and its usage in RStudio."    
 keypoints:
 - "`git` allows you to version control files and go back in time if needed."
 - "In a version control system, file names do not reflect their versions."
@@ -17,27 +17,48 @@ keypoints:
 
 # Introduction
 
-We will learn about version control using `git` and [GitHub](https://en.wikipedia.org/wiki/GitHub), and we will interface with this through RStudio. Why use version control? To save time when working with your most important collaborator: **you** ! 
+## Why should scientists use git and Github?
 
-A famous quote that I like to emphasize:
-> Your past self 6 months ago won't answer emails from your present self!  
+* Ends (or, nearly ends) the horror of keeping track of versions.
+  Basically, we get away from this: 
 
-`git` will track and version your files, [GitHub](https://en.wikipedia.org/wiki/GitHub) stores this online and enables you to collaborate with others (and yourself). Although `git` and GitHub are two different things, distinct from each other, I think of them as a bundle since I always use them together. It also helped me to think of GitHub like Dropbox: you make folders that are 'tracked' and can be synced to the cloud. GitHub does this too, but you have to be more deliberate about when syncs are made. This is because GitHub saves these as different versions, with information about who contributed when, line-by-line. This makes collaboration easier, and it allows you to roll-back to different versions or contribute to others' work.
+![](../img/MessySaves.png)
 
-- `git` is locally executed and works on your local machine. It was named created and name by Linus Torvalds, the creator of Linux.  
-> Torvalds sarcastically quipped about the name _git_ (which means unpleasant person in British English slang): "I'm an egotistical bastard, and I name all my projects after myself. First 'Linux', now 'git'."
+![](../img/phdcomics_version_control.png)
+
+When you open your repository, you only see the most recent version.  But, it easy to compare versions, and you can easily revert to previous versions. 
+
+* Improves collaborative efforts.  Different researchers can work on the same files at the same time!
+* It is easy to share and distribute files through the Github website.
+* Your files are available anywhere, you just need internet connection!  
+
+## git and Github
+
+We will learn about version control using `git` and [GitHub](https://en.wikipedia.org/wiki/GitHub), and we will interface with this through RStudio. This will change your scientific life (for the better!). Github was developed for social coding (i.e., sort of like an open source Wikipedia for programmers). Consequently, much of the functionality and terminology of Github (e.g., branches and pull requests) will not be relevant for most scientists. Therefore, we will skip over all this stuff!    
+
+Github will facilitate your daily coding life when working with your most important collaborator: **you** ! A famous quote that we like to emphasize:
+> Your past self from 6 months ago is gone and won't answer emails from your present self!  
+
+**git:**   
+On the one hand, `git` will track and version your files locally on your machine. In a complementary way, [GitHub](https://en.wikipedia.org/wiki/GitHub) stores this information online and enables you to collaborate with others (and yourself).   
+`git` is a version control system that lets you track changes to files over time. These files can be any kind of file (eg .doc, .pdf, .xls), but free text differences are most easily visible (eg txt, csv, md). 
+
+**Github:**  
+[GitHub](https://github.com/) is a website for storing your git versioned files remotely. It has many nice features to be able visualize differences between [images](https://help.github.com/articles/rendering-and-diffing-images/), [rendering](https://help.github.com/articles/mapping-geojson-files-on-github/) & [diffing](https://github.com/blog/1772-diffable-more-customizable-maps) map data files, [render text data files](https://help.github.com/articles/rendering-csv-and-tsv-data/), and [track changes in text](https://help.github.com/articles/rendering-differences-in-prose-documents/).
+
+> If you are a student you can get the micro account which includes 5 private repositories for free (normally a $7/month value).  You can sign up for the student account [here](https://education.github.com/pack).  Instructors can also request a free organization [account, "Request a discount"](https://education.github.com/). These concepts are more important for coders who want the entire coding community (and not just people working on the same project) to be able to suggest changes to their code.  This isn't how most scientists will use Github. To get the full functionality of Github, you will eventually want to learn other concepts. But, this can wait.  
+
+**git and Github**:  
+Although `git` and GitHub are two different things, distinct from each other, I think of them as a bundle since I always use them together. It also helped me to think of GitHub like Dropbox: you make folders that are 'tracked' and can be synced to the cloud. GitHub does this too, but you have to be more deliberate about when syncs are made. This is because GitHub saves these as different versions, with information about who contributed when, line-by-line. This makes collaboration easier, and it allows you to roll-back to different versions or contribute to others' work.
+- `git` is locally executed and works on your local machine. It was named created and named by Linus Torvalds, the creator of Linux. Torvalds sarcastically quipped about the name _git_ (which means unpleasant person in British English slang): "I'm an egotistical bastard, and I name all my projects after myself. First 'Linux', now 'git'."
 - [GitHub](https://en.wikipedia.org/wiki/GitHub) is a website and runs on a server somewhere over the internet.
 
 <figure>
     <img src="../img/octocat_GitHub_mascot.png" alt='Github Mascot' width="250" />
-    <figcaption>""</figcaption>
+    <figcaption><center>The octocat: the official mascot of Github</center></figcaption>
 </figure>
 
 ## Resources
-
-We will learn about version control using `git` and [GitHub](https://en.wikipedia.org/wiki/GitHub), and we will interface with this through RStudio. Why use version control? To save time when working with your most important collaborator: you. 
-
-`git` will track and version your files, [GitHub](https://en.wikipedia.org/wiki/GitHub) stores this online and enables you to collaborate with others (and yourself). Although git and GitHub are two different things, distinct from each other, I think of them as a bundle since I always use them together. It also helped me to think of GitHub like Dropbox: you make folders that are 'tracked' and can be synced to the cloud. [GitHub](https://en.wikipedia.org/wiki/GitHub) does this too, but you have to be more deliberate about when syncs are made. This is because GitHub saves these as different versions, with information about who contributed when, line-by-line. This makes collaboration easier, and it allows you to roll-back to different versions or contribute to others' work.
 
 These materials borrow from: 
 
@@ -50,50 +71,19 @@ These materials borrow from:
 
 Today, we'll only introduce the features and terminology that scientists need to learn to begin managing their projects.
 
-### Objectives
+## Outline
 
 Today, we'll interface with GitHub from our local computers using RStudio. There are many other ways to interact with GitHub, including GitHub's Desktop App or the command line ([here is Jenny Bryan's list of git clients](http://stat545.com/git02_git-clients.html)), but today we are going to work from RStudio. You have the largest suite of options if you interface through the command line, but the most common things you'll do can be done through one of these other applications (i.e. RStudio and the GitHub Desktop App).
 
-Here's what we'll do after we set up git on your computers: 
+Here's what we'll do after we set up `git` on your computers: 
 
 1. create a repository on Github.com
-2. clone locally using RStudio 
-3. learn the RStudio-GitHub workflow by syncing to Github.com: pull, stage, commit, push
-4. explore github.com: files, commit history, file history
-5. practice the RStudio-GitHub workflow by editing and adding files 
-6. practice R Markdown
+2. clone locally using RStudio. 
+3. learn the RStudio-GitHub workflow by syncing to Github.com: `pull`, `stage`, `commit`, `push`.
+4. explore github.com: files, commit history, file history.
+5. practice the RStudio-GitHub workflow by editing and adding files. 
+6. practice R Markdown.
 
-
-## Why should scientists use Github?
-
-* Ends (or, nearly ends) the horror of keeping track of versions.
-  Basically, we get away from this: 
-
-![](../img/MessySaves.png)
-
-but also this:
-
-![](../img/phdcomics_version_control.png)
-
-When you open your repository, you only see the most recent version.  But, it easy to compare versions, and you can easily revert to previous versions. 
-
-* Improves collaborative efforts.  Different researchers can work on the same files at the same time!
-* It is easy to share and distribute files through the Github website.
-* Your files are available anywhere, you just need internet connection!  
-
-### What are Git and Github?
-
-- **Git** is a version control system that lets you track changes to files over time. These files can be any kind of file (eg .doc, .pdf, .xls), but free text differences are most easily visible (eg txt, csv, md). 
-
-- **Github** is a website for storing your git versioned files remotely. It has many nice features to be able visualize differences between [images](https://help.github.com/articles/rendering-and-diffing-images/), [rendering](https://help.github.com/articles/mapping-geojson-files-on-github/) & [diffing](https://github.com/blog/1772-diffable-more-customizable-maps) map data files, [render text data files](https://help.github.com/articles/rendering-csv-and-tsv-data/), and [track changes in text](https://help.github.com/articles/rendering-differences-in-prose-documents/).
-
-> If you are a student you can get the micro account which includes 5 private repositories for free (normally a $7/month value).  You can sign up for the student account [here](https://education.github.com/pack).  Instructors can also request a free organization [account, "Request a discount"](https://education.github.com/).
-
-Github was developed for social coding (i.e., sort of like an open source Wikipedia for programmers). Consequently, much of the functionality and terminology of Github (e.g., branches and pull requests) isn't necessary for a scientist getting started.  
-
-These concepts are more important for coders who want the entire coding community (and not just people working on the same project) to be able to suggest changes to their code.  This isn't how most scientists will use Github.  
-
-To get the full functionality of Github, you will eventually want to learn other concepts. But, this can wait.  
 
 ### Some Github terminology
 
@@ -120,6 +110,7 @@ We're going to switch gears from R for a moment and set up Git and GitHub, which
 
 1. Configure **git** with global commands, which means it will apply 'globally' to all files on your computer, rather than to a specific folder. Open the Git Bash program (Windows) or the Terminal (Mac) and type the following:
 
+~~~
         # display your version of git
         git --version
         
@@ -131,6 +122,8 @@ We're going to switch gears from R for a moment and set up Git and GitHub, which
         
         # list your config to confirm user.* variables set
         git config --list
+~~~
+{: .language-shell}
 
 Not only have you just set up git as a one-time-only thing, you have just used the command line. We don't have time to learn much of the command line today, but you just successfully used it following explicit instructions, which is huge! There are great resources for learning the command line, check out [this tutorial from SWC at UCSB](http://remi-daigle.github.io/2016-04-15-UCSB/shell/). 
 
