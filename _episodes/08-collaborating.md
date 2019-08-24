@@ -175,13 +175,14 @@ Notice that in the git tab, there are orange `U`s; this means that there is an u
 
 Let's look at the README file itself. We got a preview in the diff pane that there is some new text going on in our README file: 
 
-```r
+~~~
 <<<<<<< HEAD
 Julie is collaborating on this README.
 =======
 **Jamie is adding lines here.**
 >>>>>>> 05a189b23372f0bdb5b42630f8cb318003cee19b
-```
+~~~
+{: .source}
 
 In this example, Partner 1 is Jamie and Partner 2 is Julie. GitHub is displaying the line that Julie wrote and the line Jamie wrote separated by `=======`. So these are the two choices that Partner 2 has to decide between, which one do you want to keep? Where where does this decision start and end? The lines are bounded by `<<<<<<<HEAD` and `>>>>>>>long commit identifier`. 
 
@@ -264,14 +265,15 @@ In the text box, let's write a note to our collaborator. You can use Markdown in
 
 Let's have one of you write something here. I'm going to write: 
 
-```
+~~~
 Hi @jafflerbach! 
 
 # first priority
 
 - explore NYC flights
 - plot interesting things
-```
+~~~
+{: .source}
 
 Note that I have my collaborator's GitHub name with a `@` symbol. This is going to email her directly so that she sees this issue. I can click the "Preview" button at the top left of the text box to see how this will look rendered in Markdown. It looks good! 
 
@@ -295,22 +297,25 @@ Here's what we'll be doing (from [R for Data Science's Transform Chapter](http:/
 
 Let's have Person 1 write this in the RMarkdown document (Person 2 just listen for a moment; we will sync this to you in a moment). 
 
-```{r, message = FALSE}
+~~~
 library(nycflights13) # install.packages('nycflights13')
 library(tidyverse)
-```
+~~~
+{:.language-r}
 
 This data frame contains all `r format(nrow(nycflights13::flights), big.mark = ",")` flights that departed from New York City in 2013. The data comes from the US [Bureau of Transportation Statistics](http://www.transtats.bts.gov/DatabaseInfo.asp?DB_ID=120&Link=0), and is documented in `?flights`.
 
-```{r}
+~~~
 flights
-```
+~~~
+{:.language-r}
 
 Let's select all flights on January 1st with:
 
-```{r}
+~~~
 filter(flights, month == 1, day == 1)
-```
+~~~
+{:.language-r}
 
 To use filtering effectively, you have to know how to select the observations that you want using the comparison operators. R provides the standard suite: `>`, `>=`, `<`, `<=`, `!=` (not equal), and `==` (equal). We learned these operations yesterday. But there are a few others to learn as well. 
 
@@ -330,24 +335,27 @@ Let's have a look:
 
 The following code finds all flights that departed in November or December:
 
-```{r, eval = FALSE}
+~~~
 filter(flights, month == 11 | month == 12)
-```
+~~~
+{: .language-r}
 
 The order of operations doesn't work like English. You can't write `filter(flights, month == 11 | 12)`, which you might literally translate into  "finds all flights that departed in November or December". Instead it finds all months that equal `11 | 12`, an expression that evaluates to `TRUE`. In a numeric context (like here), `TRUE` becomes one, so this finds all flights in January, not November or December. This is quite confusing!
 
 A useful short-hand for this problem is `x %in% y`. This will select every row where `x` is one of the values in `y`. We could use it to rewrite the code above:
 
-```{r, eval = FALSE}
+~~~
 nov_dec <- filter(flights, month %in% c(11, 12))
-```
+~~~
+{: .language-r}
 
 Sometimes you can simplify complicated subsetting by remembering De Morgan's law: `!(x & y)` is the same as `!x | !y`, and `!(x | y)` is the same as `!x & !y`. For example, if you wanted to find flights that weren't delayed (on arrival or departure) by more than two hours, you could use either of the following two filters:
 
-```{r, eval = FALSE}
+~~~
 filter(flights, !(arr_delay > 120 | dep_delay > 120))
 filter(flights, arr_delay <= 120, dep_delay <= 120)
-```
+~~~
+{: .language-r}
 
 Whenever you start using complicated, multipart expressions in `filter()`, consider making them explicit variables instead. That makes it much easier to check your work. 
 
@@ -361,17 +369,73 @@ Remember to make your commit messages useful!
 
 As you work, you may get merge conflicts. This is part of collaborating in GitHub; we will walk through and help you with these and also teach the whole group. 
 
+
 ### Use logicals
 
-1.  Find all flights that:
 
-    1. Had an arrival delay of two or more hours
-    1. Flew to Houston (`IAH` or `HOU`)
-    1. Were operated by United, American, or Delta
-    1. Departed in summer (July, August, and September)
-    1. Arrived more than two hours late, but didn't leave late
-    1. Were delayed by at least an hour, but made up over 30 minutes in flight
-    1. Departed between midnight and 6am (inclusive)
+> ## Find flights that:
+>
+>  1. Had an arrival delay of two or more hours
+>  2. Flew to Houston (`IAH` or `HOU`)
+>  1. Were operated by United, American, or Delta
+>  1. Departed in summer (July, August, and September)
+>  1. Arrived more than two hours late, but didn't leave late
+>  1. Were delayed by at least an hour, but made up over 30 minutes in flight
+>  1. Departed between midnight and 6am (inclusive)
+> 
+> > ## Solution
+> > 2. No: `/` stands for the root directory.
+> > 3. No: Amanda's home directory is `/Users/amanda`.
+> {: .solution}
+{: .challenge}
+
+
+### Use logicals
+
+
+> ## Exercice 1
+>
+> ## Find flights that:
+>  1. Had an arrival delay of two or more hours
+>  2. Flew to Houston (`IAH` or `HOU`)
+>  1. Were operated by United, American, or Delta
+>  1. Departed in summer (July, August, and September)
+>  1. Arrived more than two hours late, but didn't leave late
+>  1. Were delayed by at least an hour, but made up over 30 minutes in flight
+>  1. Departed between midnight and 6am (inclusive)
+> 
+{: .challenge}
+
+
+> ## Absolute vs Relative Paths
+>
+> Starting from `/Users/amanda/data`,
+> which of the following commands could Amanda use to navigate to her home directory,
+> which is `/Users/amanda`?
+>
+> 1. `cd .`
+> 2. `cd /`
+> 3. `cd /home/amanda`
+> 4. `cd ../..`
+> 5. `cd ~`
+> 6. `cd home`
+> 7. `cd ~/data/..`
+> 8. `cd`
+> 9. `cd ..`
+>
+> > ## Solution
+> > 1. No: `.` stands for the current directory.
+> > 2. No: `/` stands for the root directory.
+> > 3. No: Amanda's home directory is `/Users/amanda`.
+> > 4. No: this goes up two levels, i.e. ends in `/Users`.
+> > 5. Yes: `~` stands for the user's home directory, in this case `/Users/amanda`.
+> > 6. No: this would navigate into a directory `home` in the current directory if it exists.
+> > 7. Yes: unnecessarily complicated, but correct.
+> > 8. Yes: shortcut to go back to the user's home directory.
+> > 9. Yes: goes up one level.
+> {: .solution}
+{: .challenge}
+
 
 1.  Another useful dplyr filtering helper is `between()`. What does it do?
     Can you use it to simplify the code needed to answer the previous 
