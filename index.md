@@ -13,11 +13,20 @@ This is going to be fun, because learning these open data science tools and prac
 
 Before you begin, be sure you are all set up: see the prerequisites in Chapter \@ref(overview). 
 
-<!-- this is an html comment -->
-
-## Prerequisites
-FIXME
+> ## Before you start
+>
+> Before the training, please make sure you have done the following: 
+>
+> 1. Download and install **up-to-date versions** of:
+>    - R: [https://cloud.r-project.org](https://cloud.r-project.org)
+>    - RStudio: [http://www.rstudio.com/download](http://www.rstudio.com/download) 
+>    - Git: [https://git-scm.com/downloads](https://git-scm.com/downloads) 
+> 2. Create a GitHub account: [https://github.com](https://github.com) *Note! Shorter names that kind of identify you are better, and use your work email!*
+> 3. Read the workshop [Code of Conduct](https://docs.carpentries.org/topic_folders/policies/code-of-conduct.html) to make sure this workshop stays welcoming for everybody.
+> 4. Get comfortable: if you're not in a physical workshop, be set up with two screens if possible. You will be following along in RStudio on your own computer while also following this tutorial on your own.
+> More instructions are available on the workshop website in the **Setup** section.
 {: .prereq}
+
 
 {% include links.md %}
 
