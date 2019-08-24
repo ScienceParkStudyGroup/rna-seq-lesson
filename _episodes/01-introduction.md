@@ -89,17 +89,21 @@ Here are some important things to keep in mind as you learn (these are joke book
 
 ![](../img/practical_dev_both.png)
 
-## Prerequisites
 
-Before the training, please make sure you have done the following: 
+## Credit
 
-1. Download and install **up-to-date versions** of:
-    - R: [https://cloud.r-project.org](https://cloud.r-project.org)
-    - RStudio: [http://www.rstudio.com/download](http://www.rstudio.com/download) 
-    - Git: [https://git-scm.com/downloads](https://git-scm.com/downloads) *Note: open the download and follow normal install procedures on your computer but you won't see any software installed when you're done*
-2. Create a GitHub account: [https://github.com](https://github.com) *Note! Shorter names that kind of identify you are better, and use your work email!*
-3. Read the workshop [Code of Conduct](https://docs.carpentries.org/topic_folders/policies/code-of-conduct.html) to make sure this workshop stays welcoming for everybody.
-4. Get comfortable: if you're not in a physical workshop, be set up with two screens if possible. You will be following along in RStudio on your own computer while also following this tutorial on your own.
+This lesson has been formatted according to the [Carpentries Foundation](https://carpentries.org/) lesson template and following their recommendations on how to teach researchers good practices in programming and data analysis.   
+
+This material builds from a lot of fantastic materials developed by others in the open data science community. Most of the content derives from the [Ocean Health Index Data Science Training](http://ohi-science.org/data-science-training/index.html) which are greatly acknowledge for the quality of their teaching materials.
+
+It also pulls from the following resources, which are highly recommended for further learning and as resources later on. Specific lessons will also cite more resources.
+
+- [R for Data Science](http://r4ds.had.co.nz/) by Hadley Wickham and Garrett Grolemund
+- [STAT 545](http://stat545.com/) by Jenny Bryan
+- [Happy Git with R](http://happygitwithr.com) by Jenny Bryan
+- [Software Carpentry](https://software-carpentry.org/lessons/) by the Carpentries
+
+{% include links.md %}
 
 <!---
 ## Motivation 
@@ -147,18 +151,3 @@ Going to teach you how to think differently, get into some of the theory but in 
 
 
 --->
-
-
-## Credit
-
-This lesson has been formatted according to the [Carpentries Foundation](https://carpentries.org/) lesson template and following their recommendations on how to teach researchers good practices in programming and data analysis. 
-This material builds from a lot of fantastic materials developed by others in the open data science community. In particular, it pulls from the following resources, which are highly recommended for further learning and as resources later on. Specific lessons will also cite more resources.
-
-- [R for Data Science](http://r4ds.had.co.nz/) by Hadley Wickham and Garrett Grolemund
-- [STAT 545](http://stat545.com/) by Jenny Bryan
-- [Happy Git with R](http://happygitwithr.com) by Jenny Bryan
-- [Software Carpentry](https://software-carpentry.org/lessons/) by the Carpentries
-
-
-{% include links.md %}
-
