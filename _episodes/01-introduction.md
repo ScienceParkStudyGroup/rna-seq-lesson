@@ -26,7 +26,7 @@ This is going to be a fun workshop.
 
 The plan is to expose you to a lot of great tools that you can have confidence using in your research. You'll be working hands-on and doing the same things on your own computer as we do live on up on the screen. We're going to go through a lot in these two days and it's less important that you remember it all. More importantly, you'll have experience with it and confidence that you can do it. The main thing to take away is that there *are* good ways to approach your analyses; we will teach you to expect that so you can find what you need and use it! A theme throughout is that tools exist and are being developed by real, and extraordinarily nice, people to meet you where you are and help you do what you need to do. If you expect and appreciate that, you will be more efficient in doing your awesome science.
 
-You are all welcome here, please be respectful of one another. You are encouraged to help each other. 
+You are all welcome here, please be respectful of one another. You are encouraged to help each other. We abide to the Carpentries [Code of Conduct](https://docs.carpentries.org/topic_folders/policies/code-of-conduct.html). 
 
 Everyone in this workshop is coming from a different place with different experiences and expectations. But everyone will learn something new here, because there is so much innovation in the data science world. Instructors and helpers learn something new every time, from each other and from your questions. If you are already familiar with some of this material, focus on how we teach, and how you might teach it to others. Use these workshop materials not only as a reference in the future but also for talking points so you can communicate the importance of these tools to your communities. A big part of this training is not only for you to learn these skills, but for you to also teach others and increase the value and practice of open data science in science as a whole. 
 
@@ -94,11 +94,12 @@ Here are some important things to keep in mind as you learn (these are joke book
 Before the training, please make sure you have done the following: 
 
 1. Download and install **up-to-date versions** of:
-    - R: https://cloud.r-project.org
-    - RStudio: http://www.rstudio.com/download 
-    - Git: https://git-scm.com/downloads *Note: open the download and follow normal install procedures on your computer but you won't see any software installed when you're done*
-1. Create a GitHub account: https://github.com *Note! Shorter names that kind of identify you are better, and use your work email!*
-1. Get comfortable: if you're not in a physical workshop, be set up with two screens if possible. You will be following along in RStudio on your own computer while also watching a virtual training or following this tutorial on your own.
+    - R: [https://cloud.r-project.org](https://cloud.r-project.org)
+    - RStudio: [http://www.rstudio.com/download](http://www.rstudio.com/download) 
+    - Git: [https://git-scm.com/downloads](https://git-scm.com/downloads) *Note: open the download and follow normal install procedures on your computer but you won't see any software installed when you're done*
+2. Create a GitHub account: [https://github.com](https://github.com) *Note! Shorter names that kind of identify you are better, and use your work email!*
+3. Read the workshop [Code of Conduct](https://docs.carpentries.org/topic_folders/policies/code-of-conduct.html) to make sure this workshop stays welcoming for everybody.
+4. Get comfortable: if you're not in a physical workshop, be set up with two screens if possible. You will be following along in RStudio on your own computer while also following this tutorial on your own.
 
 <!---
 ## Motivation 
