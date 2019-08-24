@@ -17,6 +17,8 @@ keypoints:
 - ""
 ---
 
+Hello Aleksandra, feel free to modify things here directly! I will integrate your changes!
+
 ## Definitions
 
 What is Open Science? Open 
