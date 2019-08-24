@@ -3,8 +3,9 @@ title: "Collaborating with Github"
 teaching: 30
 exercises: 60 
 questions:
-- "How can I co-develop and collaborate on code with another scientist?"
-- "How can I stay in sync on code"
+- "How can I develop and collaborate on code with another scientist?"
+- "How can I give access to my code to another collaborator?"
+- "How can I keep code synchronised with another scientist?"
 - "How can I solve conflicts that arise from that collaboration?"
 - "What are Github "
 objectives:
@@ -43,7 +44,8 @@ We are going to create a website with a collaborator!
 
 ## Create repo (Partner 1)
 
-Team up with a partner sitting next to you. Partner 1 will create a new repository. We will do this in the same way that we did in Chapter \@ref(github): [Create a repository on Github.com]. 
+Team up with a partner sitting next to you.   
+Partner 1 will create a new repository. We will do this in the same way that we did in Chapter \@ref(github): [Create a repository on Github.com]. 
 
 ## Create a gh-pages branch (Partner 1)
 
@@ -368,79 +370,4 @@ With your partner, do the following tasks. Each of you should work on one task a
 Remember to make your commit messages useful!
 
 As you work, you may get merge conflicts. This is part of collaborating in GitHub; we will walk through and help you with these and also teach the whole group. 
-
-
-### Use logicals
-
-
-> ## Find flights that:
->
->  1. Had an arrival delay of two or more hours
->  2. Flew to Houston (`IAH` or `HOU`)
->  1. Were operated by United, American, or Delta
->  1. Departed in summer (July, August, and September)
->  1. Arrived more than two hours late, but didn't leave late
->  1. Were delayed by at least an hour, but made up over 30 minutes in flight
->  1. Departed between midnight and 6am (inclusive)
-> 
-> > ## Solution
-> > 2. No: `/` stands for the root directory.
-> > 3. No: Amanda's home directory is `/Users/amanda`.
-> {: .solution}
-{: .challenge}
-
-
-
-1.  Another useful dplyr filtering helper is `between()`. What does it do?
-    Can you use it to simplify the code needed to answer the previous 
-    challenges?
-
-### Missing values
-
-To answer these questions: read some background below.
-
-1.  How many flights have a missing `dep_time`? What other variables are 
-    missing? What might these rows represent?
-
-1.  Why is `NA ^ 0` not missing? Why is `NA | TRUE` not missing?
-    Why is `FALSE & NA` not missing? Can you figure out the general
-    rule?  (`NA * 0` is a tricky counterexample!)
-
-
-One important feature of R that can make comparison tricky are missing values, or `NA`s ("not availables"). `NA` represents an unknown value so missing values are "contagious": almost any operation involving an unknown value will also be unknown.
-
-```{r}
-NA > 5
-10 == NA
-NA + 10
-NA / 2
-```
-
-The most confusing result is this one:
-
-```{r}
-NA == NA
-```
-
-It's easiest to understand why this is true with a bit more context:
-
-```{r}
-# Let x be Mary's age. We don't know how old she is.
-x <- NA
-
-# Let y be John's age. We don't know how old he is.
-y <- NA
-
-# Are John and Mary the same age?
-x == y
-# We don't know!
-```
-
-If you want to determine if a value is missing, use `is.na()`:
-
-```{r}
-is.na(x)
-```
-
-
 
