@@ -14,7 +14,7 @@ keypoints:
 ---
 # Overview 
 
-Welcome. 
+Welcome!
 
 In this training you will learn R, RStudio, Git, and GitHub. It's going to be fun and empowering! You will learn a reproducible workflow that can be used in research and analyses of all kinds, including Ocean Health Index assessments. This is really powerful, cool stuff, and not just for data: this lesson website was actually made using some of these tools.
 
@@ -150,6 +150,7 @@ Going to teach you how to think differently, get into some of the theory but in 
 
 ## Credit
 
+This lesson has been formatted according to the [Carpentries Foundation](https://carpentries.org/) lesson template and following their recommendations on how to teach researchers good practices in programming and data analysis. 
 This material builds from a lot of fantastic materials developed by others in the open data science community. In particular, it pulls from the following resources, which are highly recommended for further learning and as resources later on. Specific lessons will also cite more resources.
 
 - [R for Data Science](http://r4ds.had.co.nz/) by Hadley Wickham and Garrett Grolemund
