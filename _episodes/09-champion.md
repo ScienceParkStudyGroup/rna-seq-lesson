@@ -19,9 +19,13 @@ keypoints:
 
 ## Definitions
 
-What is Open Science? Open 
+What is Open Science?  
 
-- Open science is "the concept of transparency at all stages of the research process, coupled with free and open access to data, code, and papers" ([Hampton et al. 2015](http://onlinelibrary.wiley.com/doi/10.1890/ES14-00402.1/abstract))) 
+Open science is the concept of transparency at all stages of the research process, coupled with free and open access to data, code, and papers" ([Hampton et al. 2015](http://onlinelibrary.wiley.com/doi/10.1890/ES14-00402.1/abstract))). 
+
+> The opposite of “open” isn’t “closed”. The opposite of “open” is “broken”.
+> — John Wilbanks
+
 
 
 ## Three messages
