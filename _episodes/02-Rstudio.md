@@ -9,9 +9,10 @@ questions:
 - "How can I generate an Rmarkdown notebook?"
 objectives:
 - "Learn what is an Integrated Developing Environment."
-- "Learn how to generate a reproducible code notebook with Rmarkdown"
+- "Learn how to generate a reproducible code notebook with Rmarkdown."
 keypoints:
-- "First key point. Brief Answer to questions. (FIXME)"
+- "R and RStudio make a powerful duo to create R scripts and Rmarkdown notebooks."
+- "RStudio offers a text editor, a console and some extra features (environment, files, etc.)."
 ---
 
 ## Resources
@@ -477,17 +478,24 @@ OK. Now let's practice with some of those commands that we were working on this 
 
 Create a new chunk in your RMarkdown first in one of these ways: 
 
-- click "Insert > R" at the top of the editor pane
+- click "*Insert* > *R*" at the top of the editor pane
 - type by hand 
-   \```{r}
-   \```
+
+~~~ 
+```{r}
+
+```
+~~~
+{: .source}
+
 - if you haven't deleted a chunk that came with the new file, edit that one
 
 Now, let's write some R code. 
 
-```
+~~~
 x <- seq(1:15)
-```
+~~~
+{: .language-r}
 
 Now, hitting return does not execute this command; remember, it's a text file in the text editor, it's not associated with the R engine. To execute it, we need to get what we typed in the the R chunk (the grey R code) down into the console. How do we do it? There are several ways (let's do each of them):
 
@@ -500,7 +508,12 @@ Now, hitting return does not execute this command; remember, it's a text file in
 
 ### Your turn
 
-> Add a few more commands to your file from this morning. Execute them by trying the three ways above. Then, save your R Markdown file. 
+> ## Exercise
+>
+> Add a few more commands to your file from this morning.  
+> Execute them by trying the three ways above. Then, save your R Markdown file. 
+>
+{: .challenge}
 
 ## RMarkdown video (1-minute)
 
@@ -516,10 +529,11 @@ Here are some additional things we didn't have time to discuss:
 
 It may be because you didn't complete a command: is there a little `+` in your console? R is saying that it is waiting for you to finish. In the example below, I need to close that parenthesis.
 
-```{r, eval=FALSE}
+~~~
 > x <- seq(1, 10
 + 
-```
+~~~
+{: .language-r}
 
 
 ### How do I update RStudio?
