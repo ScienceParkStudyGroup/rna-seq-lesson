@@ -9,15 +9,33 @@ questions:
 - "How can I generate an Rmarkdown notebook?"
 objectives:
 - "Learn what is an Integrated Developing Environment."
+- "Learn to work in the R console interactively."
 - "Learn how to generate a reproducible code notebook with Rmarkdown."
 keypoints:
 - "R and RStudio make a powerful duo to create R scripts and Rmarkdown notebooks."
 - "RStudio offers a text editor, a console and some extra features (environment, files, etc.)."
+- "R is a functional programming language: everything resolves around functions."
 ---
 
-## Resources
+## Table of Contents
+1. [Introduction](#introduction)
+2. [Why learn R with RStudio?](#why-learn-r-with-rstudio)
+3. [R at the console, RStudio goodies](#r-at-the-console-rstudio-goodies)
+4. [Error messages are your friends](#error-messages-are-your-friends)
+5. [Logical operators and expressions](#logical-operators-and-expressions)
+6. [R functions, help pages](#r-functions-help-pages)
+7. [Packages](#packages)
+8. [Clearing the environment](#clearing-the-environment)
+9. [RMarkdown](#rmarkdown)
+10. [Miscellaneous](#miscellaneous)
 
-This lesson is a combination of excellent lessons by others (thank you Jenny Bryan and Data Carpentry!) that I have combined and modified for our lesson. I definitely recommend reading through the original lessons and using them as reference:   
+## Introduction
+
+This lesson is a combination of excellent lessons by others (thank you Jenny Bryan and Data Carpentry!) that I have combined and modified for our lesson. 
+
+### Resources
+
+I definitely recommend reading through the original lessons and using them as reference:   
 
 [Dr. Jenny Bryan's lectures from STAT545 at UBC](https://stat545-ubc.github.io/)
 
@@ -130,7 +148,7 @@ sciencerocks
 ~~~
 {: .language-r}
 
-### Error messages are your friends
+## Error messages are your friends
 
 Implicit contract with the computer / scripting language: Computer will do tedious computation for you. In return, you will be completely precise in your instructions. Typos matter. Case matters. Pay attention to how you type.
 
@@ -140,7 +158,7 @@ Remember that this is a language, not unsimilar to English! There are times you 
 
 And also know that there are errors that can creep in more subtly, when you are giving information that is understood, but not in the way you meant. Like if I am telling a story about suspenders that my British friend hears but silently interprets in a very different way (true story). This can leave me thinking I've gotten something across that the listener (or R) might silently interpreted very differently. And as I continue telling my story you get more and more confused... Clear communication is critical when you code: write clean, well documented code and check your work as you go to minimize these circumstances!
 
-### Logical operators and expressions
+## Logical operators and expressions
 
 A moment about **logical operators and expressions**. We can ask questions about the objects we made. 
 
@@ -158,8 +176,8 @@ x != 5
 ~~~
 {: .language-r}
 
-> Shortcuts
-You will make lots of assignments and the operator `<-` is a pain to type. Don't be lazy and use `=`, although it would work, because it will just sow confusion later. Instead, utilize **RStudio's keyboard shortcut: Alt + - (the minus sign)**.
+Shortcuts: 
+> You will make lots of assignments and the operator `<-` is a pain to type. Don't be lazy and use `=`, although it would work, because it will just sow confusion later. Instead, utilize **RStudio's keyboard shortcut: Alt + - (the minus sign)**.
 Notice that RStudio automagically surrounds `<-` with spaces, which demonstrates a useful code formatting practice. Code is miserable to read on a good day. Give your eyes a break and use spaces.
 RStudio offers many handy [keyboard shortcuts](https://support.rstudio.com/hc/en-us/articles/200711853-Keyboard-Shortcuts). Also, Alt+Shift+K brings up a keyboard shortcut reference card.
 
@@ -219,7 +237,7 @@ names
 ~~~
 {: .language-r}
 
-## Your Turn
+### Your turn
 
 > ## Exercise
 >
@@ -265,13 +283,13 @@ help(seq) # same as ?seq
 > ## Help page
 >
 > The help page tells the name of the package in the top left, and broken down into sections:
-> - Description: An extended description of what the function does.
-> - Usage: The arguments of the function and their default values.
-> - Arguments: An explanation of the data each argument is expecting.
-> - Details: Any important details to be aware of.
-> - Value: The data the function returns.
-> - See Also: Any related functions you might find useful.
-> - Examples: Some examples for how to use the function.
+> - **Description:** An extended description of what the function does.
+> - **Usage:** The arguments of the function and their default values.
+> - **Arguments:** An explanation of the data each argument is expecting.
+> - **Details:** Any important details to be aware of.
+> - **Value:** The data the function returns.
+> - **See Also:** Any related functions you might find useful.
+> - **Examples:** Some examples for how to use the function.
 >
 {: .callout}
 
@@ -389,13 +407,18 @@ We will keep coming back to this theme but let's restart our R session together:
 
 ### Your turn
 
-> ## Discussion
+> ## Exercise
 >
-> Clear your workspace, then create a few new variables. Create a variable that is the mean of a sequence of 1-20.   
-> What's a good name for your variable? 
-> Does it matter what your 'by' argument is? Why?
+> Clear your workspace and create a few new variables.
+> Create a variable that is the mean of a sequence of 1-20. 
+> 1. What's a good name for your variable?
+> 2. Does it matter what your "by" argument is? Why?
 >
-{: .discussion}
+> > ## Solution
+> > 1. Any meaningful and relatively short name is good. As a suggestion `mean.seq` could work.
+> > 2. Yes it does. By default "by" is equal to 1 but it can be changed to any increment number.
+> {: .solution}
+{: .challenge}
 
 ## RMarkdown
 
@@ -403,7 +426,7 @@ Now we are going to also introduce RMarkdown. This is really key for collaborati
 
 This is also going to introduce us to the fact that RStudio is a sophisticated text editor (among all the other awesome things). You can use it to keep your files and scripts organized within one place (the RStudio IDE) while getting support that you expect from text editors (check-spelling and color, to name a few).
 
-An RMarkdown file will allow us to weave markdown text with chunks of R code to be evaluated and output content like tables and plots.
+An RMarkdown file will allow us to weave markdown text with chunks of R code to be evaluated and output content like tables a 	nd plots.
 
 To do so, go to:
 *File* -> *New File* -> *RMarkdown*... -> Document of output format HTML, OK.
@@ -512,21 +535,17 @@ Now, hitting return does not execute this command; remember, it's a text file in
 >
 > Add a few more commands to your file from this morning.  
 > Execute them by trying the three ways above. Then, save your R Markdown file. 
->
 {: .challenge}
 
-## RMarkdown video (1-minute)
+## Miscellaneous
 
-Let's watch this to demonstrate all the amazing things you can now do: 
+### RMarkdown video (1-minute)
 
-[What is RMarkdown?](https://vimeo.com/178485416)
+Let's watch this to demonstrate all the amazing things you can now do: [What is RMarkdown?](https://vimeo.com/178485416)
 
-## Troubleshooting
+### Troubleshooting
 
-Here are some additional things we didn't have time to discuss:
-
-### I entered a command and nothing's happening
-
+"I entered a command and nothing's happening!"  
 It may be because you didn't complete a command: is there a little `+` in your console? R is saying that it is waiting for you to finish. In the example below, I need to close that parenthesis.
 
 ~~~
