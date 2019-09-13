@@ -3,17 +3,25 @@ title: "Visualizing data with ggplot2"
 teaching: 30
 exercises: 60 
 questions:
-- "How can I make publication-grade plots with ggplot2?"
-- "What are the key concepts underlying ggplot2 plotting?"
-- "What are some of the visualisations available through ggplot2?"
+- "How can I make publication-grade plots with `ggplot2`?"
+- "What are the key concepts underlying `ggplot2` plotting?"
+- "What are some of the visualisations available through `ggplot2`?"
 - "How can I save my plot in a specific format (e.g. png)?"
 objectives:
-- "Install the ggplot2 package by installing tidyverse."
-- "Learn basics of ggplot2 with several public datasets"
-- "Practice writing a script in RMarkdown"
+- "Install the `ggplot2` package by installing tidyverse."
+- "Learn basics of `ggplot2` with several public datasets."
+- "Learn how to customize your plot efficiently (facets, geoms)."
+- "See how to use the stat functions to produce on-the-fly summary plots."
 keypoints:
-- "First key point. Brief Answer to questions. (FIXME)"
+- "`ggplot2` relies on the grammar of graphics, an advanced methodology to visualise data."
+- "ggplot() creates a coordinate system that you can add layers to."
+- "You pass a mapping using `aes()` to link dataset variables to visual properties."
+- "You add one or more layers (or `geoms`) to the `ggplot` coordinate system and `aes` mapping."
+- "Building a minimal plot requires to supply a dataset, mapping aesthetics and geometric layers (geoms)."
+- "`ggplot2` offers advanced graphical visualisations to plot extra information from the dataset."
 ---
+
+
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -47,6 +55,7 @@ Here are some additional resources for data visualization in R:
 - [Graphs with ggplot2 - Cookbook for R](http://www.cookbook-r.com/Graphs/#graphs-with-ggplot2)  
 - [ggplot2 Essentials - STHDA](http://www.sthda.com/english/wiki/ggplot2-essentials)  
 - ["Why I use ggplot2" - David Robinson Blog Post](http://varianceexplained.org/r/why-I-use-ggplot2/)
+- ["The Grammar of Graphics explained" - Towards Data Science blog series](https://towardsdatascience.com/a-comprehensive-guide-to-the-grammar-of-graphics-for-effective-visualization-of-multi-dimensional-1f92b4ed4149)
 
 
 ## Install our first package: `tidyverse`
@@ -110,6 +119,9 @@ ggplot graphics are built step by step by adding new elements. Adding layers in 
 
 <img src="../img/rstudio-cheatsheet-ggplot.png" width="800px">
 
+One can see it as a pyramid of layers too.
+
+![](../img/pyramid-grammar-graphics.png)
 
 ### Data description
 
