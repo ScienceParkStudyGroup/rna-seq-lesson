@@ -113,7 +113,7 @@ mass <- read_csv("https://raw.githubusercontent.com/OHI-Science/data-science-tra
 
 **`ggplot2`** is a plotting package that makes it simple to create complex plots from data in a data frame. It provides a more programmatic interface for specifying what variables to plot, how they are displayed, and general visual properties. Therefore, we only need minimal changes if the underlying data change or if we decide to change from a bar plot to a scatterplot. This helps in creating publication quality plots with minimal amounts of adjustments and tweaking.
 
-ggplot likes data in the **tidy** ('long') format: i.e., a column for every dimension, and a row for every observation. Well structured data will save you lots of time when making figures with ggplot.
+ggplot likes data in the **tidy** ('long') format: i.e., a column for every dimension, and a row for every observation. Well structured data will save you lots of time when making figures with ggplot. We'll learn more about tidy data in the next section. 
 
 ggplot graphics are built step by step by adding new elements. Adding layers in this fashion allows for extensive flexibility and customization of plots.
 
