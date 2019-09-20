@@ -9,15 +9,16 @@ questions:
 - "How can I solve conflicts that arise from that collaboration?"
 - "What are Github "
 objectives:
+- "Be able to create a new repository and share it with another scientist."
 - "Be able to work together on a R script through RStudio and Github integration."
-- ""
+- "Understand how to make issues and explore the history of a repository."
 keypoints:
 - "Github allows you to synchronise work efforts and collaborate with other scientists on (R) code."
 - ""
 - ""
 ---
 
-## Introduction
+# Introduction
 
 The collaborative power of GitHub and RStudio is really game changing. So far we've been collaborating with our most important collaborator: ourselves. But, we are lucky that in science we have so many other collaborators, so let's learn how to accelerate our collaborations with them through GitHub! 
 
@@ -25,27 +26,34 @@ We are going to teach you the simplest way to collaborate with someone, which is
 
 We will do this all with a partner, and we'll walk through some things all together, and then give you a chance to work with your collaborator on your own. 
 
+## Outline
 
-## Objectives & Resources
-
-
-### Objectives
-
-We are going to create a website with a collaborator!
-
-- create a new repo and give permission to a collaborator
-- open as a new RStudio project!
-- collaborate with a partner 
-- explore github.com blame, history, issues
-
-<!---**Resources**--->
+- Make pairs of scientists
+- Define roles (repository owner and collaborator) 
+- Create a repository (owner)
+- Create a `gh-pages` branch (owner)
+- Give the collaborator admin rights
+- Clone into a new R project
+- 
 
 
+# Pair up and work collaboratively 
 
-## Create repo (Partner 1)
+## Decide who does what in your pair
+1. Make groups of two scientists. They will collaborate through Github.
+2. Decide who will own the Github repository (this will be the "owner").
+3. The other scientist will be called the "collaborator".
+4. You can write these roles on a sticky note to remember who you are!  
 
-Team up with a partner sitting next to you.   
-Partner 1 will create a new repository. We will do this in the same way that we did in Chapter \@ref(github): [Create a repository on Github.com]. 
+# Owner part
+
+## Create a Github repository (Partner 1 = "owner")
+  
+The repository "owner" will connect to Github and create a repository called **first-collaboration**. We will do this in the same way that we did in 
+
+ <a href="https://www.w3schools.com/html/">Visit our HTML tutorial</a> 
+
+Chapter \@ref(github): [Create a repository on Github.com]. 
 
 ## Create a gh-pages branch (Partner 1)
 
@@ -89,10 +97,7 @@ Now let's have Partner 1 clone the repository to their local computer. We'll do 
 Opening this Project in a new Session opens up a new world of awesomeness from RStudio. Having different RStudio project sessions allows you to keep your work separate and organized. So you can collaborate with this collaborator on this repository while also working on your other repository from this morning. I tend to have a lot of projects going at one time:
 
 
-
 ![](../img/Rproj_screenshot.jpg)
-
-
 
 Have a look in your git tab. 
 
@@ -105,6 +110,8 @@ Remember:
  
 
 Let's confirm that this was synced by looking at GitHub.com again. You may have to refresh the page, but you should see this commit where you added the `.Rproj` file.
+
+# Collaborator part
 
 ## Clone to a new Rproject  (Partner 2)
 
@@ -200,7 +207,7 @@ Then be sure to stage, and write a commit message. I often write "resolving merg
 
 ![](../img/github_mergeconflict4.png)
 
-### Your turn
+# Your turn
 
 Create a merge conflict with your partner, like we did in the example above. And try other ways to get and solve merge conflicts. For example, when you get the following error message, try both ways (commit or stash. Stash means copy/move it somewhere else, for example, on your Desktop temporarily).
 
