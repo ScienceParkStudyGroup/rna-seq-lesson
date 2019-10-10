@@ -43,6 +43,13 @@ You can share data, for instance, in public repositories such as Figshare, Githu
 
 ### Reproducible Data Workflow
 
+What is Open Science?  
+
+Open science is the concept of transparency at all stages of the research process, coupled with free and open access to data, code, and papers" ([Hampton et al. 2015](http://onlinelibrary.wiley.com/doi/10.1890/ES14-00402.1/abstract))). 
+
+> The opposite of “open” isn’t “closed”. The opposite of “open” is “broken”.
+> — John Wilbanks
+
 One of the core scientific values is reprodicibility. The reproducibility of experimental designs and methods allows the scientific community to determine the validity of alledged effects. 
 
 The benefit of publishing fully reporducible statistical results (including the reporting of all data preprocessing steps) is that collaborators, peer-reviewers, and independent researchers can repeat the analysis --from raw data and to the creation of relevant figures and tables-- and verify the correctness of the results. Scientific articles are not free from typographical mistakes and it has been shown that the prevalence for statistical reporting errors is shockingly high. For instance, Nuijten et al. ([2015](https://link.springer.com/article/10.3758/s13428-015-0664-2)) examined the prevalence of statistical reporting errors in the field of psychology and found that almost 50% or all psychological articles papers contain at least one error. These reporting errors can lead to erroneous substantive conclusions and influence, for instance, the results of meta-analyses. Most importantly, however, is that these errors are preventable. Through tools, such as `git` and *RMarkdown*, researchers can automate their statistical reporting and produce fully reproducible research papers.
@@ -118,8 +125,11 @@ Join existing communities locally and online, and start local chapters with frie
 
 Some ideas: 
 
-- [Mozilla Study Groups](https://science.mozilla.org/programs/studygroups) Example: [Eco-data-science](http://eco-data-science.github.io/). Also see ([Steven et al. 2018](https://www.biorxiv.org/content/early/2018/02/15/265421)) 
-- [RLadies](https://rladies.org/). Example: [RLadies Amsterdam](https://www.meetup.com/rladies-amsterdam/)
+- [Amsterdam Science Park Study Group Slack workspace](https://join.slack.com/t/scienceparkstudygroup/signup): join this workspace to ask questions and network with other biologists on programming and data analysis topics. [Slack](https://slack.com/intl/en-fr/features) is a collaboration software used mostly by companies that has more than 10 million users worldwide.  
+
+- [Amsterdam Science Park Study Group](www.scienceparkstudygroup.info): this local [Mozilla Study Groups](https://science.mozilla.org/programs/studygroups) is regularly organising local training workshops for biologists that are either beginners or more advanced in scientific programming. [A publication describing the intention of these study groups and how to implement them has been published in 2018 in PLoS Biology](https://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.2005561).   
+
+- [RLadies](https://rladies.org/). Informal but efficient communities centered on R data analysis meant to be inclusive and supportive. The [RLadies Amsterdam](https://www.meetup.com/rladies-amsterdam/) chapter is quite active in Amsterdam! 
 
 These meetups can be for skill-sharing, showcasing how people work, or building community so you can troubleshoot together. They can be an informal "hacky hour" at a cafe or pub!
 

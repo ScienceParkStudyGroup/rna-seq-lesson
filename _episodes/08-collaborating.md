@@ -3,20 +3,22 @@ title: "Collaborating with Github"
 teaching: 30
 exercises: 60 
 questions:
-- "How can I co-develop and collaborate on code with another scientist?"
-- "How can I stay in sync on code"
+- "How can I develop and collaborate on code with another scientist?"
+- "How can I give access to my code to another collaborator?"
+- "How can I keep code synchronised with another scientist?"
 - "How can I solve conflicts that arise from that collaboration?"
 - "What are Github "
 objectives:
+- "Be able to create a new repository and share it with another scientist."
 - "Be able to work together on a R script through RStudio and Github integration."
-- ""
+- "Understand how to make issues and explore the history of a repository."
 keypoints:
 - "Github allows you to synchronise work efforts and collaborate with other scientists on (R) code."
 - ""
 - ""
 ---
 
-## Introduction
+# Introduction
 
 The collaborative power of GitHub and RStudio is really game changing. So far we've been collaborating with our most important collaborator: ourselves. But, we are lucky that in science we have so many other collaborators, so let's learn how to accelerate our collaborations with them through GitHub! 
 
@@ -24,26 +26,34 @@ We are going to teach you the simplest way to collaborate with someone, which is
 
 We will do this all with a partner, and we'll walk through some things all together, and then give you a chance to work with your collaborator on your own. 
 
+## Outline
 
-## Objectives & Resources
-
-
-### Objectives
-
-We are going to create a website with a collaborator!
-
-- create a new repo and give permission to a collaborator
-- open as a new RStudio project!
-- collaborate with a partner 
-- explore github.com blame, history, issues
-
-<!---**Resources**--->
+- Make pairs of scientists
+- Define roles (repository owner and collaborator) 
+- Create a repository (owner)
+- Create a `gh-pages` branch (owner)
+- Give the collaborator admin rights
+- Clone into a new R project
+- 
 
 
+# Pair up and work collaboratively 
 
-## Create repo (Partner 1)
+## Decide who does what in your pair
+1. Make groups of two scientists. They will collaborate through Github.
+2. Decide who will own the Github repository (this will be the "owner").
+3. The other scientist will be called the "collaborator".
+4. You can write these roles on a sticky note to remember who you are!  
 
-Team up with a partner sitting next to you. Partner 1 will create a new repository. We will do this in the same way that we did in Chapter \@ref(github): [Create a repository on Github.com]. 
+# Owner part
+
+## Create a Github repository (Partner 1 = "owner")
+  
+The repository "owner" will connect to Github and create a repository called **first-collaboration**. We will do this in the same way that we did in 
+
+ <a href="https://www.w3schools.com/html/">Visit our HTML tutorial</a> 
+
+Chapter \@ref(github): [Create a repository on Github.com]. 
 
 ## Create a gh-pages branch (Partner 1)
 
@@ -87,10 +97,7 @@ Now let's have Partner 1 clone the repository to their local computer. We'll do 
 Opening this Project in a new Session opens up a new world of awesomeness from RStudio. Having different RStudio project sessions allows you to keep your work separate and organized. So you can collaborate with this collaborator on this repository while also working on your other repository from this morning. I tend to have a lot of projects going at one time:
 
 
-
 ![](../img/Rproj_screenshot.jpg)
-
-
 
 Have a look in your git tab. 
 
@@ -103,6 +110,8 @@ Remember:
  
 
 Let's confirm that this was synced by looking at GitHub.com again. You may have to refresh the page, but you should see this commit where you added the `.Rproj` file.
+
+# Collaborator part
 
 ## Clone to a new Rproject  (Partner 2)
 
@@ -175,13 +184,14 @@ Notice that in the git tab, there are orange `U`s; this means that there is an u
 
 Let's look at the README file itself. We got a preview in the diff pane that there is some new text going on in our README file: 
 
-```r
+~~~
 <<<<<<< HEAD
 Julie is collaborating on this README.
 =======
 **Jamie is adding lines here.**
 >>>>>>> 05a189b23372f0bdb5b42630f8cb318003cee19b
-```
+~~~
+{: .source}
 
 In this example, Partner 1 is Jamie and Partner 2 is Julie. GitHub is displaying the line that Julie wrote and the line Jamie wrote separated by `=======`. So these are the two choices that Partner 2 has to decide between, which one do you want to keep? Where where does this decision start and end? The lines are bounded by `<<<<<<<HEAD` and `>>>>>>>long commit identifier`. 
 
@@ -197,7 +207,7 @@ Then be sure to stage, and write a commit message. I often write "resolving merg
 
 ![](../img/github_mergeconflict4.png)
 
-### Your turn
+# Your turn
 
 Create a merge conflict with your partner, like we did in the example above. And try other ways to get and solve merge conflicts. For example, when you get the following error message, try both ways (commit or stash. Stash means copy/move it somewhere else, for example, on your Desktop temporarily).
 
@@ -264,14 +274,15 @@ In the text box, let's write a note to our collaborator. You can use Markdown in
 
 Let's have one of you write something here. I'm going to write: 
 
-```
+~~~
 Hi @jafflerbach! 
 
 # first priority
 
 - explore NYC flights
 - plot interesting things
-```
+~~~
+{: .source}
 
 Note that I have my collaborator's GitHub name with a `@` symbol. This is going to email her directly so that she sees this issue. I can click the "Preview" button at the top left of the text box to see how this will look rendered in Markdown. It looks good! 
 
@@ -295,22 +306,25 @@ Here's what we'll be doing (from [R for Data Science's Transform Chapter](http:/
 
 Let's have Person 1 write this in the RMarkdown document (Person 2 just listen for a moment; we will sync this to you in a moment). 
 
-```{r, message = FALSE}
+~~~
 library(nycflights13) # install.packages('nycflights13')
 library(tidyverse)
-```
+~~~
+{:.language-r}
 
 This data frame contains all `r format(nrow(nycflights13::flights), big.mark = ",")` flights that departed from New York City in 2013. The data comes from the US [Bureau of Transportation Statistics](http://www.transtats.bts.gov/DatabaseInfo.asp?DB_ID=120&Link=0), and is documented in `?flights`.
 
-```{r}
+~~~
 flights
-```
+~~~
+{:.language-r}
 
 Let's select all flights on January 1st with:
 
-```{r}
+~~~
 filter(flights, month == 1, day == 1)
-```
+~~~
+{:.language-r}
 
 To use filtering effectively, you have to know how to select the observations that you want using the comparison operators. R provides the standard suite: `>`, `>=`, `<`, `<=`, `!=` (not equal), and `==` (equal). We learned these operations yesterday. But there are a few others to learn as well. 
 
@@ -330,24 +344,27 @@ Let's have a look:
 
 The following code finds all flights that departed in November or December:
 
-```{r, eval = FALSE}
+~~~
 filter(flights, month == 11 | month == 12)
-```
+~~~
+{: .language-r}
 
 The order of operations doesn't work like English. You can't write `filter(flights, month == 11 | 12)`, which you might literally translate into  "finds all flights that departed in November or December". Instead it finds all months that equal `11 | 12`, an expression that evaluates to `TRUE`. In a numeric context (like here), `TRUE` becomes one, so this finds all flights in January, not November or December. This is quite confusing!
 
 A useful short-hand for this problem is `x %in% y`. This will select every row where `x` is one of the values in `y`. We could use it to rewrite the code above:
 
-```{r, eval = FALSE}
+~~~
 nov_dec <- filter(flights, month %in% c(11, 12))
-```
+~~~
+{: .language-r}
 
 Sometimes you can simplify complicated subsetting by remembering De Morgan's law: `!(x & y)` is the same as `!x | !y`, and `!(x | y)` is the same as `!x & !y`. For example, if you wanted to find flights that weren't delayed (on arrival or departure) by more than two hours, you could use either of the following two filters:
 
-```{r, eval = FALSE}
+~~~
 filter(flights, !(arr_delay > 120 | dep_delay > 120))
 filter(flights, arr_delay <= 120, dep_delay <= 120)
-```
+~~~
+{: .language-r}
 
 Whenever you start using complicated, multipart expressions in `filter()`, consider making them explicit variables instead. That makes it much easier to check your work. 
 
@@ -360,69 +377,4 @@ With your partner, do the following tasks. Each of you should work on one task a
 Remember to make your commit messages useful!
 
 As you work, you may get merge conflicts. This is part of collaborating in GitHub; we will walk through and help you with these and also teach the whole group. 
-
-### Use logicals
-
-1.  Find all flights that:
-
-    1. Had an arrival delay of two or more hours
-    1. Flew to Houston (`IAH` or `HOU`)
-    1. Were operated by United, American, or Delta
-    1. Departed in summer (July, August, and September)
-    1. Arrived more than two hours late, but didn't leave late
-    1. Were delayed by at least an hour, but made up over 30 minutes in flight
-    1. Departed between midnight and 6am (inclusive)
-
-1.  Another useful dplyr filtering helper is `between()`. What does it do?
-    Can you use it to simplify the code needed to answer the previous 
-    challenges?
-
-### Missing values
-
-To answer these questions: read some background below.
-
-1.  How many flights have a missing `dep_time`? What other variables are 
-    missing? What might these rows represent?
-
-1.  Why is `NA ^ 0` not missing? Why is `NA | TRUE` not missing?
-    Why is `FALSE & NA` not missing? Can you figure out the general
-    rule?  (`NA * 0` is a tricky counterexample!)
-
-
-One important feature of R that can make comparison tricky are missing values, or `NA`s ("not availables"). `NA` represents an unknown value so missing values are "contagious": almost any operation involving an unknown value will also be unknown.
-
-```{r}
-NA > 5
-10 == NA
-NA + 10
-NA / 2
-```
-
-The most confusing result is this one:
-
-```{r}
-NA == NA
-```
-
-It's easiest to understand why this is true with a bit more context:
-
-```{r}
-# Let x be Mary's age. We don't know how old she is.
-x <- NA
-
-# Let y be John's age. We don't know how old he is.
-y <- NA
-
-# Are John and Mary the same age?
-x == y
-# We don't know!
-```
-
-If you want to determine if a value is missing, use `is.na()`:
-
-```{r}
-is.na(x)
-```
-
-
 

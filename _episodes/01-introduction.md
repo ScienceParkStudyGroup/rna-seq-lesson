@@ -5,20 +5,40 @@ exercises: 0
 questions:
 - "What will I learn during this workshop?"
 - "What are the tools that I will be using?"
-- "What is Open Data Science?"
+- "What are the tidy data principles?"
+- "What is working in a more open way beneficial?"
 objectives:
-- "Learn about Open Science."
+- "Discover a complete data analysis process revolving around the tidy principles."
 - "Learn how to increase your data analysis efficacy"
 keypoints:
-- "First key point. Brief Answer to questions. (FIXME)"
+- "Tidy data principles are essential to increase data analysis efficiency and code readability."
+- "Using R and RStudio, it becomes easier to implement good practices in data analysis."
+- "I can make my workflow more reproducible and collaborative by using git and Github."
 ---
-# Overview 
+
+## Table of Contents
+1. [Overview](#overview)
+2. [What to expect](#what-to-expect)
+3. [What you will learn](#what-you-will-learn)
+4. [Tidy data workflow](#tidy-data-workflow)
+5. [Learning with public datasets](#learning-with-public-datasets)
+6. [Emphasizing collaboration](#emphasizing-collaboration)
+6. [By the end of the course](#by-the-end-of-the-course)
+6. [Credits](#credits)
+
+
+## Overview 
 
 Welcome!
 
 In this training you will learn R, RStudio, Git, and GitHub. It's going to be fun and empowering! You will learn a reproducible workflow that can be used in research and analyses of all kinds, including Ocean Health Index assessments. This is really powerful, cool stuff, and not just for data: this lesson website was actually made using some of these tools.
 
-We will practice learning three main things all at the same time: coding with best practices (R/RStudio), collaborative version control (Git/GitHub), and communication/publishing (RMarkdown/GitHub). This training will teach these all together to reinforce skills and best practices, and get you comfortable with a workflow that you can use in your own projects. 
+We will practice learning three main things all at the same time: 
+1. coding with best practices (R/RStudio)
+2. collaborative version control (git/GitHub). 
+3. communication/publishing (RMarkdown/GitHub). 
+
+This training will teach these all together to reinforce skills and best practices, and get you comfortable with a workflow that you can use in your own projects. 
 
 ## What to expect
 
@@ -30,24 +50,24 @@ You are all welcome here, please be respectful of one another. You are encourage
 
 Everyone in this workshop is coming from a different place with different experiences and expectations. But everyone will learn something new here, because there is so much innovation in the data science world. Instructors and helpers learn something new every time, from each other and from your questions. If you are already familiar with some of this material, focus on how we teach, and how you might teach it to others. Use these workshop materials not only as a reference in the future but also for talking points so you can communicate the importance of these tools to your communities. A big part of this training is not only for you to learn these skills, but for you to also teach others and increase the value and practice of open data science in science as a whole. 
 
-## What you'll learn
+## What you will learn
 
-- how to THINK about data 
-    - how to think about data separately from your research questions
-    - how and why to tidy data and analyze tidy data, rather than making your analyses accommodate messy data
-    - how there is a lot of decision-making involved with data analysis, and a lot of creativity
-- how to increase efficiency in your science
-    - and increase reproducibility
-    - and facilitate collaboration with others — especially Future You!
-- how open science is a great benefit
-    - find solutions faster
-    - broaden the impact of your work
-- how to learn with intention and community
-    - think ahead instead of only to get a single job done now
-    - the #rstats online community is fantastic. The tools we're using are developed by real people. Real, nice people. They are building powerful and empowering tools and are welcoming to all skill-levels
+- **how to *think* about data** 
+    - how to think about data separately from your research questions.
+    - how and why to tidy data and analyze tidy data, rather than making your analyses accommodate messy data.
+    - how there is a lot of decision-making involved with data analysis, and a lot of creativity.
+- **how to increase efficiency in your data science**
+    - and increase reproducibility.
+    - and facilitate collaboration with others — especially your future self!
+- **how open science is a great benefit**
+    - find solutions faster.
+    - broaden the impact of your work.
+- **how to learn with intention and community**
+    - think ahead instead of only to get a single job done now.
+    - the #rstats online community is fantastic. The tools we're using are developed by real people. Real, nice people. They are building powerful and empowering tools and are welcoming to all skill-levels.
 
 
-### Tidy data workflow
+## Tidy data workflow
 
 We will be learning about tidy data. And how to use a tidyverse suite of tools to work with tidy data.
 
@@ -60,16 +80,14 @@ We will be focusing on:
 
 - **Tidy**: `tidyr` to organize rows of data into unique values
 - **Transform**: `dplyr` to manipulate/wrangle data based on subsetting by rows or columns, sorting and joining
-- **Visualize**: 
-    - `ggplot2` static plots, using grammar of graphics principles
-- **Communicate**
-    - dynamic documents with *R Markdown*
-    
+- **Visualize**: `ggplot2` static plots, using grammar of graphics principles.
+- **Communicate**: dynamic documents with `knitr` to produce *R Markdown* notebooks.
     
 This is really critical. Instead of building your analyses around whatever (likely weird) format your data are in, take deliberate steps to make your data tidy. When your data are tidy, you can use a growing assortment of powerful analytical and visualization tools instead of inventing home-grown ways to accommodate your data. This will save you time since you aren't reinventing the wheel, and will make your work more clear and understandable to your collaborators (most importantly, Future You). 
 
+Reference: [original paper about tidy datasets from Hadley Wickham](http://vita.had.co.nz/papers/tidy-data.pdf).
     
-## Learning with data that are not your own
+## Learning with public datasets
 
 One of the most important things you will learn is how to think about data separately from your own research context. Said in another way, you'll learn to distinguish your data questions from your research questions. Here, we are focusing on data questions, and we will use data that is not specific to your research.
 
@@ -79,9 +97,9 @@ We will be using several different data sets throughout this training, and will 
 
 Collaborating efficiently has historically been really hard to do. It's only been the last 20 years or so that we've moved beyond mailing things with the postal service. Being able to email and get feedback on files through track changes was a huge step forward, but it comes with a lot of bookkeeping and reproduciblity issues (did I do my analyses with `thesis_final_final.xls` or `thesis_final_usethisone.xls`?). But now, open tools make it much easier to collaborate. 
 
-Working with collaborators in mind is critical for reproducibility. And, your most important collaborator is Future You. This training will introduce best practices using open tools, so that collaboration will become second nature to you!
+Working with collaborators in mind is critical for reproducibility. And, your most important collaborator is your future self. This training will introduce best practices using open tools, so that collaboration will become second nature to you!
 
-## By the end of the course...
+## By the end of the course
 
 By the end of the course, you'll wrangle a few different data sets, and make your own graphics that you'll publish on webpages you've built collaboratively with GitHub and RMarkdown. Woop!
 
@@ -90,7 +108,7 @@ Here are some important things to keep in mind as you learn (these are joke book
 ![](../img/practical_dev_both.png)
 
 
-## Credit
+## Credits
 
 This lesson has been formatted according to the [Carpentries Foundation](https://carpentries.org/) lesson template and following their recommendations on how to teach researchers good practices in programming and data analysis.   
 
