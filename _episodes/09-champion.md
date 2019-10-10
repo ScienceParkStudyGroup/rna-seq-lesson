@@ -17,9 +17,9 @@ keypoints:
 - "Make a sharp distincion between exploratory and confirmatory research"
 ---
 
-## The Crisis of Confidence
+## The Reproducibility Crisis
 
-The crisis of confidence poses a general problem across most empirical research disciplines and is characterized by an alarmingly low rate of key findings that are reproducible (e.g., Fidler et al. [2017](https://academic.oup.com/bioscience/article-abstract/67/3/282/2900173); Open Science Collaboration, [2015](https://science.sciencemag.org/content/349/6251/aac4716.short); Poldrack et al., [2017](https://www.nature.com/nrn/journal/v18/n2/abs/nrn.2016.167.html); Wager et at., [2009](https://www.sciencedirect.com/science/article/pii/S1053811908012111)). A low reproducibility rate can arise when scientists do not respect the empirical cycle. Scientific research methods for experimental research are based on the hypothetico-deductive approach (see e.g., de Groot, [1969](https://books.google.nl/books?hl=en&lr=&id=6hiBDwAAQBAJ&oi=fnd&pg=PR5&dq=de+groot+methologie&ots=GR5-EAw6pB&sig=Ej1MJgvsN1bHiQHio__ibrO4fkA&redir_esc=y#v=onepage&q=de%20groot%20methologie&f=false); Peirce, [1878](https://www.taylorfrancis.com/books/e/9781315823126/chapters/10.4324/9781315823126-7)), which is illustrated in Figure 1. 
+The reproducibility crisis poses a general problem across most empirical research disciplines and is characterized by an alarmingly low rate of key findings that are reproducible (e.g., Fidler et al. [2017](https://academic.oup.com/bioscience/article-abstract/67/3/282/2900173); Open Science Collaboration, [2015](https://science.sciencemag.org/content/349/6251/aac4716.short); Poldrack et al., [2017](https://www.nature.com/nrn/journal/v18/n2/abs/nrn.2016.167.html); Wager et at., [2009](https://www.sciencedirect.com/science/article/pii/S1053811908012111)). A low reproducibility rate can arise when scientists do not respect the empirical cycle. Scientific research methods for experimental research are based on the hypothetico-deductive approach (see e.g., de Groot, [1969](https://books.google.nl/books?hl=en&lr=&id=6hiBDwAAQBAJ&oi=fnd&pg=PR5&dq=de+groot+methologie&ots=GR5-EAw6pB&sig=Ej1MJgvsN1bHiQHio__ibrO4fkA&redir_esc=y#v=onepage&q=de%20groot%20methologie&f=false); Peirce, [1878](https://www.taylorfrancis.com/books/e/9781315823126/chapters/10.4324/9781315823126-7)), which is illustrated in Figure 1. 
 
 
 {% include figure.html url="../img/EmpiricalCycle.jpg" description="<strong>Figure 1.</strong> The two stages of the empirical cycle; after the initial stage of creative discovery and hypothesis generation (illustrated in the right panel), researchers test their hypotheses in a statistical context of justification (illustrated in the left panel). However, scientists fool themselves, if they test their new predictions on old knowledge and old data (dotted line)." %}  
@@ -39,7 +39,9 @@ In this section, we focus on open and reproducible research practices that resea
 
 International collaboration is a cornerstone for the field of ecology and thus the documentation, and archiving of large volume of (multinational) data and metadata is becoming increasingly important. Even though many scientists are reluctant to make their data publicly available, data sharing can increase the impact of their research. For instance, in cancer research, studies for which data were publicly available received higher citation rates compared to studies for which data were not available (Piwowar, Day, & Fridsma, [2007](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0000308)). This is due to the fact that other researchers can build directly on existing data, analyze them using utilize novel statistical techniques and modelling tools, and mine them from new perspectives (Carpenter et al., [2009](https://academic.oup.com/bioscience/article-abstract/59/8/699/256190)).
 
-### Reproducibility of Statistical Results
+You can share data, for instance, in public repositories such as Figshare, Github, the Open Science Framework, or Zenodo (for big datasets). In case you have senisble data to share, you can look up ressources from the UvA on [Research Data Management](https://uba.uva.nl/en/researchers/research-data/rdm.html) or contact the Research Data Management suppor via [rdm-support@uva.nl](rdm-support@uva.nl).
+
+### Reproducible Data Workflow
 
 One of the core scientific values is reprodicibility. The reproducibility of experimental designs and methods allows the scientific community to determine the validity of alledged effects. 
 
@@ -49,7 +51,7 @@ The benefit of publishing fully reporducible statistical results (including the 
 
 A blurred distinction between statistical analyses that are pre-planned and post-hoc causes many researchers to (unintentionally) use questionable research practices to produce significant findings (QRPs; John, Loewenstein, & Prelec, [2012](https://journals.sagepub.com/doi/abs/10.1177/0956797611430953)). The most effective method to combat questionable research practices is preregistration, a procedure to curtail scientists’ degrees of freedom (e.g., Wagenmakers & Dutilh, [2016](https://osf.io/crg29/). When preregistering studies, scientists commit to an analysis plan in advance of data collection. By making a sharp distinction between hypothesis generating and analyzing the data, preregistration eliminates the confusion between exploratory and confirmatory research.
 
-Over the last years, preregistration has quickly gained popularity and has established itself over several platforms and formats. Scientists can now choose to preregister their work either independently —for instance on platforms like https://asPredicted.org or the Open Science Framework (OSF)— or preregister their studies directly in a journal in the format of a Registered Report as promoted by Chris Chambers ([2013](https://science.sciencemag.org/content/348/6242/1422.short)). Currently about 200 journals —including *Nature: Human Behaviour*— accept Registered Reports either as a regular submission option or as part of a single special issue (see https://cos.io/rr/ for the full list).
+Over the last years, preregistration has quickly gained popularity and has established itself over several platforms and formats. Scientists can now choose to preregister their work either independently —for instance on platforms like https://asPredicted.org or the Open Science Framework (OSF)— or preregister their studies directly in a journal in the format of a Registered Report as promoted by Chris Chambers ([2013](https://science.sciencemag.org/content/348/6242/1422.short)). Currently about 200 journals —including *Nature: Human Behaviour*— accept Registered Reports either as a regular submission option or as part of a single special issue (see https://cos.io/rr/ for the full list). Also the [Reproducibility Project: Cancer Biology](https://osf.io/e81xl/), that replicated studies from 50 high-profile papers in the field of cancer biology that were published between 2010-2012, used the Registered Reports format to assure the quality of the research.
 
 Preregistration is encouraged in the transparency and openness promotion (TOP) guidelines (Nosek et al., [2015](https://science.sciencemag.org/content/348/6242/1422.short) and represents the standard for the analysis of clinical trials; for instance, in the New England Journal of Medicine —the world’s highest impact journal— the registration of Clinical Trials is a prerequisite for publication.
 
@@ -120,6 +122,8 @@ Some ideas:
 - [RLadies](https://rladies.org/). Example: [RLadies Amsterdam](https://www.meetup.com/rladies-amsterdam/)
 
 These meetups can be for skill-sharing, showcasing how people work, or building community so you can troubleshoot together. They can be an informal "hacky hour" at a cafe or pub!
+
+If you are interested in sharing your experiences on topics related to open science, you can join the [Open Science Community Amsterdam](https://openscience-amsterdam.com). 
 
 ## Going further / Bibliography
 - [The Replication Crisis in Wikipedia](https://en.wikipedia.org/wiki/Replication_crisis)
