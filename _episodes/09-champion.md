@@ -163,6 +163,7 @@ If you are interested in sharing your experiences on topics related to open scie
 ## Going further / Bibliography
 - [The Replication Crisis in Wikipedia](https://en.wikipedia.org/wiki/Replication_crisis)
 - [A special issue in Science on Reproducibility](https://www.nature.com/collections/prbfkwmwvz/)
+- [Workshop slides](https://osf.io/crvun)
 
 
 <!---
