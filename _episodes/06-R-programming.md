@@ -129,32 +129,32 @@ OK. So we can check our repo in the file pane (bottom right of RStudio) and see 
 
 Now, in our code above, we've had to write out "Afghanistan" several times. This makes it not only typo-prone as we type it each time, but if we wanted to plot another country, we'd have to write that in 3 places too. It is not setting us up for an easy time in our future, and thinking ahead in programming is something to keep in mind. 
 
-Instead of having "Afghanistan" written 3 times, let's instead create an object that we will assign to "Afghanistan". We won't name our object "country" because that's a column header with gapminder, and will just confuse us. Let's make it distinctive: let's write cntry (country without vowels):
+Instead of having "Afghanistan" written 3 times, let's instead create an object that we will assign to "Afghanistan". This object will be named `country`:
 
 ~~~
 ## create country variable
-cntry <- "Afghanistan"
+country <- "Afghanistan"
 ~~~
 {:.language-r}
 
-Now, we can replace each `"Afghanistan"` with our variable `cntry`. We will have to introduce a `paste` statement here too, and we want to separate by nothing (`""`). Note: there are many ways to create the filename, and we are doing it this way for a specific reason right now.
+Now, we can replace each `"Afghanistan"` with our variable `country`. We will have to introduce a `paste` statement here too, and we want to separate by nothing (`""`). Note: there are many ways to create the filename, and we are doing it this way for a specific reason right now.
 
 ~~~
 ## create country variable
-cntry <- "Afghanistan"
+country <- "Afghanistan"
 
 ## filter the country to plot
 gap_to_plot <- gapminder %>%
-  filter(country == cntry)
+  filter(country == country)
 
 ## plot
 my_plot <- ggplot(data = gap_to_plot, aes(x = year, y = gdpPercap)) + 
   geom_point() +
   ## add title and save
-  labs(title = paste(cntry, "GDP per capita", sep = " "))
+  labs(title = paste(country, "GDP per capita", sep = " "))
 
 ## note: there are many ways to create filenames with paste() or file.path(); we are doing this way for a reason.
-ggsave(filename = paste(cntry, "_gdpPercap.png", sep = ""), plot = my_plot)
+ggsave(filename = paste(country, "_gdpPercap.png", sep = ""), plot = my_plot)
 ~~~
 {:.language-r}
 
@@ -163,7 +163,7 @@ Let's run this. Great! it saved our figure (I can tell this because the timestam
 
 ### For loop basic structure
 
-Now, how about if we want to plot not only Afghanistan, but other countries as well? There wasn't actually that much code needed to get us here, but we definitely do not want to copy this for every country. Even if we copy-pasted and switched out the country assigned to the `cntry` variable, it would be very typo-prone. Plus, what if you wanted to instead plot lifeExp? You'd have to remember to change it each time...it gets messy quick. 
+Now, how about if we want to plot not only Afghanistan, but other countries as well? There wasn't actually that much code needed to get us here, but we definitely do not want to copy this for every country. Even if we copy-pasted and switched out the country assigned to the `country` variable, it would be very typo-prone. Plus, what if you wanted to instead plot lifeExp? You'd have to remember to change it each time...it gets messy quick. 
 
 Better with a for loop. This will let us cycle through and do what we want to each thing in turn. If you want to iterate over a set of values, and perform the same operation on each, a `for` loop will do the job.
 
@@ -185,21 +185,21 @@ So looking back at our Afghanistan code: all of this is pretty much the "do a th
 Let's paste from what we had before, and modify it. I'm also going to use RStudio's indentation help to indent the lines within the for loop by highlighting the code in this chunk and going to Code > Reindent Lines (shortcut: command I)
 ~~~
 ## create country variable
-cntry <- "Afghanistan"
+country <- "Afghanistan"
 
-for (each cntry in a list of countries ) {
+for (each country in a list of countries ) {
   
   ## filter the country to plot
   gap_to_plot <- gapminder %>%
-    filter(country == cntry)
+    filter(country == country)
   
   ## plot
   my_plot <- ggplot(data = gap_to_plot, aes(x = year, y = gdpPercap)) + 
     geom_point() +
     ## add title and save
-    labs(title = paste(cntry, "GDP per capita", sep = " "))
+    labs(title = paste(country, "GDP per capita", sep = " "))
   
-  ggsave(filename = paste(cntry, "_gdpPercap.png", sep = ""), plot = my_plot)
+  ggsave(filename = paste(country, "_gdpPercap.png", sep = ""), plot = my_plot)
   
 }
 ~~~
@@ -213,24 +213,24 @@ OK. So let's start with the beginning of the for loop. We want a list of countri
 ## create a list of countries
 country_list <- c("Albania", "Fiji", "Spain")
 
-for ( cntry in country_list ) {
+for ( country in country_list ) {
   
   ## filter the country to plot
   gap_to_plot <- gapminder %>%
-    filter(country == cntry)
+    filter(country == country)
   
   ## plot
   my_plot <- ggplot(data = gap_to_plot, aes(x = year, y = gdpPercap)) + 
     geom_point() +
     ## add title and save
-    labs(title = paste(cntry, "GDP per capita", sep = " "))
+    labs(title = paste(country, "GDP per capita", sep = " "))
   
-  ggsave(filename = paste(cntry, "_gdpPercap.png", sep = ""), plot = my_plot)
+  ggsave(filename = paste(country, "_gdpPercap.png", sep = ""), plot = my_plot)
 }
 ~~~
 {:.language-r}
 
-At this point, we do have a functioning for loop. For each item in the `country_list`, the for loop will iterate over the code within the `{ }`, changing `cntry` each time as it goes through the list. And we can see it works because we can see them appear in the files pane at the bottom right of RStudio!
+At this point, we do have a functioning for loop. For each item in the `country_list`, the for loop will iterate over the code within the `{ }`, changing `country` each time as it goes through the list. And we can see it works because we can see them appear in the files pane at the bottom right of RStudio!
 
 Great! And it doesn't matter if we just use these three countries or all the countries--let's try it. 
 
@@ -242,20 +242,20 @@ dir.create("figures")
 ## create a list of countries
 country_list <- unique(gapminder$country) # ?unique() returns the unique values
 
-for( cntry in country_list ){
+for( country in country_list ){
   
   ## filter the country to plot
   gap_to_plot <- gapminder %>%
-    filter(country == cntry)
+    filter(country == country)
   
   ## plot
   my_plot <- ggplot(data = gap_to_plot, aes(x = year, y = gdpPercap)) + 
     geom_point() +
     ## add title and save
-    labs(title = paste(cntry, "GDP per capita", sep = " "))
+    labs(title = paste(country, "GDP per capita", sep = " "))
   
   ## add the figures/ folder
-  ggsave(filename = paste("figures/", cntry, "_gdpPercap.png", sep = "")), plot = my_plot)
+  ggsave(filename = paste("figures/", country, "_gdpPercap.png", sep = "")), plot = my_plot)
 } 
 ~~~
 {:.language-r}
@@ -288,7 +288,7 @@ OK we now have 142 figures that we just created. They exist locally on our compu
 > >       
 > >     `## filter the country to plot`  
 > >     `gap_to_plot <- gap_europe %>%`  
-> >        `filter(country == cntry)`  
+> >        `filter(country == country)`  
 > > 
 > >   `## add a print message to see what's plotting`  
 > >   `print(paste("Plotting", country))`  
@@ -352,26 +352,26 @@ gap_europe <- gapminder_est %>% ## use instead of gapminder
 
 country_list <- unique(gap_europe$country) 
 
-for( cntry in country_list ){ # (cntry = country_list[1])
+for( country in country_list ){ # (country = country_list[1])
   
   ## filter the country to plot
   gap_to_plot <- gap_europe %>%
-    filter(country == cntry)
+    filter(country == country)
   
   ## add a print message 
-  print(paste("Plotting", cntry))
+  print(paste("Plotting", country))
   
   ## plot
   my_plot <- ggplot(data = gap_to_plot, aes(x = year, y = gdpPercap_cummean)) + 
     geom_point() +
     ## add title and save
-    labs(title = paste(cntry, "GDP per capita", sep = " "))
+    labs(title = paste(country, "GDP per capita", sep = " "))
   
   ## if estimated, add that as a subtitle. 
   if (gap_to_plot$estimated == "yes") {
     
     ## add a print statement just to check
-    print(paste(cntry, "data are estimated"))
+    print(paste(country, "data are estimated"))
     
     my_plot <- my_plot +
       labs(sutbtitle("Estimated data"))
@@ -380,7 +380,7 @@ for( cntry in country_list ){ # (cntry = country_list[1])
   # In if (gap_to_plot$estimated == "yes") { :
   #   the condition has length > 1 and only the first element will be used
   
-  ggsave(filename = paste("figures/Europe/", cntry, "_gdpPercap_cummean.png", sep = ""), 
+  ggsave(filename = paste("figures/Europe/", country, "_gdpPercap_cummean.png", sep = ""), 
          plot = my_plot)
   
 } 
@@ -403,30 +403,30 @@ gap_europe <- gapminder_est %>% ## use instead of gapminder
 
 country_list <- unique(gap_europe$country) 
 
-for( cntry in country_list ){ # (cntry = country_list[1])
+for( country in country_list ){ # (country = country_list[1])
   
   ## filter the country to plot
   gap_to_plot <- gap_europe %>%
-    filter(country == cntry)
+    filter(country == country)
   
   ## add a print message 
-  print(paste("Plotting", cntry))
+  print(paste("Plotting", country))
   
   ## plot
   my_plot <- ggplot(data = gap_to_plot, aes(x = year, y = gdpPercap_cummean)) + 
     geom_point() +
     ## add title and save
-    labs(title = paste(cntry, "GDP per capita", sep = " "))
+    labs(title = paste(country, "GDP per capita", sep = " "))
   
   ## if estimated, add that as a subtitle. 
   if (any(gap_to_plot$estimated == "yes")) { # any() will return a single TRUE or FALSE
     
-    print(paste(cntry, "data are estimated"))
+    print(paste(country, "data are estimated"))
     
     my_plot <- my_plot +
       labs(subtitle = "Estimated data")
   }
-  ggsave(filename = paste("figures/Europe/", cntry, "_gdpPercap_cummean.png", sep = ""), 
+  ggsave(filename = paste("figures/Europe/", country, "_gdpPercap_cummean.png", sep = ""), 
          plot = my_plot)
   
 } 
@@ -448,25 +448,25 @@ gap_europe <- gapminder_est %>% ## use instead of gapminder
 
 country_list <- unique(gap_europe$country) 
 
-for( cntry in country_list ){ # (cntry = country_list[1])
+for( country in country_list ){ # (country = country_list[1])
   
   ## filter the country to plot
   gap_to_plot <- gap_europe %>%
-    filter(country == cntry)
+    filter(country == country)
   
   ## add a print message 
-  print(paste("Plotting", cntry))
+  print(paste("Plotting", country))
   
   ## plot
   my_plot <- ggplot(data = gap_to_plot, aes(x = year, y = gdpPercap_cummean)) + 
     geom_point() +
     ## add title and save
-    labs(title = paste(cntry, "GDP per capita", sep = " "))
+    labs(title = paste(country, "GDP per capita", sep = " "))
   
   ## if estimated, add that as a subtitle. 
   if (any(gap_to_plot$estimated == "yes")) { # any() will return a single TRUE or FALSE
     
-    print(paste(cntry, "data are estimated"))
+    print(paste(country, "data are estimated"))
     
     my_plot <- my_plot +
       labs(subtitle = "Estimated data")
@@ -475,10 +475,10 @@ for( cntry in country_list ){ # (cntry = country_list[1])
     my_plot <- my_plot +
       labs(subtitle = "Reported data")
     
-    print(paste(cntry, "data are reported"))
+    print(paste(country, "data are reported"))
     
   }
-  ggsave(filename = paste("figures/Europe/", cntry, "_gdpPercap_cummean.png", sep = ""), 
+  ggsave(filename = paste("figures/Europe/", country, "_gdpPercap_cummean.png", sep = ""), 
          plot = my_plot)
   
 } 
@@ -490,7 +490,7 @@ Note that this works because we know there are only two conditions, `Estimated =
 ~~~
   if (any(gap_to_plot$estimated == "yes")) { # any() will return a single TRUE or FALSE
     
-    print(paste(cntry, "data are estimated"))
+    print(paste(country, "data are estimated"))
     
     my_plot <- my_plot +
       labs(subtitle = "Estimated data")
@@ -499,7 +499,7 @@ Note that this works because we know there are only two conditions, `Estimated =
     my_plot <- my_plot +
       labs(subtitle = "Reported data")
     
-    print(paste(cntry, "data are reported"))
+    print(paste(country, "data are reported"))
     
   }
 ~~~
