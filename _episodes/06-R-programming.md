@@ -21,7 +21,8 @@ keypoints:
 ## Table of contents
 1. [Introduction](#introduction)
 2. [Create an R script](#create-an-r-script)
-## Automation with for loops
+3. [Automation with for loops](#automation-with-for-loops)
+4. [Conditional statements with `if` and `else`](#conditional-statements-with-if-and-else)
 
 ## Introduction
 
