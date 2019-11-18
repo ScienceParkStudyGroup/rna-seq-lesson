@@ -127,7 +127,7 @@ These meetups can be for skill-sharing, showcasing how people work, or building 
 ## Going further / Bibliography
 - [The Replication Crisis in Wikipedia](https://en.wikipedia.org/wiki/Replication_crisis)
 - [A special issue in Science on Reproducibility](https://www.nature.com/collections/prbfkwmwvz/)
-
+- [Open Science And Reproducibility: presentation by Alexandra Sarafoglou (PhD student, UvA)](../presentations/OSCA2019_OpenResearchPractices.pdf)
 
 <!---
 ## Other lessons
