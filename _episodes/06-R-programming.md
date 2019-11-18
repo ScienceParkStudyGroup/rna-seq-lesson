@@ -18,29 +18,19 @@ keypoints:
 - "XX"
 ---
 
-# Introduction
+## Table of contents
+1. [Introduction](#introduction)
+2. [Create an R script](#create-an-r-script)
+
+## Introduction
 
 Now we are going to build a little analysis. We will learn to automate our analyses with a for loop. We will make figures, and save them each with automated labeling. Then, we will join data from different files and conditionally label them with if/else statements.
 
-## Resources
-
-- Hadley Wichkam scripting tips: [R for Data Science](https://r4ds.had.co.nz/workflow-scripts.html)
-
-## Analysis plan
-
-~~~
-library(tidyverse)
-library(gapminder)
-~~~
-{:.language-r}
-
-
 OK, here is the plan for our analysis. We want to plot the **gdpPercap** for each country in the gapminder data frame. So that's 142 separate plots! We will automate this, labeling each one with its name and saving it in a folder called figures. We will learn a bunch of things as we go. 
-
 
 ## Create an R script
 
-OK, now, we are going to create an R script. What is an R script? It's a text file with a .R extension. We've been writing R code in R Markdown files so far; R scripts are just R code without the Markdown along with it. 
+OK, now, we are going to create an R script. What is an R script? It's a text file with a .R extension. We've been writing R code in R Markdown files so far; R scripts are just R code without the Markdown plain text along with it. 
 
 Go to File > New File > R Script (or click the green plus in the top left corner). 
 
@@ -60,7 +50,7 @@ We'll be working with the gapminder data again so let's read it in here:
 library(tidyverse)
 
 ## read in gapminder data
-gapminder <- readr::read_csv('https://raw.githubusercontent.com/OHI-Science/data-science-training/master/data/gapminder.csv')
+gapminder <- readr::read_csv('https://raw.githubusercontent.com/ScienceParkStudyGroup/r-lesson-based-on-ohi-data-training/gh-pages/data/gapminder.csv')
 ~~~
 {:.language-r}
 
@@ -548,6 +538,7 @@ You'll soon have questions that are outside the scope of this workshop, how do y
 
 - [Ton of resources and advices](https://peerj.com/collections/50-practicaldatascistats/)
 
-## Ideas for Extended Analysis 2	
+### Going further
 
 - [stringr](http://r4ds.had.co.nz/strings.html)
+- Hadley Wichkam scripting tips: [R for Data Science](https://r4ds.had.co.nz/workflow-scripts.html)
