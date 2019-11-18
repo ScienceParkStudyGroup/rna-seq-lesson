@@ -34,9 +34,9 @@ Welcome!
 In this training you will learn R, RStudio, Git, and GitHub. It's going to be fun and empowering! You will learn a reproducible workflow that can be used in research and analyses of all kinds, including Ocean Health Index assessments. This is really powerful, cool stuff, and not just for data: this lesson website was actually made using some of these tools.
 
 We will practice learning three main things all at the same time: 
-1. coding with best practices (R/RStudio)
-2. collaborative version control (git/GitHub). 
-3. communication/publishing (RMarkdown/GitHub). 
+1. Coding with best practices (R/RStudio).
+2. Collaborative version control (git/GitHub). 
+3. Communication/publishing (RMarkdown/GitHub). 
 
 This training will teach these all together to reinforce skills and best practices, and get you comfortable with a workflow that you can use in your own projects. 
 
@@ -78,12 +78,12 @@ Here's an overview of techniques to be covered in Hadley Wickham and Garrett Gro
 
 We will be focusing on: 
 
-- **Tidy**: `tidyr` to organize rows of data into unique values
-- **Transform**: `dplyr` to manipulate/wrangle data based on subsetting by rows or columns, sorting and joining
+- **Tidy**: `tidyr` to organize rows of data into unique values.
+- **Transform**: `dplyr` to manipulate/wrangle data based on subsetting by rows or columns, sorting and joining.
 - **Visualize**: `ggplot2` static plots, using grammar of graphics principles.
 - **Communicate**: dynamic documents with `knitr` to produce *R Markdown* notebooks.
     
-This is really critical. Instead of building your analyses around whatever (likely weird) format your data are in, take deliberate steps to make your data tidy. When your data are tidy, you can use a growing assortment of powerful analytical and visualization tools instead of inventing home-grown ways to accommodate your data. This will save you time since you aren't reinventing the wheel, and will make your work more clear and understandable to your collaborators (most importantly, Future You). 
+This is really critical. Instead of building your analyses around whatever (likely weird) format your data are in, take deliberate steps to make your data tidy. __When your data are tidy, you can use a growing assortment of powerful analytical and visualization tools instead of inventing home-grown ways to accommodate your data__. This will save you time since you aren't reinventing the wheel, and will make your work more clear and understandable to your collaborators (most importantly, Future You). 
 
 Reference: [original paper about tidy datasets from Hadley Wickham](http://vita.had.co.nz/papers/tidy-data.pdf).
     

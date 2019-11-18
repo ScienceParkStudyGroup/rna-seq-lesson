@@ -31,7 +31,8 @@ keypoints:
 9. [`mutate()` adds new variables](#mutate-adds-new-variables)
 10. [`group_by` makes group that can be`summarize()`](#group_by-makes-group-that-can-be-summarize)
 11. [`arrange()` orders columns](#arrange-orders-columns)
-12. [Joining datasets](#joining-datasets)
+12. [All together now](#all-together-now)
+13. [Joining datasets](#joining-datasets)
 
 ## Introduction
 Why should we care about data transformation?   
@@ -132,13 +133,14 @@ We can read this data into R directly from GitHub, without downloading it. But w
 
 ![](../img/gapminder-gh-raw.png)
 
-Copy the url for raw data: `https://raw.githubusercontent.com/ScienceParkStudyGroup/r-lesson-based-on-ohi-data-training/gh-pages/data/gapminder.csv`
+Copy the url for raw data: `https://raw.githubusercontent.com/ScienceParkStudyGroup/r-lesson-based-on-ohi-data-training/gh-pages/data/
+gapminder.csv`
 
 Now, let's go back to RStudio. In our R Markdown, let's read this csv file and name the variable "gapminder". We will use the `read_csv()` function from the `readr` package (part of the `tidyverse`, so it's already installed!). 
 
 ~~~
 ## read gapminder csv. Note the readr:: prefix identifies which package it's in
-gapminder <- readr::read_csv('https://raw.githubusercontent.com/OHI-Science/data-science-training/master/data/gapminder.csv') 
+gapminder <- readr::read_csv('https://raw.githubusercontent.com/ScienceParkStudyGroup/r-lesson-based-on-ohi-data-training/gh-pages/data/gapminder.csv') 
 ~~~
 {:.language-r}
 
@@ -587,7 +589,7 @@ gap_max_gdp <- gapminder %>%
 
 I actually am borrowing this "All together now" from Tony Fischetti's blog post [How dplyr replaced my most common R idioms](http://www.statsblogs.com/2014/02/10/how-dplyr-replaced-my-most-common-r-idioms/). With that as inspiration, this is how what we have done would look like in Base R.
 
-### With `base R
+### With `base` R
 
 Let's compare with some base R code to accomplish the same things. Base R requires subsetting with the `[rows, columns]` notation. This notation is something you'll see a lot in base R. the brackets `[ ]` allow you to extract parts of an object. Within the brackets, the comma separates rows from columns. 
 

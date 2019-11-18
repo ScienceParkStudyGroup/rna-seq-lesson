@@ -84,7 +84,7 @@ Often, data must be reshaped for it to become tidy data. What does that mean? Th
 
 Yesterday we started off with the gapminder data in a format that was already tidy. But what if it weren't? Let's look at a different version of those data. 
 
-The gapminder dataset in the *wide* format is on GitHub: https://github.com/ScienceParkStudyGroup/r-lesson-based-on-ohi-data-training/blob/gh-pages/data/gapminder_wide.csv
+The gapminder dataset in the *wide* format is on GitHub: `https://github.com/ScienceParkStudyGroup/r-lesson-based-on-ohi-data-training/blob/gh-pages/data/gapminder_wide.csv`  
 
 First have a look at the data. 
 

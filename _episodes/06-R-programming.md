@@ -21,6 +21,7 @@ keypoints:
 ## Table of contents
 1. [Introduction](#introduction)
 2. [Create an R script](#create-an-r-script)
+## Automation with for loops
 
 ## Introduction
 
@@ -267,10 +268,43 @@ OK we now have 142 figures that we just created. They exist locally on our compu
 
 ### Your turn
 
-1. Modify our for loop so that it: 
-- loops through countries in Europe only
-- plots the cumulative mean gdpPercap (Hint: Use the [Data Wrangling Cheatsheet](https://www.rstudio.com/resources/cheatsheets/)!)
-- saves them to a new subfolder inside the (recreated) figures folder called "Europe".
+
+> ## Exercise
+>
+> Modify our for loop so that it: 
+> 1. loops through countries in Europe only.  
+> 2. plots the cumulative mean gdpPercap (Hint: Use the [Data Wrangling Cheatsheet](https://www.rstudio.com/resources/cheatsheets/)!)
+> 3. saves them to a new subfolder inside the (recreated) figures folder called "Europe".
+> 
+> > ## Solution
+> > `dir.create("figures")`     
+> > `dir.create("figures/Europe")`     
+> > ` ## create a list of countries. Calculations go here, not in the for loop`  
+> >  `gap_europe <- gapminder %>%`  
+> >   `mutate(gdpPercap_cummean = dplyr::cummean(gdpPercap))`  
+> >  `for ( country in country_list ) { `
+> >     
+> >     `## filter the country to plot`
+> >     `gap_to_plot <- gap_europe %>%`
+> >        `filter(country == cntry)`
+> > 
+> >   `## add a print message to see what's plotting`
+> >   `print(paste("Plotting", country))`
+> >   
+> >   `## plot`
+> >   `my_plot <- ggplot(data = gap_to_plot, aes(x = year, y = gdpPercap_cummean)) + `
+> >     `geom_point() +`
+> >    `## add title and save`
+> >     `labs(title = paste(cntry, "GDP per capita", sep = " "))`
+> >   
+> >   `ggsave(filename = paste("figures/Europe/", country, "_gdpPercap_cummean.png", sep = "")),` 
+> >   `plot = my_plot)`
+> > `}` 
+> > 
+> {: .solution}
+{: .challenge}  
+
+
 
 #### Answer
 
