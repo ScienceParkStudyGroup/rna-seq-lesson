@@ -13,9 +13,10 @@ objectives:
 - "Understand the logic of join operations in R."
 - "Create conditional statements using `if` and `else`."
 keypoints:
-- "XX"
-- "XX"
-- "XX"
+- "An R script is a plain text file with an `.R` extension that you can execute."
+- "Comments in an R script can be written with a # (hastag)."
+- "Loops allow you to automatize a series of similar actions."
+- "Condition `if/else` helps you to control the execution of your R script. "
 ---
 
 ## Table of contents
