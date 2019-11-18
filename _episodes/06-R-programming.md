@@ -278,69 +278,32 @@ OK we now have 142 figures that we just created. They exist locally on our compu
 > 
 > > ## Solution
 > > `dir.create("figures")`     
-> > `dir.create("figures/Europe")`     
-> > ` ## create a list of countries. Calculations go here, not in the for loop`  
-> >  `gap_europe <- gapminder %>%`  
-> >   `mutate(gdpPercap_cummean = dplyr::cummean(gdpPercap))`  
-> >  `for ( country in country_list ) { `
-> >     
-> >     `## filter the country to plot`
-> >     `gap_to_plot <- gap_europe %>%`
-> >        `filter(country == cntry)`
+> > `dir.create("figures/Europe")`    
+> >    
+> > ` ## create a list of countries. Calculations go here, not in the for loop`    
+> > `gap_europe <- gapminder %>%`    
+> >   `mutate(gdpPercap_cummean = dplyr::cummean(gdpPercap))`    
+> >  
+> > `for ( country in country_list ) { `  
+> >       
+> >     `## filter the country to plot`  
+> >     `gap_to_plot <- gap_europe %>%`  
+> >        `filter(country == cntry)`  
 > > 
-> >   `## add a print message to see what's plotting`
-> >   `print(paste("Plotting", country))`
+> >   `## add a print message to see what's plotting`  
+> >   `print(paste("Plotting", country))`  
 > >   
-> >   `## plot`
-> >   `my_plot <- ggplot(data = gap_to_plot, aes(x = year, y = gdpPercap_cummean)) + `
-> >     `geom_point() +`
-> >    `## add title and save`
-> >     `labs(title = paste(cntry, "GDP per capita", sep = " "))`
+> >   `## plot`  
+> >   `my_plot <- ggplot(data = gap_to_plot, aes(x = year, y = gdpPercap_cummean)) + `  
+> >     `geom_point() +`  
+> >    `## add title and save`  
+> >     `labs(title = paste(country, "GDP per capita", sep = " "))`  
 > >   
-> >   `ggsave(filename = paste("figures/Europe/", country, "_gdpPercap_cummean.png", sep = "")),` 
-> >   `plot = my_plot)`
-> > `}` 
+> > `ggsave(filename = paste("figures/Europe/", country, "_gdpPercap_cummean.png", sep = "")),plot = my_plot)`  
+> > `}`   
 > > 
 > {: .solution}
 {: .challenge}  
-
-
-
-#### Answer
-
-No peeking!
-
-~~~
-dir.create("figures") 
-dir.create("figures/Europe") 
-
-## create a list of countries. Calculations go here, not in the for loop
-gap_europe <- gapminder %>%
-  filter(continent == "Europe") %>%
-  mutate(gdpPercap_cummean = dplyr::cummean(gdpPercap))
-
-country_list <- unique(gap_europe$country) # ?unique() returns the unique values
-
-for( cntry in country_list ){ # (cntry = country_list[1])
-  
-  ## filter the country to plot
-  gap_to_plot <- gap_europe %>%
-    filter(country == cntry)
-  
-  ## add a print message to see what's plotting
-  print(paste("Plotting", cntry))
-  
-  ## plot
-  my_plot <- ggplot(data = gap_to_plot, aes(x = year, y = gdpPercap_cummean)) + 
-    geom_point() +
-    ## add title and save
-    labs(title = paste(cntry, "GDP per capita", sep = " "))
-  
-  ggsave(filename = paste("figures/Europe/", cntry, "_gdpPercap_cummean.png", sep = "")), 
-  plot = my_plot)
-} 
-~~~
-{:.language-r}
 
 Notice how we put the calculation for `cummean()` outside the for loop. It could have gone inside, but it's an operation that could be done just one time before hand (outside the loop) rather than multiple times as you go (inside the for loop). 
 
