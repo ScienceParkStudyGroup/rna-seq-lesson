@@ -20,7 +20,7 @@ keypoints:
 1. [Introduction](#introduction)
 2. [Outline](#outline)
 3. [Synchronising changes from RStudio to Github](#synchronising-changes-from-rstudio-to-github)
-4. [Clone your repository using RStudio](#clone-your-repository-usingrstudio)
+4. [Clone your repository using RStudio](#clone-your-repository-using-rstudio)
 5. [Inspect your repository](#inspect-your-repository)
 6. [A typical workflow: add, commit and push](#a-typical-workflow-add-commit-and-push)
 7. [How often should I commit?](#how-often-should-i-commit)
