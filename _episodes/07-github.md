@@ -1,7 +1,7 @@
 ---
 title: "Version control with git and Github"
 teaching: 45
-exercises: 45 
+exercises: 45
 questions:
 - "What is version control? How do I use it?"
 - "What is the difference between `git`and Github?"
@@ -16,24 +16,33 @@ keypoints:
 - "Working locally in RStudio with a synchronised online folder will make your work more stable and understandable for you and others."
 ---
 
-# Introduction
+## Table of contents
+1. [Introduction](#introduction)
+2. [Outline](#outline)
+3. [Synchronising changes from RStudio to Github](#synchronising-changes-from-rstudio-to-github)
+4. [Clone your repository using RStudio](#clone-your-repository-usingrstudio)
+5. [Inspect your repository](#inspect-your-repository)
+6. [A typical workflow: add, commit and push](#a-typical-workflow-add-commit-and-push)
+7. [How often should I commit?](#how-often-should-i-commit)
 
-## Why should scientists use git and Github?
+## Introduction
+
+### Why should scientists use git and Github?
 
 * Ends (or, nearly ends) the horror of keeping track of versions.
-  Basically, we get away from this: 
+  Basically, we get away from this:
 
 ![](../img/MessySaves.png)
 
 ![](../img/phdcomics_version_control.png)
 
-When you open your repository, you only see the most recent version.  But, it easy to compare versions, and you can easily revert to previous versions. 
+When you open your repository, you only see the most recent version.  But, it easy to compare versions, and you can easily revert to previous versions.
 
 * Improves collaborative efforts.  Different researchers can work on the same files at the same time!
 * It is easy to share and distribute files through the Github website.
 * Your files are available anywhere, you just need internet connection!  
 
-## git and Github
+### git and Github
 
 We will learn about version control using `git` and [GitHub](https://en.wikipedia.org/wiki/GitHub), and we will interface with this through RStudio. This will change your scientific life (for the better!). Github was developed for social coding (i.e., sort of like an open source Wikipedia for programmers). Consequently, much of the functionality and terminology of Github (e.g., branches and pull requests) will not be relevant for most scientists. Therefore, we will skip over all this stuff!    
 
@@ -43,7 +52,7 @@ Github will facilitate your daily coding life when working with your most import
 **git:**   
 The version control program `git` will track and version your files locally on your machine. `git` is locally executed and works on your local machine. It was named created and named by *Linus Torvalds*, the creator of Linux. Torvalds sarcastically quipped about the name _git_ (which means unpleasant person in British English slang): "I'm an egotistical bastard, and I name all my projects after myself. First 'Linux', now 'git'."
 
-`git` is a version control system that lets you track changes to files over time. These files can be any kind of file (e.g. .doc, .pdf, .xls), but free text differences are visible and can be read by humans (eg txt, csv, md). 
+`git` is a version control system that lets you track changes to files over time. These files can be any kind of file (e.g. .doc, .pdf, .xls), but free text differences are visible and can be read by humans (eg txt, csv, md).
 
 **Github:**  
 [GitHub](https://github.com/) is a website for storing your git versioned files remotely. It has many nice features to be able visualize differences between [images](https://help.github.com/articles/rendering-and-diffing-images/), [rendering](https://help.github.com/articles/mapping-geojson-files-on-github/) & [diffing](https://github.com/blog/1772-diffable-more-customizable-maps) map data files, [render text data files](https://help.github.com/articles/rendering-csv-and-tsv-data/), and [track changes in text](https://help.github.com/articles/rendering-differences-in-prose-documents/).
@@ -58,9 +67,9 @@ Although `git` and GitHub are two different things, distinct from each other, I 
     <figcaption><center>The octocat: the official mascot of Github</center></figcaption>
 </figure>
 
-## Resources
+### Resources
 
-These materials borrow from: 
+These materials borrow from:
 
 - [The `git` version control system wikipedia page](https://en.wikipedia.org/wiki/Git)
 - [Github wikipedia page](https://en.wikipedia.org/wiki/GitHub)
@@ -75,13 +84,13 @@ Today, we'll only introduce the features and terminology that scientists need to
 
 Today, we'll interface with GitHub from our local computers using RStudio. There are many other ways to interact with GitHub, including GitHub's Desktop App or the command line ([here is Jenny Bryan's list of git clients](http://stat545.com/git02_git-clients.html)), but today we are going to work from RStudio. You have the largest suite of options if you interface through the command line, but the most common things you'll do can be done through one of these other applications (i.e. RStudio and the GitHub Desktop App).
 
-Here's what we'll do after we set up `git` on your computers: 
+Here's what we'll do after we set up `git` on your computers:
 
 1. create a repository on Github.com
-2. clone locally using RStudio. 
+2. clone locally using RStudio.
 3. learn the RStudio-GitHub workflow by syncing to Github.com: `pull`, `stage`, `commit`, `push`.
 4. explore github.com: files, commit history, file history.
-5. practice the RStudio-GitHub workflow by editing and adding files. 
+5. practice the RStudio-GitHub workflow by editing and adding files.
 6. practice R Markdown.
 
 
@@ -104,7 +113,7 @@ Here's what we'll do after we set up `git` on your computers:
 
 ## Setup Git & GitHub
 
-We're going to switch gears from R for a moment and set up Git and GitHub, which we will be using along with R and RStudio for the rest of the workshop. This set up is a one-time thing! You will only have to do this once per computer. We'll walk through this together. 
+We're going to switch gears from R for a moment and set up Git and GitHub, which we will be using along with R and RStudio for the rest of the workshop. This set up is a one-time thing! You will only have to do this once per computer. We'll walk through this together.
 
 1. Create **Github** account at <http://github.com>, if you don't already have one. For username, I recommend all lower-case letters, short as you can. I recommend using your academic email (e.g. *.uva.nl*), since you can request free private repositories via [GitHub Education](https://education.github.com/) discount.
 
@@ -113,26 +122,26 @@ We're going to switch gears from R for a moment and set up Git and GitHub, which
 ~~~
         # display your version of git
         git --version
-        
+
         # replace USER with your Github user account
         git config --global user.name YOUR_USER_NAME
-        
+
         # replace NAME@EMAIL.EDU with the email you used to register with Github
         git config --global user.email YOUR_NAME@@EMAIL.UNIVERSITY
-        
+
         # list your config to confirm user.* variables set
         git config --list
 ~~~
 {: .language-bash}
 
-Not only have you just set up git as a one-time-only thing, you have just used the command line. We don't have time to learn much of the command line today, but you just successfully used it following explicit instructions, which is huge! There are great resources for learning the command line from the [Software Carpentry Shell novice lesson](swcarpentry.github.io/shell-novice). 
+Not only have you just set up git as a one-time-only thing, you have just used the command line. We don't have time to learn much of the command line today, but you just successfully used it following explicit instructions, which is huge! There are great resources for learning the command line from the [Software Carpentry Shell novice lesson](swcarpentry.github.io/shell-novice).
 
 ### Troubleshooting
 
-If you have problems setting up git, please see the [Troubleshooting section](http://happygitwithr.com/troubleshooting.html) in Jenny Bryan's amazing [HappyGitWithR](http://happygitwithr.com). 
+If you have problems setting up git, please see the [Troubleshooting section](http://happygitwithr.com/troubleshooting.html) in Jenny Bryan's amazing [HappyGitWithR](http://happygitwithr.com).
 
 #### New(ish) Error on a Mac
-We've also seen the following errors from RStudio: 
+We've also seen the following errors from RStudio:
 
 ~~~
 error key does not contain a section --global terminal
@@ -153,21 +162,21 @@ which git
 
 <img src="../img/git_whichgit.png" width="250px">
 
-  
+
 Look at the filepath that is returned. Does it say anything to do with Apple?
 
 -> If yes, then the [Git you downloaded](https://git-scm.com/downloads) isn't installed, please redownload if necessary, and follow instructions to install.  
 
 -> If no, (in the example image, the filepath does not say anything with Apple) then proceed below:
 
-In RStudio, navigate to: Tools > Global Options > Git/SVN. 
+In RStudio, navigate to: Tools > Global Options > Git/SVN.
 
 <img src="../img/git_options.png" width="250px">
 
 
 <br>
 
-Does the **“Git executable”** filepath match what the url in Terminal says? 
+Does the **“Git executable”** filepath match what the url in Terminal says?
 
 <br>
 
@@ -184,20 +193,20 @@ Then relaunch RStudio.
 
 Try syncing or cloning, and if that works and then you don’t need to worry about typing into the Terminal, you’re all done!
 
-# Synchronising changes from RStudio to Github
+## Synchronising changes from RStudio to Github
 
-## Create a repository on Github.com
+### Create a repository on Github.com
 
 First, go to your account on github.com and click "New repository".
 
-<img src="../img/create_repository.png" width="900px"> 
+<img src="../img/create_repository.png" width="900px">
 
 
 Name it `my-repo`, short for "my-repository" (any short self-describing name would be good).   
 
 Also, add a description, make it public, create a README file, and create your repo!
 
-<img src="../img/create_repository_2.png" width="900px"> 
+<img src="../img/create_repository_2.png" width="900px">
 
 The *Add gitignore* option adds a document where you can identify files or file-types you want Github to ignore. These files will stay in on the local `git` folder (the one on your computer), but will not be uploaded onto the web version of Github.
 
@@ -207,20 +216,20 @@ Check out our new repository!
 
 Notice how the README.md file we created is automatically displayed at the bottom. The .md means that it is Markdown (remember how .Rmd was RMarkdown?) so the formatting we learned in the last lesson apply here.
 
-<img src="../img/new_repository.png" width="900px"> 
+<img src="../img/New_repository.png" width="900px">
 
 **From here, you will work locally (on your computer).**
 
 
 ## Clone your repository using RStudio
 
-We'll start of by cloning to our local computer using RStudio. We are going to be cloning a copy of our Remote repository on Github.com to our local computers. Unlike downloading, cloning keeps all the version control and user information bundled with the files. 
+We'll start of by cloning to our local computer using RStudio. We are going to be cloning a copy of our remote repository on Github.com to our local computers. Unlike downloading, cloning keeps all the version control and user information bundled with the files.
 
-**Step 0**: Create your `github` folder 
+### Step 0: Create your `github` folder
 
-This is really important! We need to be organized and deliberate about where we want to keep all of our GitHub repositories (since this is the first of many in your career). 
+This is really important! We need to be organized and deliberate about where we want to keep all of our GitHub repositories (since this is the first of many in your career).
 
-Let's all make a folder called `github` (all lowercase!) in our home directories. So it will look like this: 
+Let's all make a folder called `github` (all lowercase!) in our home directories. So it will look like this:
 
 - Windows: `Users\[User]\Documents\github\`
 - Mac: `Users/[User]/github/`
@@ -229,55 +238,57 @@ This will let us take advantage of something that is really key about GitHub.com
 
 So really. Make sure that you have an all-lowercase folder called `github` in your home directory!!
 
-**Step 1**: Copy the web address of the repository you want to clone.
+### Step 1: Copy the web address of the repository you want to clone.
 
-<img src="../img/clone_step1.png" width="900px"> 
+<img src="../img/clone_step1.png" width="900px">
 
-**Step 2**: from RStudio, go to New Project (also in the File menu).
+### Step 2: from RStudio, go to New Project (also in the File menu).
 
-<img src="../img/new_project_1.png" width="600px"> 
+<img src="../img/new_project_1.png" width="600px">
 
-**Step 3**: Select Version Control
+### Step 3: Select Version Control
 
-<img src="../img/new_project_2.png" width="600px"> 
+<img src="../img/new_project_2.png" width="600px">
 
-**Step 4**: Select Git
-    
-<img src="../img/new_project_3.png" width="600px"> 
+### Step 4: Select Git
+
+<img src="../img/new_project_3.png" width="600px">
 
 
-**Step 5**: Paste it in the Repository URL field, and type **tab** to autofill the Project Directory name. Make sure you keep the Project Directory Name **THE SAME** as the repository name from the URL.
+### Step 5: Paste it in the Repository URL field
 
-Save it in your github folder (click on Browse) to do this. 
+Type **tab** to autofill the Project Directory name. Make sure you keep the Project Directory Name **THE SAME** as the repository name from the URL.  
 
-<img src="../img/new_project_4.png" width="600px"> 
+Save it in your github folder (click on Browse) to do this.
+
+<img src="../img/new_project_4.png" width="600px">
 
 If everything went well, the repository will be added to the list located here:
 
-<img src="../img/select_project.png" width="700px"> 
+<img src="../img/select_project.png" width="700px">
 
 And the repository will be saved to the Github folder on your computer:
 
-<img src="../img/cloned_repository.png" width="900px"> 
+<img src="../img/cloned_repository.png" width="900px">
 
 <font size="+2">Ta da!!!</font> The folder doesn't contain much of interest, but we are going to change that.
 
 ## Inspect your repository
 
-Notice a few things in our repo here: 
+Notice a few things in our repo here:
 
-1. Our working directory is set to `~/github/my-repo`. This means that I can start working with the files I have in here without setting the filepath. This is that when we cloned this from RStudio, it created an RStudio project, which you can tell because: 
-    - `.RProj` file, which you can see in the Files pane. 
+1. Our working directory is set to `~/github/my-repo`. This means that I can start working with the files I have in here without setting the filepath. This is that when we cloned this from RStudio, it created an RStudio project, which you can tell because:
+    - `.RProj` file, which you can see in the Files pane.
     - The project is named in the top right hand corner
 1. We have a git tab! This is how we will interface directly to Github.com
 
-<img src="../img/RStudio_IDE_git.png" width="900px"> 
+<img src="../img/RStudio_IDE_git.png" width="900px">
 
-When you first clone a repo through RStudio, RStudio will add an `.Rproj` file to your repo. And if you didn't add a `.gitignore` file when you originally created the repo on GitHub.com, RStudio will also add this for you. These will show up with little yellow `?` icons in your git tab. This is `git` way of saying: "I am responsible for tracking everything that happens in this repo, but I haven't seen these files yet. Do you want me to track them too?" (We'll see that when you click the box to stage them, they will turn into `A`s because they have been added to the repo. 
+When you first clone a repo through RStudio, RStudio will add an `.Rproj` file to your repo. And if you didn't add a `.gitignore` file when you originally created the repo on GitHub.com, RStudio will also add this for you. These will show up with little yellow `?` icons in your git tab. This is `git` way of saying: "I am responsible for tracking everything that happens in this repo, but I haven't seen these files yet. Do you want me to track them too?" (We'll see that when you click the box to stage them, they will turn into `A`s because they have been added to the repo.
 
-# A typical workflow: add, commit and push 
+## A typical workflow: add, commit and push
 
-## Add files to our local repo
+### Add files to our local repo
 
 The repository will contain:
 
@@ -287,26 +298,25 @@ The repository will contain:
 
 And, I typically create the following:
 
-* folders for `data/` and `figures/`.  
-* R scripts.
-* etc.
+* a folder for my raw unmodified datasets named `data/`.
+* a folder for my figures named `figures/`. I have a subfolder for each figure (e.g. `figure1/`).  
+* a folder for my R scripts named....`Rscripts/`.
 
-I'm going to go to the Finder (Windows Explorer on a PC) and copy a file into my repository from there. And then I'm going to go back to RStudio -- it shows up in the git tab! So the repository is being tracked, no matter how you make changes to it (changes do not have to be done only through RStudio). 
+I'm going to go to the Finder (Windows Explorer on a PC) and copy a file into my repository from there. And then I'm going to go back to RStudio -- it shows up in the git tab! So the repository is being tracked, no matter how you make changes to it (changes do not have to be done only through RStudio).
 
-To make changes to the repository, you will work from your computer in the local `git` folder (mirror of the online Github `my-repo`). 
+To make changes to the repository, you will work from your computer in the local `git` folder (mirror of the online Github `my-repo`).
 
 When files are changed in the local repository, these changes will be reflected in the git tab of RStudio:
 
-<img src="../img/modify_files.png" width="900px"> 
+<img src="../img/modify_files.png" width="900px">
 
-## Inspect what has changed
+### Inspect what has changed
 
 These are the codes RStudio uses to describe how the files are changed, (from the RStudio [cheatsheet](http://www.rstudio.com/wp-content/uploads/2016/01/rstudio-IDE-cheatsheet.pdf)):
 
 ![](../img/modified.png)
 
-## Sync from RStudio to GitHub
-
+### Sync from RStudio to GitHub
 
 When you are ready to commit your changes, you follow these steps:
 
@@ -314,32 +324,32 @@ When you are ready to commit your changes, you follow these steps:
 
 We walk through this process below:
 
-### Pull 
+### Pull
 From the Git tab, "Pull" the repository.  This makes sure your local repository is synced with the remote repository.  This is very important if other people are making changes to the repository or if you are working from multiple computers.
 
-<img src="../img/pull.png" width="700px"> 
+<img src="../img/pull.png" width="700px">
 
 ### Stage
 Stage the files you want to commit.  In RStudio, this involves checking the "Staged" boxes:
 
-<img src="../img/staged.png" width="700px"> 
+<img src="../img/staged.png" width="700px">
 
 ### Commit
 
-<img src="../img/commit.png" width="700px"> 
+<img src="../img/commit.png" width="700px">
 
 ### Push
 
-<img src="../img/push.png" width="700px"> 
+<img src="../img/push.png" width="700px">
 
-## Explore remote Github
+### Explore remote Github
 The files you added should be on github.com:
 
-<img src="../img/Github_remote.png" width="700px"> 
+<img src="../img/Github_remote.png" width="700px">
 
 Let's also explore commit history, file history.
 
-# Your turn!
+## Your turn!
 
 > ## Exercise: update the README file
 >
@@ -356,20 +366,20 @@ Let's also explore commit history, file history.
 >  3. Go back to RStudio.
 >  4. Confirm that `git` can see this file.
 >  5. Add/stage this file.
->  6. Commit this new file with a commit message. 
+>  6. Commit this new file with a commit message.
 >  7. Sync it to your remote repository (`my-repo` on Github.com).
 >
 > > ## Solution
-> > * 4) `git` sees the file as untracked and displays a question mark icon: **?** 
-> > * 5) In the Git panel of RStudio, click on the **Staged** tick box. The status of the file should change. 
-> > * 6) Click on the **Commit** button and write a small descriptive message. It should be the end of the sentence: "with this commit, ...". 
-> > 
+> > * 4) `git` sees the file as untracked and displays a question mark icon: **?**
+> > * 5) In the Git panel of RStudio, click on the **Staged** tick box. The status of the file should change.
+> > * 6) Click on the **Commit** button and write a small descriptive message. It should be the end of the sentence: "with this commit, ...".
+> >
 > {: .solution}
 {: .challenge}  
- 
+
 Remember, `git` will track anything within that folder (the way Dropbox does), it's not specific to RStudio!
 
-## Committing - how often? Tracking changes in your files
+## How often should I commit?
 
 Whenever you make changes to the files in Github, you will walk through the Pull -> Stage -> Commit -> Push steps.
 
@@ -393,8 +403,6 @@ You can click on the commits to see how the files changed from the previous comm
 <br />
 
 
-## Happy Git with R 
+## Happy Git with R
 
 Jenny Bryan's [HappyGitWithR](http://happygitwithr.com) is very useful for troubleshooting, particularly the sections on [Detect Git from RStudio](http://happygitwithr.com/rstudio-see-git.html) and [RStudio, Git, GitHub Hell (troubleshooting)](http://happygitwithr.com/troubleshooting.html).
-
-
