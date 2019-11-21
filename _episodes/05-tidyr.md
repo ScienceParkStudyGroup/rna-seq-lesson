@@ -393,7 +393,7 @@ This session RMarkdown notebook .Rmd could look something like this:
 library(tidyverse) # install.packages("tidyverse")
 
 ## load wide data
-gap_wide <- read.csv('https://github.com/ScienceParkStudyGroup/r-lesson-based-on-ohi-data-training/blob/gh-pages/data/gapminder_wide.csv')
+gap_wide <- readr::read_csv('https://raw.githubusercontent.com/ScienceParkStudyGroup/r-lesson-based-on-ohi-data-training/gh-pages/data/gapminder_wide.csv')
 
 head(gap_wide)
 str(gap_wide)
