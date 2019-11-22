@@ -262,10 +262,6 @@ for( country in country_list ){
 {:.language-r}
 *For loops* are sometimes just the thing you need to iterate over many things in your analyses.
 
-### Clean up our repo
-
-OK we now have 142 figures that we just created. They exist locally on our computer, and we have the code to recreate them anytime. But, we don't really need to push them to GitHub. Let's delete the figures/ folder and see it disappear from the Git tab.
-
 ### Your turn
 
 
