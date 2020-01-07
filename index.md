@@ -1,6 +1,6 @@
 ---
 layout: lesson
-#title: "Introduction to Open Data Science with R"
+title:""
 authors: Marc Galland, Tijs Bliek, Zsofia Koma from materials taken from "The Ocean Health Index Team"
 root: .  # Is the only page that doesn't follow the pattern /:path/index.html
 permalink: index.html  # Is the only page that doesn't follow the pattern /:path/index.html
