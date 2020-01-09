@@ -3,13 +3,13 @@ title: "Introduction"
 teaching: 30
 exercises: 0
 questions:
-- "What will I learn during this workshop?"
+- "What can I learn by doing this RNA-Seq lesson?"
 - "What are the tools that I will be using?"
 - "What are the tidy data principles?"
 - "What is working in a more open way beneficial?"
 objectives:
-- "Discover a complete data analysis process revolving around the tidy principles."
-- "Learn how to increase your data analysis efficacy"
+- "Discover in what consists a typical RNA-Seq experiment."
+- "Know what results a RNA-Seq experiment can (and cannot) yield."
 keypoints:
 - "Tidy data principles are essential to increase data analysis efficiency and code readability."
 - "Using R and RStudio, it becomes easier to implement good practices in data analysis."
@@ -18,101 +18,68 @@ keypoints:
 
 ## Table of Contents
 1. [Overview](#overview)
-2. [What to expect](#what-to-expect)
-3. [What you will learn](#what-you-will-learn)
-4. [Tidy data workflow](#tidy-data-workflow)
-5. [Learning with public datasets](#learning-with-public-datasets)
-6. [Emphasizing collaboration](#emphasizing-collaboration)
-6. [By the end of the course](#by-the-end-of-the-course)
-6. [Credits](#credits)
+2. [What you will learn](#what-you-will-learn)
+3. [Dataset used](#dataset-used)
 
 
 ## Overview 
 
 Welcome!
 
-In this training you will learn R, RStudio, Git, and GitHub. It's going to be fun and empowering! You will learn a reproducible workflow that can be used in research and analyses of all kinds, including Ocean Health Index assessments. This is really powerful, cool stuff, and not just for data: this lesson website was actually made using some of these tools.
+In this training you will learn the basics of a typical RNA-Sequencing experiment. It is going to be fun and empowering! You will discover how total RNA are converted to short sequences called "reads" that can in turn be used to get insights into gene expression. Through careful experimental design, these gene expression information can yield new research avenues and answer crucial questions. 
 
 We will practice learning three main things all at the same time: 
-1. Coding with best practices (R/RStudio).
-2. Collaborative version control (git/GitHub). 
-3. Communication/publishing (RMarkdown/GitHub). 
+1. The purpose and good practices related to an RNA-Seq experiment. 
+2. Making plots to describe the output of a RNA-Seq workflow.
+3. How to perform a differential expression analysis and create some insightful plots for one comparison.
 
-This training will teach these all together to reinforce skills and best practices, and get you comfortable with a workflow that you can use in your own projects. 
+We will use mostly R and its companion RStudio to perform our RNA-Seq analyses and visualisations. 
 
-## What to expect
-
-This is going to be a fun workshop. 
-
-The plan is to expose you to a lot of great tools that you can have confidence using in your research. You'll be working hands-on and doing the same things on your own computer as we do live on up on the screen. We're going to go through a lot in these two days and it's less important that you remember it all. More importantly, you'll have experience with it and confidence that you can do it. The main thing to take away is that there *are* good ways to approach your analyses; we will teach you to expect that so you can find what you need and use it! A theme throughout is that tools exist and are being developed by real, and extraordinarily nice, people to meet you where you are and help you do what you need to do. If you expect and appreciate that, you will be more efficient in doing your awesome science.
-
-You are all welcome here, please be respectful of one another. You are encouraged to help each other. We abide to the Carpentries [Code of Conduct](https://docs.carpentries.org/topic_folders/policies/code-of-conduct.html). 
-
-Everyone in this workshop is coming from a different place with different experiences and expectations. But everyone will learn something new here, because there is so much innovation in the data science world. Instructors and helpers learn something new every time, from each other and from your questions. If you are already familiar with some of this material, focus on how we teach, and how you might teach it to others. Use these workshop materials not only as a reference in the future but also for talking points so you can communicate the importance of these tools to your communities. A big part of this training is not only for you to learn these skills, but for you to also teach others and increase the value and practice of open data science in science as a whole. 
+Depending on the level of participants, the bioinformatic part might be performed (QC of fastq files, genome alignment, counting, etc.)  
 
 ## What you will learn
 
-- **how to *think* about data** 
-    - how to think about data separately from your research questions.
-    - how and why to tidy data and analyze tidy data, rather than making your analyses accommodate messy data.
-    - how there is a lot of decision-making involved with data analysis, and a lot of creativity.
-- **how to increase efficiency in your data science**
-    - and increase reproducibility.
-    - and facilitate collaboration with others — especially your future self!
-- **how open science is a great benefit**
-    - find solutions faster.
-    - broaden the impact of your work.
-- **how to learn with intention and community**
-    - think ahead instead of only to get a single job done now.
-    - the #rstats online community is fantastic. The tools we're using are developed by real people. Real, nice people. They are building powerful and empowering tools and are welcoming to all skill-levels.
+1. **What are the important things to know before doing an RNA-Seq experiment** 
+    - When should you perform a RNA-Seq experiment?  
+    - RNA-Seq experiments have to comply with good experimental design practices just like any experiment.
+    - What are biological replicates and why are they important?
+2. **How can I assess the quality of my RNA-Seq sequencing results?**
+    - FastQC.
+    - PCA plot.
+    - Sample clustering.
+3. **How do I perform a differential expression analysis on RNA-Seq results using R?**
+    - Raw and scaled counts: why do you need to scale counts between samples?
+    - What are the gene expression units I need to know: RPKM, FPKM, TPM.
+    - What are robust scaling/normalisation methods?
+    - How does the DESeq method works?
+4. **What are the plots that I can make from the differential analysis results?**
+    - Heatmap coupled with gene and sample clustering.
+    - Volcano plot.
+
+## Dataset used 
+
+We will make use of a published experimental dataset from a study made on the small model plant _Arabidopsis thaliana_ by [Vogel et al. (2016)](https://doi.org/10.1111/nph.14036). This study compares the response of 4 weeks old plantlets to different bacteria that live on the leaves of different plant species:
+- A known foliar pathogen called _Pseudomonas syringae_ strain DC3000. 
+- A commensal ("neutral") bacteria called _Methylobacterium extorquens_ strain PA1.
+- A commensal ("neutral") bacteria called _Sphingomonas melonis_ strain Fr1. 
+
+Arabidopsis plants 
 
 
-## Tidy data workflow
+![](../img/experimental_design.png)
 
-We will be learning about tidy data. And how to use a tidyverse suite of tools to work with tidy data.
 
-[**Hadley Wickham**](http://hadley.nz/) and his team have developed a ton of the tools we'll use today. 
-Here's an overview of techniques to be covered in Hadley Wickham and Garrett Grolemund of RStudio's book [R for Data Science](http://r4ds.had.co.nz/):
-
-![](../img/r4ds_data-science.png)
-
-We will be focusing on: 
-
-- **Tidy**: `tidyr` to organize rows of data into unique values.
-- **Transform**: `dplyr` to manipulate/wrangle data based on subsetting by rows or columns, sorting and joining.
-- **Visualize**: `ggplot2` static plots, using grammar of graphics principles.
-- **Communicate**: dynamic documents with `knitr` to produce *R Markdown* notebooks.
-    
-This is really critical. Instead of building your analyses around whatever (likely weird) format your data are in, take deliberate steps to make your data tidy. __When your data are tidy, you can use a growing assortment of powerful analytical and visualization tools instead of inventing home-grown ways to accommodate your data__. This will save you time since you aren't reinventing the wheel, and will make your work more clear and understandable to your collaborators (most importantly, Future You). 
-
-Reference: [original paper about tidy datasets from Hadley Wickham](http://vita.had.co.nz/papers/tidy-data.pdf).
-    
-## Learning with public datasets
-
-One of the most important things you will learn is how to think about data separately from your own research context. Said in another way, you'll learn to distinguish your data questions from your research questions. Here, we are focusing on data questions, and we will use data that is not specific to your research.
-
-We will be using several different data sets throughout this training, and will help you see the patterns and parallels to your own data, which will ultimately help you in your research.
-
-## Emphasizing collaboration
-
-Collaborating efficiently has historically been really hard to do. It's only been the last 20 years or so that we've moved beyond mailing things with the postal service. Being able to email and get feedback on files through track changes was a huge step forward, but it comes with a lot of bookkeeping and reproduciblity issues (did I do my analyses with `thesis_final_final.xls` or `thesis_final_usethisone.xls`?). But now, open tools make it much easier to collaborate. 
-
-Working with collaborators in mind is critical for reproducibility. And, your most important collaborator is your future self. This training will introduce best practices using open tools, so that collaboration will become second nature to you!
-
-## By the end of the course
-
-By the end of the course, you'll wrangle a few different data sets, and make your own graphics that you'll publish on webpages you've built collaboratively with GitHub and RMarkdown. Woop!
-
-Here are some important things to keep in mind as you learn (these are joke book covers): 
-
-![](../img/practical_dev_both.png)
-
+The original sequencing files can be found on the [Array Express database of the European Bioinformatic Institute](https://www.ebi.ac.uk/arrayexpress) by searching for the dataset accession number __E‐MTAB‐4683__.
 
 ## Credits
 
+### Dataset
+The original RNA-Seq dataset used comes from Vogel et al. 2016:  https://doi.org/10.1111/nph.14036.  
+
+### Teaching materials
 This lesson has been formatted according to the [Carpentries Foundation](https://carpentries.org/) lesson template and following their recommendations on how to teach researchers good practices in programming and data analysis.   
 
-This material builds from a lot of fantastic materials developed by others in the open data science community. Most of the content derives from the [Ocean Health Index Data Science Training](http://ohi-science.org/data-science-training/index.html) which are greatly acknowledge for the quality of their teaching materials.
+This material builds from a lot of fantastic materials developed by others in the open data science community. Most of the content derives from the [Harvard Chan Bioinformatics Core](https://github.com/hbctraining) which are greatly acknowledge for the quality of their teaching materials.
 
 It also pulls from the following resources, which are highly recommended for further learning and as resources later on. Specific lessons will also cite more resources.
 
