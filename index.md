@@ -1,6 +1,6 @@
 ---
 layout: lesson
-title:""
+title:
 authors: Marc Galland, Tijs Bliek, Ken Kraaijeveld
 root: .  # Is the only page that doesn't follow the pattern /:path/index.html
 permalink: index.html  # Is the only page that doesn't follow the pattern /:path/index.html
@@ -25,7 +25,6 @@ Before you begin, be sure you are all set up: see the prerequisites in Chapter \
 > 3. Get comfortable: if you're not in a physical workshop, be set up with two screens if possible. You will be following along in RStudio on your own computer while also following this tutorial on your own.
 > More instructions are available on the workshop website in the **Setup** section.
 {: .prereq}
-
 
 {% include links.md %}
 
