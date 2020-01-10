@@ -1,6 +1,5 @@
 ---
 layout: lesson
-title:""
 authors: Marc Galland, Tijs Bliek, Ken Kraaijeveld
 root: .  # Is the only page that doesn't follow the pattern /:path/index.html
 permalink: index.html  # Is the only page that doesn't follow the pattern /:path/index.html
@@ -22,14 +21,15 @@ Depending on the level of participants, the bioinformatic part might be performe
 
 This lesson will introduce you to the basics of gene expression analysis using RNA-Seq (short for RNA sequencing). Due to the considerable progress and constant decreasing costs of RNA-Seq, this technique has became a standard
 
-Learning objectives 
+## Main learning objectives
+- Identify good practices when designing a RNA-Seq experiment.
+- Memorize the steps of a complete RNA-Seq experiment: from sequencing to analysis.
+- Perform a QC of your experiment through Principal Component Analysis (PCA) and sample clustering. 
+- Execute a differential gene expression analysis using R and the `DESeq2` package.  
+- Be able to create the key plots: volcano plot, heatmap and clustering of differentially expressed genes.  
 
--Seauencingto open data science so you can work with data in an open, reproducible, and collaborative way. Open data science means that methods, data, and code are available so that others can access, reuse, and build from it without much fuss. Here you will learn a workflow with R, RStudio, Git, and GitHub, as we describe in [Lowndes *et al. 2017, Nature Ecology & Evolution*: Our path to better science in less time using open data science tools](https://www.nature.com/articles/s41559-017-0160).
 
-This is going to be fun, because learning these open data science tools and practices is empowering! This training book is written (and always improving) so you can use it as self-paced learning, or it can be used to teach an in-person workshop where the instructor live-codes. Either way, you should do everything hands-on on your own computer as you learn. 
-
-Before you begin, be sure you are all set up: see the prerequisites in Chapter \@ref(overview). 
-
+Before you begin, be sure you are all set up: see the prerequisites (see below) and in the setup section. 
 > ## Before you start
 >
 > Before the training, please make sure you have done the following: 
