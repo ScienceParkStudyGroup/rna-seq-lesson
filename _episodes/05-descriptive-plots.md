@@ -1,40 +1,24 @@
 ---
-title: "Visualizing data with ggplot2"
+title: "Exploration of RNA-seq results"
 teaching: 30
 exercises: 60 
 questions:
-- "How can I make publication-grade plots with `ggplot2`?"
-- "What are the key concepts underlying `ggplot2` plotting?"
+- "How can I make plots to describe the distribution of RNA-seq counts?"
+- "Why do I need to scale/normalize read counts?"
 - "What are some of the visualisations available through `ggplot2`?"
 - "How can I save my plot in a specific format (e.g. png)?"
 objectives:
-- "Install the `ggplot2` package by installing tidyverse."
-- "Learn basics of `ggplot2` with several public datasets."
-- "Learn how to customize your plot efficiently (facets, geoms)."
-- "See how to use the stat functions to produce on-the-fly summary plots."
+- "Be able to explore RNA-seq count results rapidly using PCA and sample clustering."
+- "Be able to interpret a PCA plot and discuss its relationship with the experimental design."
+- "Be able to explain sample clustering based on RNA-seq counts."
 keypoints:
-- "`ggplot2` relies on the grammar of graphics, an advanced methodology to visualise data."
-- "ggplot() creates a coordinate system that you can add layers to."
-- "You pass a mapping using `aes()` to link dataset variables to visual properties."
-- "You add one or more layers (or `geoms`) to the `ggplot` coordinate system and `aes` mapping."
-- "Building a minimal plot requires to supply a dataset, mapping aesthetics and geometric layers (geoms)."
-- "`ggplot2` offers advanced graphical visualisations to plot extra information from the dataset."
+- "RNA-seq results in a multivariate output that can be explored through data reduction methods (e.g. PCA)."
+- "Sample clustering and PCA should indicate whether the observed experimental variability can be explained by the experimental design."
 ---
-
-
 
 ## Table of Contents
 1. [Introduction](#introduction)
 2. [Install our first package: `tidyverse`](#install-our-first-package-tidyverse)
-3. [Load national park datasets](#load-national-park-datasets)
-4. [First plot with `ggplot2`](#first-plot-with-ggplot2)
-5. [Building your plots iteratively](#building-your-plots-iteratively)
-6. [Customizing plots](#customizing-plots)
-7. [Faceting](#faceting)
-8. [Geometric objects (geoms)](#geometric-objects-geoms)
-9. [Bar charts](#bar-charts)
-10. [Arranging and exporting plots](#arranging-and-exporting-plots)
-11. [Bonus](#bonus)
 
 
 ## Introduction

@@ -11,9 +11,10 @@ objectives:
 - "Discover in what consists a typical RNA-Seq experiment."
 - "Know what results a RNA-Seq experiment can (and cannot) yield."
 keypoints:
-- "Tidy data principles are essential to increase data analysis efficiency and code readability."
-- "Using R and RStudio, it becomes easier to implement good practices in data analysis."
-- "I can make my workflow more reproducible and collaborative by using git and Github."
+- "An RNA-Seq experiment is also a normal experiment (control, treated, replication, etc.)."
+- A canonical RNA-Seq experiment consists in RNA library preparation followed by bioinformatic analyses."
+- "RNA-Seq yields a snapshot of individual gene expression levels (count table)."
+- "Upon completion of the bioinformatic steps, the analysis of RNA-Seq results can be done using the DESeq2 R package."
 ---
 
 ## Table of Contents
