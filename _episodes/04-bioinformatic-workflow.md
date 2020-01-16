@@ -1,5 +1,5 @@
 ---
-title: "Visualizing data with ggplot2"
+title: "Bioinformatic workflow"
 teaching: 30
 exercises: 60 
 questions:

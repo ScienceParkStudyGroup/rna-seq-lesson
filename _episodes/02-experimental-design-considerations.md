@@ -1,5 +1,5 @@
 ---
-title: "Experimental design "
+title: "Experimental design"
 teaching: 30
 exercises: 0
 questions:

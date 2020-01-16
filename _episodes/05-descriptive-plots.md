@@ -1,5 +1,5 @@
 ---
-title: "Descriptive plots from RNA-seq counts"
+title: "Exploration of RNA-seq results"
 teaching: 30
 exercises: 60 
 questions:
@@ -8,13 +8,12 @@ questions:
 - "What are some of the visualisations available through `ggplot2`?"
 - "How can I save my plot in a specific format (e.g. png)?"
 objectives:
-- "Install the `ggplot2` package by installing tidyverse."
-- "Learn basics of `ggplot2` with several public datasets."
-- "Learn how to customize your plot efficiently (facets, geoms)."
-- "See how to use the stat functions to produce on-the-fly summary plots."
+- "Be able to explore RNA-seq count results rapidly using PCA and sample clustering."
+- "Be able to interpret a PCA plot and discuss its relationship with the experimental design."
+- "Be able to explain sample clustering based on RNA-seq counts."
 keypoints:
-- "`ggplot2` relies on the grammar of graphics, an advanced methodology to visualise data."
-- "ggplot() creates a coordinate system that you can add layers to."
+- "RNA-seq results in a multivariate output that can be explored through data reduction methods (e.g. PCA)."
+- "Sample clustering and PCA should indicate whether the observed experimental variability can be explained by the experimental design."
 ---
 
 ## Table of Contents

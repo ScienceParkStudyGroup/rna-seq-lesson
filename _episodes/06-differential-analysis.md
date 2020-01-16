@@ -1,24 +1,21 @@
 ---
-title: "Visualizing data with ggplot2"
+title: "Differential expression analysis"
 teaching: 30
 exercises: 60 
 questions:
-- "How can I make publication-grade plots with `ggplot2`?"
-- "What are the key concepts underlying `ggplot2` plotting?"
-- "What are some of the visualisations available through `ggplot2`?"
-- "How can I save my plot in a specific format (e.g. png)?"
+- "Q1"
+- "Q2"
+- "Q3"
+- "Q4"
 objectives:
-- "Install the `ggplot2` package by installing tidyverse."
-- "Learn basics of `ggplot2` with several public datasets."
-- "Learn how to customize your plot efficiently (facets, geoms)."
-- "See how to use the stat functions to produce on-the-fly summary plots."
+- "O1"
+- "O2"
+- "O3"
 keypoints:
-- "`ggplot2` relies on the grammar of graphics, an advanced methodology to visualise data."
-- "ggplot() creates a coordinate system that you can add layers to."
-- "You pass a mapping using `aes()` to link dataset variables to visual properties."
-- "You add one or more layers (or `geoms`) to the `ggplot` coordinate system and `aes` mapping."
-- "Building a minimal plot requires to supply a dataset, mapping aesthetics and geometric layers (geoms)."
-- "`ggplot2` offers advanced graphical visualisations to plot extra information from the dataset."
+- "KP1"
+- "KP2"
+- "KP3"
+
 ---
 
 
