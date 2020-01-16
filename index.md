@@ -4,11 +4,8 @@ authors: Marc Galland, Tijs Bliek, Ken Kraaijeveld
 root: .  # Is the only page that doesn't follow the pattern /:path/index.html
 permalink: index.html  # Is the only page that doesn't follow the pattern /:path/index.html
 ---
-<<<<<<< HEAD
 
-## Overview 
-
-Welcome!
+## Welcome!
 
 In this training you will learn the basics of a typical RNA-Sequencing experiment. It is going to be fun and empowering! You will discover how total RNA are converted to short sequences called "reads" that can in turn be used to get insights into gene expression. Through careful experimental design, these gene expression information can yield new research avenues and answer crucial questions. 
 
@@ -29,10 +26,8 @@ This lesson will introduce you to the basics of gene expression analysis using R
 - Memorize the steps of a complete RNA-Seq experiment: from sequencing to analysis.
 - Perform a QC of your experiment through Principal Component Analysis (PCA) and sample clustering. 
 - Execute a differential gene expression analysis using R and the `DESeq2` package.  
-- Be able to create the key plots: volcano plot, heatmap and clustering of differentially expressed genes.  
+- Be able to create key plots: volcano plot, heatmap and clustering of differentially expressed genes.  
 
-
-Before you begin, be sure you are all set up: see the prerequisites (see below) and in the setup section. 
 > ## Before you start
 >
 > Before the training, please make sure you have done the following: 
