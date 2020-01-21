@@ -1,9 +1,9 @@
-# FIXME Lesson title
+# RNA-seq lesson
 
-[![Create a Slack Account with us](https://img.shields.io/badge/Create_Slack_Account-The_Carpentries-071159.svg)](https://swc-slack-invite.herokuapp.com/)
+This repository generates the RNA-seq lesson materials based on the website template from [The Carpentries](https://carpentries.org/) Foundation. 
 
-This repository generates the corresponding lesson website from [The Carpentries](https://carpentries.org/) repertoire of lessons. 
-
+## Credits
+This lesson is heavily based on teaching materials from the [Harvard Chan Bioinformatics Core (HBC) in-depth NGS data analysis course](https://hbctraining.github.io/In-depth-NGS-Data-Analysis-Course/). Materials have been adapted and some exercises created to comply with the [Carpentries Foundation teaching requirements](https://carpentries.github.io/instructor-training/).
 
 ## Contributing
 
@@ -40,7 +40,6 @@ Current maintainers of this lesson are
 
 * Marc Galland, Data analyst and manager (University of Amsterdam, SILS, Plant Physiology Department).
 * Tijs Bliek, research technician (University of Amsterdam, SILS, Plant Development and Epigenetics).
-
 
 ## Authors
 
