@@ -10,11 +10,11 @@
 carpentry: "dc"
 
 # Overall title for pages.
-title: "Introduction to RNA-Seq"
+title: "Introduction to RNA-seq"
 
 # Life cycle stage of the lesson
 # possible values: "pre-alpha", "alpha", "beta", "stable"
-life_cycle: "alpha"
+life_cycle: "pre-alpha"
 
 #------------------------------------------------------------
 # Generic settings (should not need to change).

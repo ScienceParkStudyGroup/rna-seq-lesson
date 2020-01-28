@@ -1,9 +1,9 @@
 ---
 title: "Exploration of RNA-seq results"
 teaching: 30
-exercises: 60 
+exercises: 30 
 questions:
-- "How can I make plots to describe the distribution of RNA-seq counts?"
+- "How are gene expression levels distributed within a RNA-seq experiment?"
 - "Why do I need to scale/normalize read counts?"
 - "What are some of the visualisations available through `ggplot2`?"
 - "How can I save my plot in a specific format (e.g. png)?"
@@ -11,6 +11,7 @@ objectives:
 - "Be able to explore RNA-seq count results rapidly using PCA and sample clustering."
 - "Be able to interpret a PCA plot and discuss its relationship with the experimental design."
 - "Be able to explain sample clustering based on RNA-seq counts."
+- "Be able to normalize counts using `DESeq2`."
 keypoints:
 - "RNA-seq results in a multivariate output that can be explored through data reduction methods (e.g. PCA)."
 - "Sample clustering and PCA should indicate whether the observed experimental variability can be explained by the experimental design."
@@ -18,438 +19,240 @@ keypoints:
 
 ## Table of Contents
 1. [Introduction](#introduction)
-2. [Install our first package: `tidyverse`](#install-our-first-package-tidyverse)
+2. [Normalization](#normalization)
+3. [Principal Component Analysis](#principal-component-analysis)
+3. [Sample clustering](#sample-clustering)
+3. [Creating the DESeq2DataSet object](#creating-the-deseq2dataset-object)
 
 
 ## Introduction
+The ultimate goal of most RNA-seq experiments is to accurately quantify the different transcripts present in a biological sample of interest. Yet, due to technical and biological causes, RNA-seq is prone to several biases that can affect sample / condition comparisons and therefore result interpretation:
 
-Why do we start with data visualization? Not only is data visualisation a big part of analysis, it’s a way to **see** your progress as you learn to code.
+* Sequencing depth: samples have a total number of sequencing reads that is different. Genes from one sample might have more reads on average not due to expression differences but due to a higher number of sequencing reads.  
+* Gene length: not all genes have the same length and longer genes will have relatively more reads assigned to them than shorter genes.
 
-> `ggplot2` implements the grammar of graphics, a coherent system for describing and building graphs. With `ggplot2`, you can do more faster by learning one system and applying it in many places. - [Hadley Wickham, R for Data Science](http://r4ds.had.co.nz/data-visualisation.html)
+## Normalization
 
-This lesson borrows heavily from Hadley Wickham's [R for Data Science book](http://r4ds.had.co.nz/data-visualisation.html), and an EcoDataScience lesson on Data Visualization.
+The first step in the DE analysis workflow is count normalization, which is necessary to make accurate comparisons of gene expression between samples.
 
+<img src="../img/workflow_overview_01.png" width="600px">
 
-### Resources
+The counts of mapped reads for each gene is proportional to the expression of RNA ("interesting") in addition to many other factors ("uninteresting"). Normalization is the process of scaling raw count values to account for the "uninteresting" factors. In this way the expression levels are more comparable between and/or within samples.
 
-Here are some additional resources for data visualization in R:  
+The main factors often considered during normalization are:
+ 
+ - **Sequencing depth:** Accounting for sequencing depth is necessary for comparison of gene expression between samples. In the example below, each gene appears to have doubled in expression in *Sample A* relative to *Sample B*, however this is a consequence of *Sample A* having double the sequencing depth. 
 
-- [ggplot2-cheatsheet-2.1.pdf](https://www.rstudio.com/wp-content/uploads/2016/11/ggplot2-cheatsheet-2.1.pdf)  
-- [Interactive Plots and Maps - Environmental Informatics](http://ucsb-bren.github.io/env-info/wk06_widgets.html)  
-- [Graphs with ggplot2 - Cookbook for R](http://www.cookbook-r.com/Graphs/#graphs-with-ggplot2)  
-- [ggplot2 Essentials - STHDA](http://www.sthda.com/english/wiki/ggplot2-essentials)  
-- ["Why I use ggplot2" - David Robinson Blog Post](http://varianceexplained.org/r/why-I-use-ggplot2/)
-- ["The Grammar of Graphics explained" - Towards Data Science blog series](https://towardsdatascience.com/a-comprehensive-guide-to-the-grammar-of-graphics-for-effective-visualization-of-multi-dimensional-1f92b4ed4149)
-
-
-## Install our first package: `tidyverse`
-
-Packages are bundles of functions, along with help pages and other goodies that make them easier for others to use, (ie. vignettes). 
-
-So far we've been using packages that are already included in *base R*. These can be considered *out-of-the-box* packages and include things such as `sum` and `mean`. You can also download and install packages created by the vast and growing R user community. The most traditional place to download packages is from [CRAN, the Comprehensive R Archive Network](https://cran.r-project.org/). This is where you went to download R originally, and will go again to look for updates. You can also install packages directly from GitHub, which we'll do tomorrow.
-
-You don't need to go to CRAN's website to install packages, we can do it from within R with the command `install.packages("package-name-in-quotes")`.
-
-We are going to be using the package `ggplot2`, which is actually bundled into a huge package called `tidyverse`. We will install `tidyverse` now, and use a few functions from the packages within. Also, check out [tidyverse.org/](https://www.tidyverse.org).
-
-
-~~~
-## from CRAN:
-install.packages("tidyverse") ## do this once only to install the package on your computer.
-library(tidyverse) ## do this every time you restart R and need it 
-~~~
-{: .language-r}
-
-
-When you do this, it will tell you which packages are inside of `tidyverse` that have also been installed. Note that there are a few name conflicts; it is alerting you that we'll be using two functions from dplyr instead of the built-in stats package.
-
-What's the difference between `install.packages()` and `library()`? Why do you need both? Here's an analogy: 
-
-- `install.packages()` is setting up electricity for your house. Just need to do this once (let's ignore monthly bills). 
-- `library()` is turning on the lights. You only turn them on when you need them, otherwise it wouldn't be efficient. And when you quit R, it turns the lights off, but the electricity lines are still there. So when you come back, you'll have to turn them on again with `library()`, but you already have your electricity set up.
-
-You can also install packages by going to the Packages tab in the bottom right pane. You can see the packages that you have installed (listed) and loaded (checkbox). You can also install packages using the install button, or check to see if any of your installed packages have updates available (update button). You can also click on the name of the package to see all the functions inside it — this is a super helpful feature that I use all the time.
-
-## Load national park datasets
-
-Copy and paste the code chunk below and read it in to your RStudio to load the five datasets we will use in this section.
-
-~~~
-# National Parks in California
-ca <- read_csv("https://raw.githubusercontent.com/ScienceParkStudyGroup/r-lesson-based-on-ohi-data-training/gh-pages/data/ca.csv") 
-
-# Acadia National Park
-acadia <- read_csv("https://raw.githubusercontent.com/ScienceParkStudyGroup/r-lesson-based-on-ohi-data-training/gh-pages/data/acadia.csv")
-
-# Southeast US National Parks
-se <- read_csv("https://raw.githubusercontent.com/ScienceParkStudyGroup/r-lesson-based-on-ohi-data-training/gh-pages/data/se.csv")
-
-# 2016 Visitation for all Pacific West National Parks
-visit_16 <- read_csv("https://raw.githubusercontent.com/ScienceParkStudyGroup/r-lesson-based-on-ohi-data-training/gh-pages/data/visit_16.csv")
-
-# All Nationally designated sites in Massachusetts
-mass <- read_csv("https://raw.githubusercontent.com/ScienceParkStudyGroup/r-lesson-based-on-ohi-data-training/gh-pages/data/mass.csv")
-~~~
-{: .language-r}
-
-
-## First plot with `ggplot2`
-
-**`ggplot2`** is a plotting package that makes it simple to create complex plots from data in a data frame. It provides a more programmatic interface for specifying what variables to plot, how they are displayed, and general visual properties. Therefore, we only need minimal changes if the underlying data change or if we decide to change from a bar plot to a scatterplot. This helps in creating publication quality plots with minimal amounts of adjustments and tweaking.
-
-ggplot likes data in the **tidy** ('long') format: i.e., a column for every dimension, and a row for every observation. Well structured data will save you lots of time when making figures with ggplot. We'll learn more about tidy data in the next section. 
-
-ggplot graphics are built step by step by adding new elements. Adding layers in this fashion allows for extensive flexibility and customization of plots.
-
-<img src="../img/rstudio-cheatsheet-ggplot.png" width="800px">
-
-One can see it as a pyramid of layers too.
-
-![](../img/pyramid-grammar-graphics.png)
-
-### Data description
-
-We are going to use a National Park visitation dataset (from the National Park Service at <https://irma.nps.gov/Stats/SSRSReports>). Read in the data using `read_csv` and take a look at the first few rows using `head()` or `View()`.
-
-~~~
-head(ca)
-~~~
-{: .language-r}
-
-This dataframe is already in a *tidy* format where all rows are an observation and all columns are variables. Among the variables in `ca` are:
-
-1. `region`, US region where park is located.
-
-2. `visitors`, the annual visitation for each `year`
-
-
-### Building a plot
-
-To build a ggplot, we need to:
-
-- use the `ggplot()` function and bind the plot to a specific data frame using the `data` argument.
-
-~~~
-# initiate the plot
-ggplot(data=ca)
-~~~
-{: .language-r}
-
-- add `geoms` -- graphical representation of the data in the plot (points, lines, bars). **`ggplot2`** offers many different geoms; we will use some common ones today, including:
-      * `geom_point()` for scatter plots, dot plots, etc.
-      * `geom_bar()` for bar charts
-      * `geom_line()` for trend lines, time-series, etc.  
-To add a geom to the plot use `+` operator. Because we have two continuous variables, let's use `geom_point()` first and then assign x and y aesthetics (`aes`).
-
-~~~
-# add geoms 
-ggplot(data=ca) +
-  geom_point(aes(x=year,y=visitors))
-~~~
-{: .language-r}
-
-Notes:
-
-- Anything you put in the `ggplot()` function can be seen by any geom layers
-  that you add (i.e., these are universal plot settings). This includes the x and
-  y axis you set up in `aes()`.
-- You can also specify aesthetics for a given geom independently of the
-  aesthetics defined globally in the `ggplot()` function.
-- The `+` sign used to add layers must be placed at the end of each line containing
-a layer. If, instead, the `+` sign is added in the line before the other layer,
-**`ggplot2`** will not add the new layer and will return an error message.
-
-
-## Building your plots iteratively
-
-Building plots with ggplot is typically an iterative process. We start by defining the dataset we'll use, lay the axes, and choose a geom:
-
-~~~
-ggplot(data = ca) +
-    geom_point(aes(x = year, y = visitors))
-~~~
-{: .language-r}
-
-
-This isn't necessarily a useful way to look at the data. We can distinguish each park by added the `color` argument to the `aes`:
-
-~~~
-ggplot(data=ca) +
-  geom_point(aes(x = year, y = visitors, color = park_name))
-~~~
-{: .language-r}
-
-
-## Customizing plots
-
-Take a look at the [**`ggplot2`** cheat sheet](https://www.rstudio.com/wp-content/uploads/2016/11/ggplot2-cheatsheet-2.1.pdf), and think of ways you could improve the plot.
-
-Now, let's capitalize the x and y axis labels and add a main title to the figure. I also like to remove that standard gray background using a different `theme`. Many themes come built into the `ggplot2` package. My preference is `theme_bw()` but once you start typing `theme_` a list of options will pop up. The last thing I'm going to do is remove the legend title.
-
-~~~
-ggplot(data = ca) +
-    geom_point(aes(x = year, y = visitors, color = park_name)) +
-    labs(x = "Year",
-       y = "Visitation",
-       title = "California National Park Visitation") +
-    theme_bw() +
-    theme(legend.title=element_blank())
-~~~
-{: .language-r}
-
-
-### `ggplot2` themes
-
-In addition to `theme_bw()`, which changes the plot background to white, **`ggplot2`** comes with several other themes which can be useful to quickly change the look of your visualization.
-
-The [ggthemes](https://cran.r-project.org/web/packages/ggthemes/vignettes/ggthemes.html) package provides a wide variety of options (including an Excel 2003 theme). The [**`ggplot2`** extensions website](https://www.ggplot2-exts.org) provides a list of packages that extend the capabilities of **`ggplot2`**, including additional themes.
-
-
-### Your turn
-
-> ## Exercise
->
-> 1. Using the `se` dataset, make a scatterplot showing visitation to all national parks in the Southeast region with color identifying individual parks.  
-> 2. Change the plot so that color indicates `state`. Customize by adding your own title and theme. You can also change the text sizes and angles. Try applying a 45 degree angle to the x-axis. Use your cheatsheet!
-> 3. In the following code, why isn't the data showing up? `ggplot(data = se, aes(x = year, y = visitors))`
-> 
-> > ## Solution
-> > 1. `ggplot(data = se) + geom_point(aes(x = year, y = visitors, color = park_name))`.
-> > 2. See the code below:  
-> > `ggplot(data = se) +
-> >  geom_point(aes(x = year, y = visitors, color = state)) + ` 
-> >  `labs(x = "Year",
-> >      y = "Visitation",
-> >      title = "Southeast States National Park Visitation") + `
-> > `theme_light() +
-> > theme(legend.title = element_blank(),
-> >       axis.text.x = element_text(angle = 45, hjust = 1, size = 14))`
-> > 3. The code is missing a geom to describe how the data should be plotted. 
-> {: .solution}
-{: .challenge}  
-
-
-## Faceting
-
-ggplot has a special technique called *faceting* that allows the user to split one plot into multiple plots based on data in the dataset. We will use it to make a plot of park visitation by state:
-
-~~~
-ggplot(data = se) +
-    geom_point(aes(x = year, y = visitors)) +
-    facet_wrap(~ state)
-~~~
-{: .language-r}
-
-
-We can now make the faceted plot by splitting further by park using `park_name` (within a single plot):
-~~~
- ggplot(data = se) +
-     geom_point(aes(x = year, y = visitors, color = park_name)) +
-     facet_wrap(~ state, scales = "free")
-~~~
-{:.language-r}
-
-## Geometric objects (geoms)
-
-A __geom__ is the geometrical object that a plot uses to represent data. People often describe plots by the type of geom that the plot uses. For example, bar charts use bar geoms, line charts use line geoms, boxplots use boxplot geoms, and so on. Scatterplots break the trend; they use the point geom. You can use different geoms to plot the same data. To change the geom in your plot, change the geom function that you add to `ggplot()`. Let's look at a few ways of viewing the distribution of annual visitation (`visitors`) for each park (`park_name`).
-
-~~~
-ggplot(data = se) + 
-  geom_jitter(aes(x = park_name, y = visitors, color = park_name), 
-              width = 0.1, 
-              alpha = 0.4) +
-  coord_flip() +
-  theme(legend.position = "none") 
-        
-ggplot(se, aes(x = park_name, y = visitors)) + 
-  geom_boxplot() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-~~~
-{:.language-r}
-
-None of these are great for visualizing data over time. We can use `geom_line()` in the same way we used `geom_point`.
-
-~~~
-ggplot(se, aes(x = year, y = visitors, color = park_name)) +
-   geom_line()
-~~~
-{:.language-r}
-
-`ggplot2` provides over 30 geoms, and extension packages provide even more (see <https://www.ggplot2-exts.org> for a sampling). The best way to get a comprehensive overview is the [ggplot2 cheatsheet](http://rstudio.com/cheatsheets). To learn more about any single geom, use help: `?geom_smooth`.
-
-To display multiple geoms in the same plot, add multiple geom functions to `ggplot()`:
-
-`geom_smooth` allows you to view a smoothed mean of data. Here we look at the smooth mean of visitation over time to Acadia National Park:
-
-~~~
-ggplot(data = acadia) + 
-  geom_point(aes(x = year, y = visitors)) +
-  geom_line(aes(x = year, y = visitors)) +
-  geom_smooth(aes(x = year, y = visitors)) +
-  labs(title = "Acadia National Park Visitation",
-       y = "Visitation",
-       x = "Year") +
-  theme_bw()
-~~~
-{:.language-r}
-
-
-Notice that this plot contains three geoms in the same graph! Each geom is using the set of mappings in the first line. ggplot2 will treat these mappings as global mappings that apply to each geom in the graph.
-
-If you place mappings in a geom function, ggplot2 will treat them as local mappings for the layer. It will use these mappings to extend or overwrite the global mappings _for that layer only_. This makes it possible to display different aesthetics in different layers.
-
-~~~
-ggplot(data = acadia, aes(x = year, y = visitors)) + 
-  geom_point() +
-  geom_line() +
-  geom_smooth(color = "red") +
-  labs(title = "Acadia National Park Visitation",
-       y = "Visitation",
-       x = "Year") +
-  theme_bw()
-~~~
-{:.language-r}
-
-### Your turn
-
-> ## Exercise
->
-> With all of this information in hand, please take another five minutes to either improve one of the plots generated in this exercise or create a beautiful graph of your own. Use the RStudio [`ggplot2` cheat sheet](https://www.rstudio.com/wp-content/uploads/2016/11/ggplot2-cheatsheet-2.1.pdf) for inspiration.
->
-> Here are some ideas:
-> 1. See if you can change the thickness of the lines or line type (e.g. dashed line)
-> 2. Can you find a way to change the name of the legend? What about its labels?
-> 3. Try using a different color palette: see the [R Cookbook](http://www.cookbook-r.com/Graphs/Colors_(ggplot2)/).
-{: .challenge}
-
-## Bar charts
-
-Next, let's take a look at a bar chart. Bar charts seem simple, but they are interesting because they reveal something subtle about plots. Consider a basic bar chart, as drawn with `geom_bar()`. The following chart displays the total number of parks in each state within the Pacific West region.
-
-~~~ 
-ggplot(data = visit_16, aes(x = state)) + 
-  geom_bar()
-~~~
-{:.language-r}
-
-On the x-axis, the chart displays `state`, a variable from `visit_16`. On the y-axis, it displays count, but count is not a variable in `visit_16`! Where does count come from? Many graphs, like scatterplots, plot the raw values of your dataset. Other graphs, like bar charts, calculate new values to plot:
-
-* bar charts, histograms, and frequency polygons bin your data 
-  and then plot bin counts, the number of points that fall in each bin.
-
-* smoothers fit a model to your data and then plot predictions from the
-  model.
-
-* boxplots compute a robust summary of the distribution and then display a 
-  specially formatted box.
-
-The algorithm used to calculate new values for a graph is called a __stat__, short for statistical transformation.
-
-You can learn which stat a geom uses by inspecting the default value for the `stat` argument. For example, `?geom_bar` shows that the default value for `stat` is "count", which means that `geom_bar()` uses `stat_count()`. `stat_count()` is documented on the same page as `geom_bar()`, and if you scroll down you can find a section called "Computed variables". That describes how it computes two new variables: `count` and `prop`.
-
-`ggplot2` provides over 20 stats for you to use. Each stat is a function, so you can get help in the usual way, e.g. `?stat_bin`. To see a complete list of stats, try the ggplot2 cheatsheet.
-
+    <img src="../img/normalization_methods_depth.png" width="400">
   
-### Position adjustments
+  >***NOTE:** In the figure above, each pink and green rectangle represents a read aligned to a gene. Reads connected by dashed lines connect a read spanning an intron.*
+ 
+ - **Gene length:** Accounting for gene length is necessary for comparing expression between different genes within the same sample. In the example, *Gene X* and *Gene Y* have similar levels of expression, but the number of reads mapped to *Gene X* would be many more than the number mapped to *Gene Y* because *Gene X* is longer.
+ 
+    <img src="../img/normalization_methods_length.png" width="200">
+ 
+ - **RNA composition:** A few highly differentially expressed genes between samples, differences in the number of genes expressed between samples, or presence of contamination can skew some types of normalization methods. Accounting for RNA composition is recommended for accurate comparison of expression between samples, and is particularly important when performing differential expression analyses [[1](https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-10-r106)]. 
+ 
+  In the example, imagine the sequencing depths are similar between Sample A and Sample B, and every gene except for gene DE presents similar expression level between samples. The counts in Sample B would be greatly skewed by the DE gene, which takes up most of the counts. Other genes for Sample B would therefore appear to be less expressed than those same genes in Sample A. 
+  
+<img src="../img/normalization_methods_composition.png" width="400">
+    
+***While normalization is essential for differential expression analyses, it is also necessary for exploratory data analysis, visualization of data, and whenever you are exploring or comparing counts between or within samples.***
+ 
+### Common normalization methods
 
-There's one more piece of magic associated with bar charts. You can colour a bar chart using either the `color` aesthetic, or, more usefully, `fill`:
+Several common normalization methods exist to account for these differences:
+  
+| Normalization method | Description | Accounted factors | Recommendations for use |
+| ---- | ---- | ---- | ---- |
+| **CPM** (counts per million) | counts scaled by total number of reads | sequencing depth | gene count comparisons between replicates of the same samplegroup; **NOT for within sample comparisons or DE analysis**  |
+| **TPM** (transcripts per kilobase million) | counts per length of transcript (kb) per million reads mapped | sequencing depth and gene length | gene count comparisons within a sample or between samples of the same sample group; **NOT for DE analysis** |
+| **RPKM/FPKM** (reads/fragments per kilobase of exon per million reads/fragments mapped) | similar to TPM | sequencing depth and gene length | gene count comparisons between genes within a sample; **NOT for between sample comparisons or DE analysis** |
+| DESeq2's **median of ratios** [[1](https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-10-r106)] | counts divided by sample-specific size factors determined by median ratio of gene counts relative to geometric mean per gene | sequencing depth and RNA composition | gene count comparisons between samples and for **DE analysis**; **NOT for within sample comparisons** |
+| EdgeR's **trimmed mean of M values (TMM)** [[2](https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-3-r25)] | uses a weighted trimmed mean of the log expression ratios between samples | sequencing depth, RNA composition, and gene length | gene count comparisons between and within samples and for **DE analysis** |
 
-~~~
-ggplot(data = visit_16, aes(x = state, y = visitors, fill = park_name)) + 
-  geom_bar(stat = "identity")
-~~~
-{:.language-r}
+### RPKM/FPKM (not recommended for between sample comparisons)
+ 
+While TPM and RPKM/FPKM normalization methods both account for sequencing depth and gene length, RPKM/FPKM are not recommended. **The reason  is that the normalized count values output by the RPKM/FPKM method are not comparable between samples.** 
 
-The stacking is performed automatically by the __position adjustment__ specified by the `position` argument. If you don't want a stacked bar chart, you can use `"dodge"`.
+Using RPKM/FPKM normalization, the total number of RPKM/FPKM normalized counts for each sample will be different. Therefore, you cannot compare the normalized counts for each gene equally between samples. 
 
-* `position = "dodge"` places overlapping objects directly _beside_ one another. This makes it easier to compare individual values.
+**RPKM-normalized counts table**
 
-~~~
-ggplot(data = visit_16, aes(x = state, y = visitors, fill = park_name)) + 
-  geom_bar(stat = "identity", position = "dodge")
-~~~
-{:.language-r}
+| gene | sampleA | sampleB |
+| ----- |:-----:|:-----:|
+| gene1 | 5.5 | 5.5 |
+| gene2 | 73.4 | 21.8 |
+| ... | ... | ... |
+|Total RPKM-normalized counts | 1,000,000 | 1,500,000 |
+
+For example, in the table above, SampleA has a greater proportion of counts associated with XCR1 (5.5/1,000,000) than does sampleB (5.5/1,500,000) even though the RPKM count values are the same. Therefore, we cannot directly compare the counts for XCR1 (or any other gene) between sampleA and sampleB because the total number of normalized counts are different between samples. 
+
+> *NOTE:* [This video by StatQuest](http://www.rna-seqblog.com/rpkm-fpkm-and-tpm-clearly-explained/) shows in more detail why TPM should be used in place of RPKM/FPKM if needing to normalize for sequencing depth and gene length.
+
+### DESeq2-normalized counts: Median of ratios method
+
+Since tools for differential expression analysis are comparing the counts between sample groups for the same gene, gene length does not need to be accounted for by the tool. However, **sequencing depth** and **RNA composition** do need to be taken into account.
+
+To normalize for sequencing depth and RNA composition, DESeq2 uses the median of ratios method. On the user-end there is only one step, but on the back-end there are multiple steps involved, as described below.
+
+> **NOTE:**  The steps below describe in detail some of the steps performed by DESeq2 when you run a single function to get DE genes. Basically, for a typical RNA-seq analysis, **you would not run these steps individually**.
+
+**Step 1: creates a pseudo-reference sample (row-wise geometric mean)**
+
+For each gene, a pseudo-reference sample is created that is equal to the geometric mean across all samples.
+
+| gene | sampleA | sampleB | pseudo-reference sample  |
+| ----- |:-----:|:-----:|:-----:|
+| gene1 | 1489 | 906 | sqrt(1489 * 906) = **1161.5** |
+| gene2 | 22 | 13 | sqrt(22 * 13) = **17.7** |
+| ... | ... | ... | ... |
+
+**Step 2: calculates ratio of each sample to the reference**
+
+For every gene in a sample, the ratios (sample/ref) are calculated (as shown below). This is performed for each sample in the dataset. Since the majority of genes are not differentially expressed, the majority of genes in each sample should have similar ratios within the sample.
+
+| gene | sampleA | sampleB | pseudo-reference sample  | ratio of sampleA/ref | ratio of sampleB/ref |
+| ----- |:-----:|:-----:|:-----:| :-----: | :-----: |
+| gene1 | 1489 | 906 | 1161.5 | 1489/1161.5 = **1.28** | 906/1161.5 = **0.78** |
+| gene2 | 22 | 13 | 16.9 | 22/16.9 = **1.30** | 13/16.9 = **0.77** |
+| gene3 | 793 | 410 | 570.2 | 793/570.2 = **1.39** | 410/570.2 = **0.72**
+| gene4 | 76 | 42 | 56.5 | 76/56.5 = **1.35** | 42/56.5 = **0.74**
+| gene5 | 521 | 1196 | 883.7 | 521/883.7 = **0.590** | 1196/883.7 = **1.35** |
+| ... | ... | ... | ... |
+
+**Step 3: calculate the normalization factor for each sample (size factor)**
+
+The median value (column-wise for the above table) of all ratios for a given sample is taken as the normalization factor (size factor) for that sample, as calculated below. Notice that the differentially expressed genes should not affect the median value:
+
+`normalization_factor_sampleA <- median(c(1.28, 1.3, 1.39, 1.35, 0.59))`
+
+`normalization_factor_sampleB <- median(c(0.78, 0.77, 0.72, 0.74, 1.35))`
+ 
+The figure below illustrates the median value for the distribution of all gene ratios for a single sample (frequency is on the y-axis).
+
+<img src="../img/deseq_median_of_ratios.png" width="400">
+
+The median of ratios method makes the assumption that not ALL genes are differentially expressed; therefore, the normalization factors should account for sequencing depth and RNA composition of the sample (large outlier genes will not represent the median ratio values). **This method is robust to imbalance in up-/down-regulation and large numbers of differentially expressed genes.**
+
+> Usually these size factors are around 1, if you see large variations between samples it is important to take note since it might indicate the presence of extreme outliers.
+
+**Step 4: calculate the normalized count values using the normalization factor**
+
+This is performed by dividing each raw count value in a given sample by that sample's normalization factor to generate normalized count values. This is performed for all count values (every gene in every sample). For example, if the median ratio for SampleA was 1.3 and the median ratio for SampleB was 0.77, you could calculate normalized counts as follows:
+
+SampleA median ratio = 1.3
+
+SampleB median ratio = 0.77
+
+**Raw Counts**
+
+| gene | sampleA | sampleB |  
+| ----- |:-----:|:-----:|
+| gene1 | 1489 | 906 | 
+| gene2 | 22 | 13 | 
+| ... | ... | ... | 
+
+**Normalized Counts**
+
+| gene | sampleA | sampleB |
+| ----- |:-----:|:-----:|
+| gene1 | 1489 / 1.3 = **1145.39** | 906 / 0.77 = **1176.62** | 
+| gene2 | 22 / 1.3 = **16.92** | 13 / 0.77 = **16.88** | 
+| ... | ... | ... | 
+
+> Please note that normalized count values are not whole numbers.
+
+***
+
+## Count normalization of Mov10 dataset using DESeq2
+
+Now that we know the theory of count normalization, we will normalize the counts for the Mov10 dataset using DESeq2. This requires a few steps:
+
+1. Ensure the row names of the metadata dataframe are present and in the same order as the column names of the counts dataframe.
+2. Create a `DESeqDataSet` object
+3. Generate the normalized counts
+
+### 1. Match the metadata and counts data
+
+We should always make sure that we have sample names that match between the two files, and that the samples are in the right order. DESeq2 will output an error if this is not the case.
+
+```r
+### Check that sample names match in both files
+all(colnames(txi$counts) %in% rownames(meta))
+all(colnames(txi$counts) == rownames(meta))
+```
+
+If your data did not match, you could use the `match()` function to rearrange them to be matching.
+
+***
+
+**Exercise**  
+
+Suppose we had sample names matching in the counts matrix and metadata file, but they were out of order. Write the line(s) of code required to create a new matrix with columns ordered such that they were identical to the row names of the metadata.
+
+*** 
+
+### 2. Create DESEq2 object
+
+Bioconductor software packages often define and use a custom class within R for storing data (input data, intermediate data and also results). These custom data structures are similar to `lists` in that they can contain multiple different data types/structures within them. But, unlike lists they have pre-specified `data slots`, which hold specific types/classes of data. The data stored in these pre-specified slots can be accessed by using specific package-defined functions.
+
+Let's start by creating the `DESeqDataSet` object and then we can talk a bit more about what is stored inside it. To create the object we will need the **count matrix** and the **metadata** table as input. We will also need to specify a **design formula**. The design formula specifies the column(s) in the metadata table and how they should be used in the analysis. For our dataset we only have one column we are interested in, that is `~sampletype`. This column has three factor levels, which tells DESeq2 that for each gene we want to evaluate gene expression change with respect to these different levels.
+
+**Our count matrix input is stored inside the `txi` list object**, and so we pass that in using the `DESeqDataSetFromTximport()` function which will extract the counts component and round the values to the nearest whole number.
+
+```r
+## Create DESeq2Dataset object
+dds <- DESeqDataSetFromTximport(txi, colData = meta, design = ~ sampletype)
+```
+
+> **NOTE:** Since we had created a `data` variable in the last lesson which contains the counts, we could have also used that as input. However, in that case we would want to use the `DESeqDataSetFromMatrix()` function.
+
+![deseq1](../img/deseq_obj1.png)
 
 
-### Your turn 
+You can use DESeq-specific functions to access the different slots and retrieve information, if you wish. For example, suppose we wanted the original count matrix we would use `counts()` (*Note: we nested it within the `View()` function so that rather than getting printed in the console we can see it in the script editor*) :
 
-> ## Exercise
->
-> With all of this information in hand, please take another five minutes to either improve one of the plots generated in this exercise or create a beautiful graph of your own. Use the RStudio [**`ggplot2`** cheat sheet](https://www.rstudio.com/wp-content/uploads/2016/11/ggplot2-cheatsheet-2.1.pdf) for inspiration. Remember to use the help documentation (e.g. `?geom_bar`)
-> Here are some ideas:
-> 1. Flip the x and y axes.
-> 2. Change the color palette used
-> 3. Use `scale_x_discrete` to change the x-axis tick labels to the full state names (Arizona, Colorado, etc.)
-> 4. Make a bar chart using the Massachussets dataset (`mass`) and find out how many parks of each type are in the state.
-> 
-> > ## Solution
-> > 4) How many of each types of parks are in Massachusetts?   
-> > `ggplot(data = mass) + `  
-> >     `geom_bar(aes(x = type, fill = park_name)) +`  
-> >     `labs(x = "",y = "")+`  
-> >     `theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 7))`
-> {: .solution}
-{: .challenge}
+```r
+View(counts(dds))
+```
 
-## Arranging and exporting plots
+As we go through the workflow we will use the relevant functions to check what information gets stored inside our object.
 
-After creating your plot, you can save it to a file in your favorite format. The Export tab in the **Plot** pane in RStudio will save your plots at low resolution, which will not be accepted by many journals and will not scale well for posters. 
+### 3. Generate the Mov10 normalized counts
 
-Instead, use the `ggsave()` function, which allows you easily change the dimension and resolution of your plot by adjusting the appropriate arguments (`width`, `height` and `dpi`):
-
-~~~
-my_plot <- ggplot(data = mass) + 
-      geom_bar(aes(x = type, fill = park_name)) +
-  labs(x = "",
-       y = "")+
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 7))
-
-ggsave("name_of_file.png", my_plot, width = 15, height = 10)
-~~~
-{:.language-r}
-
-Note: The parameters `width` and `height` also determine the font size in the saved plot.
-
-## Bonus
-
-So as you can see, `ggplot2` is a fantastic package for visualizing data. But there are some additional packages that let you make plots interactive. `plotly`, `gganimate`.
-
-~~~
-#install.packages("plotly")
-library(plotly)
-
-ggplotly(my_plot)
-~~~
-{:.language-r}
-
-~~~
-acad_vis <- ggplot(data = acadia, aes(x = year, y = visitors)) + 
-  geom_point() +
-  geom_line() +
-  geom_smooth(color = "red") +
-  labs(title = "Acadia National Park Visitation",
-       y = "Visitation",
-       x = "Year") +
-  theme_bw()
-
-ggplotly(acad_vis)
-~~~
-{:.language-r}
+The next step is to normalize the count data in order to be able to make fair gene comparisons between samples.
 
 
+<img src="../img/de_workflow_salmon_normalization.png" width="400">
 
+To perform the **median of ratios method** of normalization, DESeq2 has a single `estimateSizeFactors()` function that will generate size factors for us. We will use the function in the example below, but **in a typical RNA-seq analysis this step is automatically performed by the `DESeq()` function**, which we will see later. 
 
+```r
+dds <- estimateSizeFactors(dds)
+```
 
+By assigning the results back to the `dds` object we are filling in the slots of the `DESeqDataSet` object with the appropriate information. We can take a look at the normalization factor applied to each sample using:
 
+```r
+sizeFactors(dds)
+```
 
+Now, to retrieve the normalized counts matrix from `dds`, we use the `counts()` function and add the argument `normalized=TRUE`.
 
+```r
+normalized_counts <- counts(dds, normalized=TRUE)
+```
 
+We can save this normalized data matrix to file for later use:
 
+```r
+write.table(normalized_counts, file="data/normalized_counts.txt", sep="\t", quote=F, col.names=NA)
+```
 
+> **NOTE:** DESeq2 doesn't actually use normalized counts, rather it uses the raw counts and models the normalization inside the Generalized Linear Model (GLM). These normalized counts will be useful for downstream visualization of results, but cannot be used as input to DESeq2 or any other tools that peform differential expression analysis which use the negative binomial model.
 
-
-
-
+## Genome browser
+For Master level!
 
 
