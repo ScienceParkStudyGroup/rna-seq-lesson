@@ -87,7 +87,7 @@
      inkscape:pageshadow="2"
      inkscape:zoom="0.54186667"
      inkscape:cx="9.4488192"
-     inkscape:cy="88.582677"
+     inkscape:cy="531.49606"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -932,7 +932,7 @@
     <g
        transform="matrix(0.79786819,1.0167102,-2.052668,1.6108409,-1097.0374,685.75316)"
        id="g4459"
-       style="fill:#3e4837;stroke:#000000;stroke-opacity:1;opacity:0.5">
+       style="fill:#3e4837;stroke:#000000;stroke-opacity:1;opacity:0.4">
       <g
          transform="matrix(0.12963962,0,0,0.064212,23.511801,7.5842083)"
          id="g4461"
@@ -946,7 +946,7 @@
       </g>
     </g>
     <rect
-       style="opacity:0.5;fill:#44aa00;fill-opacity:1;stroke:#000000;stroke-width:0.99834144;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="opacity:0.4;fill:#44aa00;fill-opacity:1;stroke:#000000;stroke-width:0.99834144;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect4465"
        width="335.98737"
        height="107.1012"
@@ -958,7 +958,7 @@
        id="text4467"
        y="848.28064"
        x="-1164.6334"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:30px;line-height:125%;font-family:Palatino;-inkscape-font-specification:'Palatino, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;opacity:0.5;"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:30px;line-height:125%;font-family:Palatino;-inkscape-font-specification:'Palatino, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;opacity:0.4;"
        xml:space="preserve"><tspan
          id="tspan4469"
          style="font-style:italic;text-align:center;text-anchor:middle;"
@@ -974,7 +974,7 @@
          sodipodi:role="line">ggplot2, heatmap.2</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:30px;line-height:125%;font-family:Palatino;-inkscape-font-specification:'Palatino Bold';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000080;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;opacity:0.5;"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:30px;line-height:125%;font-family:Palatino;-inkscape-font-specification:'Palatino Bold';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000080;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;opacity:0.4;"
        x="-1322.4833"
        y="953.17584"
        id="text4475"
