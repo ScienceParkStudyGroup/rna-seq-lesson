@@ -49,8 +49,7 @@ We will make use of a published experimental dataset from a study made on the sm
 - A commensal ("neutral") bacteria called _Methylobacterium extorquens_ strain PA1.
 - A commensal ("neutral") bacteria called _Sphingomonas melonis_ strain Fr1. 
 
-![](../img/experimental_design.png)
-<img src="../img/experimental_design.png" width="400px" alt="experimental design" >
+<img src="../img/experimental_design.png" width="600px" alt="experimental design" >
 
 
 The original sequencing files can be found on the [Array Express database of the European Bioinformatic Institute](https://www.ebi.ac.uk/arrayexpress) by searching for the dataset accession number __E‐MTAB‐4683__.
