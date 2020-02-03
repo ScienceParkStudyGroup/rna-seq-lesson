@@ -31,7 +31,7 @@ __Option 2:__ use a Docker container
 2. Navigate to the `rna-seq-lesson/` folder using the `cd` command.
 3. Since the lesson relies Jekyll 3.8.5, type within the Shell `export JEKYLL_VERSION=3.8.5`.
 4. Make sure you have Docker for Windows or Mac installed: https://docs.docker.com/install/
-5. With the Docker Desktop application running (you should see a little whale with containers at the top of your screen), type `docker run --rm --volume="$PWD:/srv/jekyll" -p 3000:4000 -it jekyll/jekyll:$JEKYLL_VERSION jekyll serve`  
+5. With the Docker Desktop application running (you should see a little whale with containers at the top of your screen), type `docker run --rm --volume="$PWD:/srv/jekyll" -p 4000:4000 -it jekyll/jekyll:$JEKYLL_VERSION jekyll serve`  
 6. Open a web browser and type `http://0.0.0.0:4000/` in the navigation bar. You should see the lesson website. Your changes should be automatically reflected online.  
 
 ## Maintainer(s)
