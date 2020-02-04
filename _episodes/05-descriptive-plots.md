@@ -252,6 +252,36 @@ write.table(normalized_counts, file="data/normalized_counts.txt", sep="\t", quot
 
 > **NOTE:** DESeq2 doesn't actually use normalized counts, rather it uses the raw counts and models the normalization inside the Generalized Linear Model (GLM). These normalized counts will be useful for downstream visualization of results, but cannot be used as input to DESeq2 or any other tools that peform differential expression analysis which use the negative binomial model.
 
+
+
+### Estimation of the size factors
+We are first going to calculate the size factors (see previous episode) and display them in a custom plot. 
+~~~
+dds <- estimateSizeFactors(dds)
+
+# create a dataframe for convenience
+size_factors_df <- data.frame(sample = names(sizeFactors(dds)), 
+                              size = sizeFactors(dds))
+
+# add the experimental condition of interest for plot labelling
+size_factors_df <- left_join(size_factors_df, xp_design_mock_vs_infected, by = "sample")
+
+# plot
+ggplot(size_factors_df, aes(x = sample, y = size, colour = infected)) + 
+  geom_segment(aes(x = sample, xend = sample, y = 0, yend = size), color="grey") +
+  geom_point(size = 6) + 
+  coord_flip() +
+  theme_grey()
+~~~
+{:.language-r}
+
+This plot indicates that size factors are all between 0.75 and 1.5 so relatively close to each other. 
+
+<img src="../img/size_factors_mock_pseudomonas.png" width="800px" alt="experimental design" >
+
+
+### Estimation of the dispersion
+
 ## Genome browser
 For Master level!
 

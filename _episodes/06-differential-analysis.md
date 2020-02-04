@@ -88,29 +88,58 @@ This shows that the _mock_ level comes first before the _Pseudomonas_syringae_DC
 
 ## Differential expression analysis
 
-### Estimation of the size factors
-We are first going to calculate the size factors (see previous episode) and display them in a custom plot. 
+Differential gene expression analysis will consist of simply two lines of code:
+1. The first will call the `DESeq` function on a `DESeqDataSet` object that you've just created under the name `dds`. It will be returned under the same `R` object name `dds`.
+2. Then, results are extracted using the `results` function on the `dds` object and results will be extracted as a table under the name `res` (short for results). 
+
 ~~~
-dds <- estimateSizeFactors(dds)
-
-# create a dataframe for convenience
-size_factors_df <- data.frame(sample = names(sizeFactors(dds)), 
-                              size = sizeFactors(dds))
-
-# add the experimental condition of interest for plot labelling
-size_factors_df <- left_join(size_factors_df, xp_design_mock_vs_infected, by = "sample")
-
-# plot
-ggplot(size_factors_df, aes(x = sample, y = size, colour = infected)) + 
-  geom_segment(aes(x = sample, xend = sample, y = 0, yend = size), color="grey") +
-  geom_point(size = 6) + 
-  coord_flip() +
-  theme_grey()
+dds <- DESeq(dds)
+res <- results(dds)
 ~~~
-{:.language-r}
+{: .language-r}
 
-This plot indicates that size factors are all between 0.75 and 1.5 so relatively close to each other. 
+The theory beyond DESeq2 differential gene expression analysis is beyond this course but nicely explained [within the DESeq2 vignette](http://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#theory). 
 
-<img src="../img/size_factors_mock_pseudomonas.png" width="800px" alt="experimental design" >
+> ## Beware of factor levels
+> 
+> If you do not supply any values to the contrast argument of the `DESeq` function, it will use the first value of the design variable from the design file.
+> 
+> In our case, we will perform a differential expression analysis between `mock` and `Pseudomonas_syringae_DC3000`. 
+> 1. Which of these two is going to be used as the reference level?
+> 2. How would you interpret a positive log2 fold change for a given gene?
+>
+> > ## Solution
+> > 1. The `mock` condition is going to be used as the reference level since _m_ from `mock` comes before `P` from `Pseudomonas_syringae_DC3000`.
+> > 2. A positive log2 fold change for a gene would mean that this gene is more abundant in `Pseudomonas_syringae_DC3000` than in the `mock` condition.
+> {: .solution} 
+{: .challenge}
+
+The complete explanation comes from the [DESeq2 vignette](http://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#differential-expression-analysis):
+> Results tables are generated using the function results, which extracts a results table with log2 fold changes, p values and adjusted p values. With no additional arguments to results, the log2 fold change and Wald test p value will be for the last variable in the design formula, and if this is a factor, the comparison will be the last level of this variable over the reference level (see previous note on factor levels). However, the order of the variables of the design do not matter so long as the user specifies the comparison to build a results table for, using the name or contrast arguments of results.
+
+A possible preferred way is to specify the comparison of interest explicitly. We are going to name this new result object `res2` and compare it with the previous one called `res`.
+
+~~~
+res2 <- results(dds, contrast = c("infected",                       # name of the factor
+                                  "Pseudomonas_syringae_DC3000",    # name of the numerator level for fold change
+                                  "mock"))                          # name of the denominator level    
+
+~~~
+{: .language-r}
+
+If we now compare the `res` and `res2` DESeqResults objects, they should be exactly the same and return a `TRUE` value.
+
+~~~
+all_equal(res, res2)
+~~~
+{: .language-r}
+
+
+
+
+
+
+
+
 
 
