@@ -282,6 +282,9 @@ This plot indicates that size factors are all between 0.75 and 1.5 so relatively
 
 ### Estimation of the dispersion
 
+
+This function obtains dispersion estimates for Negative Binomial distributed data.
+
 ## Genome browser
 For Master level!
 

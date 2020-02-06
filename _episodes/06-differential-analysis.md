@@ -18,8 +18,6 @@ keypoints:
 
 ---
 
-
-
 ## Table of Contents
 1. [Introduction](#introduction)
 2. [Creating the DESeqDataSet object](#creating-the-DESeqDataSet-object)
@@ -88,6 +86,8 @@ This shows that the _mock_ level comes first before the _Pseudomonas_syringae_DC
 
 ## Differential expression analysis
 
+### Running a DE analysis
+
 Differential gene expression analysis will consist of simply two lines of code:
 1. The first will call the `DESeq` function on a `DESeqDataSet` object that you've just created under the name `dds`. It will be returned under the same `R` object name `dds`.
 2. Then, results are extracted using the `results` function on the `dds` object and results will be extracted as a table under the name `res` (short for results). 
@@ -95,6 +95,9 @@ Differential gene expression analysis will consist of simply two lines of code:
 ~~~
 dds <- DESeq(dds)
 res <- results(dds)
+
+# have a peek at the DESeqResults object 
+res
 ~~~
 {: .language-r}
 
@@ -135,10 +138,121 @@ all_equal(res, res2)
 {: .language-r}
 
 
+### Table results
+We can now have a look at the result table that contains all information necessary to explore the results.  
+
+Let's take a peek at the first lines.
+~~~
+res
+~~~
+{: .language-r}
+
+
+~~~
+log2 fold change (MLE): infected Pseudomonas_syringae_DC3000 vs mock 
+Wald test p-value: infected Pseudomonas syringae DC3000 vs mock 
+DataFrame with 33768 rows and 6 columns
+                   baseMean     log2FoldChange             lfcSE              stat               pvalue                 padj
+                  <numeric>          <numeric>         <numeric>         <numeric>            <numeric>            <numeric>
+AT1G01010  87.4202637575253 -0.367280333820308 0.211701693868572 -1.73489558401135   0.0827593014886041    0.187224259459075
+AT1G01020  477.153016520262 -0.266372165020665 0.107897663309171 -2.46874822726606     0.01355865776731   0.0457278114202934
+AT1G03987  14.6179093243162  -1.47071320232473 0.462672694746205 -3.17873351729018   0.0014792001454695  0.00740168146185112
+AT1G01030  194.095081900871 -0.916622750549647 0.276959201424051 -3.30959486392441 0.000934310992084711   0.0050664498722226
+AT1G03993  175.982458997999  0.108469082280126 0.142106475509239 0.763294437438034    0.445287818744395    0.614000180781882
+...                     ...                ...               ...               ...                  ...                  ...
+ATMG01370  83.9769196075523 -0.825187944843753 0.216251457067068 -3.81587229993937 0.000135702676638565 0.000983812944421723
+ATMG01380  57.1084095053476 -0.589800569274135 0.260988059519601 -2.25987568304764   0.0238289675115254   0.0709844754284016
+ATMG01390  1085.66028395293  0.429149247175392 0.443108924164171 0.968496059935803    0.332796685814142    0.507053899330804
+ATMG01400 0.254714460748876 -0.411354295725567   3.5338115409304 -0.11640527259619    0.907331356876165                   NA
+ATMG01410  7.79228297186529 -0.957658947213795 0.619376215569985 -1.54616680967076    0.122064287011553      0.2498275349753
+~~~
+{: .output}
+
+Some explanations about this output:
+> The results table when printed will provide the information about the comparison, e.g. "log2 fold change (MAP): condition treated vs untreated", meaning that the estimates are of log2(treated / untreated), as would be returned by contrast=c("condition","treated","untreated"). 
+
+So in our case, since we specified `contrast = c("infected", "Pseudomonas_syringae_DC3000", "mock")`, the `log2FoldChange` will return the $$log2(Pseudomonas \space syringae \space DC3000 \space / \space mock)$$
+
+Additional information on the DESeqResult columns is available using the `mcols` function. 
+~~~
+mcols(resLFC)
+~~~
+{: .language-r}
+
+This will indicate a few useful _metadata_ information about our results:
+
+~~~
+DataFrame with 6 rows and 2 columns
+                       type                                                          description
+                <character>                                                          <character>
+baseMean       intermediate                            mean of normalized counts for all samples
+log2FoldChange      results log2 fold change (MLE): infected Pseudomonas_syringae_DC3000 vs mock
+lfcSE               results         standard error: infected Pseudomonas syringae DC3000 vs mock
+stat                results         Wald statistic: infected Pseudomonas syringae DC3000 vs mock
+pvalue              results      Wald test p-value: infected Pseudomonas syringae DC3000 vs mock
+padj                results                                                 BH adjusted p-values
+
+~~~
+{: .output}
 
 
 
 
+
+## MA plot
+The MA plot originally comes from microarray studies that compared two conditions. From the DESeq2 vignette:
+> In DESeq2, the function `plotMA` shows the log2 fold changes attributable to a given variable over the mean of normalized counts for all the samples in the DESeqDataSet. 
+> Points will be colored red if the adjusted p value is less than 0.1. Points which fall out of the window are plotted as open triangles pointing either up or down.
+
+~~~
+plotMA(dds, alpha = 0.01)
+~~~
+{: .language-r}
+
+<img src="../img/MA_plot_raw.png" width="800px" alt="MA plot" >
+
+
+Shrinkage of effect size (LFC estimates) is useful for visualization and ranking of genes. It is more useful visualize the MA-plot for the shrunken log2 fold changes, which remove the noise associated with log2 fold changes from low count genes without requiring arbitrary filtering thresholds.
+~~~
+resLFC <- lfcShrink(dds = dds, 
+                  res = res,
+                  type = "apeglm",
+                  coef = 2) # corresponds to "infected_Pseudomonas_syringae_DC3000_vs_mock" comparison
+~~~
+{: .language-r}
+
+You can see that genes with low counts are now 
+<img src="../img/MA_plot_shrinked.png" width="800px" alt="MA plot" >
+
+
+
+
+## Volcano plot
+For each gene, this plot shows the gene fold change on the x-axis against the p-value plotted on the y-axis. 
+
+Here, we make use of a library called _EnhancedVolcano_ which is available through [Bioconductor](http://bioconductor.org/packages/release/bioc/html/EnhancedVolcano.html) and described extensively on its [own GitHub page](https://github.com/kevinblighe/EnhancedVolcano).
+
+We can build this plot step-by-step together. 
+~~~
+# load the library if not done yet
+library("EnhancedVolcano")
+
+# The main function is named after the package
+EnhancedVolcano(toptable = resLFC,              # We use the shrunken log2 fold change as noise associated with low count genes is removed 
+                x = "log2FoldChange",           # Name of the column in resLFC that contains the log2 fold changes
+                y = "padj",                     # Name of the column in resLFC that contains the p-value
+                lab = rownames(resLFC)
+                )
+~~~
+{: .language-r}
+
+<img src="../img/MA_plot_shrinked.png" width="800px" alt="MA plot" >
+
+
+## Functional enrichment
+To be added: 
+* TopGO
+* AgriGO
 
 
 
