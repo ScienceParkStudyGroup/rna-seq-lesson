@@ -165,7 +165,28 @@ SampleB median ratio = 0.77
 
 ***
 
-## Count normalization of Mov10 dataset using DESeq2
+## Count normalization 
+
+~~~
+## Data import 
+counts <- read.delim("counts.txt", header = T, stringsAsFactors = F)
+genes <- counts[,1]
+counts <- counts[,-1]
+row.names(counts) <- genes
+xp_design <- read.delim("experimental_design_modified.txt", header = T, stringsAsFactors = F, colClasses = rep("character",4))
+
+# change col names
+colnames(xp_design) <- c("sample", "growth", "infected", "dpi")
+
+# Filter design file: keep only mock versus infected
+xp_design_mock_vs_infected = xp_design %>% filter(growth == "MgCl2" & dpi == "7") 
+
+# Filter count file accordingly (so the rows correspond to the columns of the filtered xp_design file)
+counts_filtered = counts[, colnames(counts) %in% xp_design_mock_vs_infected$sample]
+
+~~~
+{: .language-r}
+
 
 Now that we know the theory of count normalization, we will normalize the counts for the Mov10 dataset using DESeq2. This requires a few steps:
 
@@ -185,14 +206,6 @@ all(colnames(txi$counts) == rownames(meta))
 
 If your data did not match, you could use the `match()` function to rearrange them to be matching.
 
-***
-
-**Exercise**  
-
-Suppose we had sample names matching in the counts matrix and metadata file, but they were out of order. Write the line(s) of code required to create a new matrix with columns ordered such that they were identical to the row names of the metadata.
-
-*** 
-
 ### 2. Create DESEq2 object
 
 Bioconductor software packages often define and use a custom class within R for storing data (input data, intermediate data and also results). These custom data structures are similar to `lists` in that they can contain multiple different data types/structures within them. But, unlike lists they have pre-specified `data slots`, which hold specific types/classes of data. The data stored in these pre-specified slots can be accessed by using specific package-defined functions.
@@ -201,12 +214,20 @@ Let's start by creating the `DESeqDataSet` object and then we can talk a bit mor
 
 **Our count matrix input is stored inside the `txi` list object**, and so we pass that in using the `DESeqDataSetFromTximport()` function which will extract the counts component and round the values to the nearest whole number.
 
-```r
+~~~
 ## Create DESeq2Dataset object
-dds <- DESeqDataSetFromTximport(txi, colData = meta, design = ~ sampletype)
-```
 
-> **NOTE:** Since we had created a `data` variable in the last lesson which contains the counts, we could have also used that as input. However, in that case we would want to use the `DESeqDataSetFromMatrix()` function.
+## Creation of the DESeqDataSet object
+dds <- DESeqDataSetFromMatrix(countData = counts_filtered, 
+                              colData = xp_design_mock_vs_infected, 
+                              design = ~ infected)
+
+# extract the normalised counts
+counts_filtered_normalised = counts(dds, normalized = TRUE)
+
+dds <- DESeqDataSetFromTximport(txi, colData = meta, design = ~ sampletype)
+~~~
+{: .language-r}
 
 ![deseq1](../img/deseq_obj1.png)
 
@@ -219,7 +240,7 @@ View(counts(dds))
 
 As we go through the workflow we will use the relevant functions to check what information gets stored inside our object.
 
-### 3. Generate the Mov10 normalized counts
+### 3. Generate normalized counts
 
 The next step is to normalize the count data in order to be able to make fair gene comparisons between samples.
 
