@@ -215,17 +215,14 @@ Let's start by creating the `DESeqDataSet` object and then we can talk a bit mor
 **Our count matrix input is stored inside the `txi` list object**, and so we pass that in using the `DESeqDataSetFromTximport()` function which will extract the counts component and round the values to the nearest whole number.
 
 ~~~
-## Create DESeq2Dataset object
-
 ## Creation of the DESeqDataSet object
 dds <- DESeqDataSetFromMatrix(countData = counts_filtered, 
                               colData = xp_design_mock_vs_infected, 
                               design = ~ infected)
 
-# extract the normalised counts
-counts_filtered_normalised = counts(dds, normalized = TRUE)
 
-dds <- DESeqDataSetFromTximport(txi, colData = meta, design = ~ sampletype)
+# extract the normalised counts
+counts_normalised = counts(dds, normalized = TRUE)
 ~~~
 {: .language-r}
 
@@ -302,9 +299,7 @@ This plot indicates that size factors are all between 0.75 and 1.5 so relatively
 
 
 ### Estimation of the dispersion
-
-
-This function obtains dispersion estimates for Negative Binomial distributed data.
+For Master level!
 
 ## Genome browser
 For Master level!

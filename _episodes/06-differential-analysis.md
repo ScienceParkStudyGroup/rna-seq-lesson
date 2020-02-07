@@ -171,7 +171,7 @@ ATMG01410  7.79228297186529 -0.957658947213795 0.619376215569985 -1.546166809670
 Some explanations about this output:
 > The results table when printed will provide the information about the comparison, e.g. "log2 fold change (MAP): condition treated vs untreated", meaning that the estimates are of log2(treated / untreated), as would be returned by contrast=c("condition","treated","untreated"). 
 
-So in our case, since we specified `contrast = c("infected", "Pseudomonas_syringae_DC3000", "mock")`, the `log2FoldChange` will return the $$log2(Pseudomonas \space syringae \space DC3000 \space / \space mock)$$
+So in our case, since we specified `contrast = c("infected", "Pseudomonas_syringae_DC3000", "mock")`, the `log2FoldChange` will return the $$log2(Pseudomonas \space syringae \space DC3000 \space / \space mock)$$.  
 
 Additional information on the DESeqResult columns is available using the `mcols` function. 
 ~~~
@@ -196,9 +196,6 @@ padj                results                                                 BH a
 {: .output}
 
 
-
-
-
 ## MA plot
 The MA plot originally comes from microarray studies that compared two conditions. From the DESeq2 vignette:
 > In DESeq2, the function `plotMA` shows the log2 fold changes attributable to a given variable over the mean of normalized counts for all the samples in the DESeqDataSet. 
@@ -210,7 +207,6 @@ plotMA(dds, alpha = 0.01)
 {: .language-r}
 
 <img src="../img/MA_plot_raw.png" width="800px" alt="MA plot" >
-
 
 Shrinkage of effect size (LFC estimates) is useful for visualization and ranking of genes. It is more useful visualize the MA-plot for the shrunken log2 fold changes, which remove the noise associated with log2 fold changes from low count genes without requiring arbitrary filtering thresholds.
 ~~~
@@ -232,7 +228,7 @@ For each gene, this plot shows the gene fold change on the x-axis against the p-
 
 Here, we make use of a library called _EnhancedVolcano_ which is available through [Bioconductor](http://bioconductor.org/packages/release/bioc/html/EnhancedVolcano.html) and described extensively on its [own GitHub page](https://github.com/kevinblighe/EnhancedVolcano).
 
-We can build this plot step-by-step together. 
+We can build this plot rapidly without much customization. 
 ~~~
 # load the library if not done yet
 library("EnhancedVolcano")
@@ -246,8 +242,107 @@ EnhancedVolcano(toptable = resLFC,              # We use the shrunken log2 fold 
 ~~~
 {: .language-r}
 
-<img src="../img/MA_plot_shrinked.png" width="800px" alt="MA plot" >
+<img src="../img/volcano_plot_default.png" width="800px" alt="default volcano plot" >
 
+Alternatively, the plot can be heavily customized to become a publication-grade figure.  
+~~~
+EnhancedVolcano(toptable = resLFC,
+                x = "log2FoldChange",
+                y = "padj",
+                lab = rownames(resLFC),
+                xlim = c(-10, +10),
+                ylim = c(0,100),
+                pCutoff = 1e-06,
+                transcriptPointSize = 2.0,
+                FCcutoff = 2, 
+                title = "Pseudomonas syringae DC3000 versus mock \n (fold change cutoff = 2, p-value cutoff = 1e-06)",
+                legend=c(
+                  'Not significant',
+                  'Log2 fold-change (but do not pass p-value cutoff)',
+                  'Pass p-value cutoff',
+                  'Pass both p-value & Log2 fold change')
+                )
+
+
+~~~
+{: .language-r}
+<img src="../img/volcano_plot.png" width="800px" alt="customized volcano plot" >
+
+## Heatmap
+Heatmap is a representation where gene counts are represented on a color scale. It is usually one of the classic figures part of a transcriptomic study. 
+One can also cluster samples and genes to display a more organised heatmap. Enough talking, let's build one step by step. 
+
+We are going to make use of a library called `pheatmap`. 
+
+### Scaling 
+We will first create three simple heatmaps by taking small subsets of the huge `counts_normalised` matrix. We have created this count matrix in the previous lesson episode.  
+
+If you do not have the `counts_normalised` object in your environment, you can re-create it easily.  
+~~~
+# create the DESeqDataSet object
+dds <- DESeqDataSetFromMatrix(countData = counts_filtered, 
+                              colData = xp_design_mock_vs_infected, 
+                              design = ~ infected)
+
+# extract the normalised counts
+dds <- estimateSizeFactors(dds)
+counts_normalised = counts(dds, normalized = TRUE)
+~~~
+{: .language-r}
+
+
+Let's plot a few simple heatmaps. 
+~~~
+# load the library if not already done
+library(pheatmap)
+
+# we will take a slice of 50 genes 
+counts_norm_small <- counts_normalised[1:50,]
+
+# 10 genes
+pheatmap(counts_norm_small[1:10,])
+
+# 20 genes
+pheatmap(counts_norm_small[1:20,])
+
+# 50 genes
+pheatmap(counts_norm_small[1:50,])
+
+~~~
+{: .language-r}
+
+> ## first heatmaps
+> 
+> From these three different heatmaps, you can already notice one important difference between these three heatmaps. 
+> 
+> * What can be a possible issue related to the color scale when increasing number of genes are being displayed?
+> 
+>
+> > ## Solution
+> > * Varying amount of genes being displayed can result in uncomparable heatmaps since the color scale automatically adjust to the gene count levels.
+> {: .solution} 
+{: .challenge}
+
+When creating a heatmap, it is vital to control how scaling is performed. A possible solution is to specify `scale = "row"` to perform row scaling since gene expression levels will become comparable. 
+
+One way to quicky scale gene levels so that they become comparable is to apply a $$log$$ transformation. Here we will apply a $$log_{10}$$ transformation. 
+~~~
+# add an offset of 1 to be able to calculate the log10 (it will be equal to 0 once log transform)
+counts_norm_small[counts_norm_small == 0] <- 1
+
+pheatmap(counts_norm_small[1:50,])
+pheatmap(log10(counts_norm_small[1:50,]))
+~~~
+{: .language-r}
+
+This is the native heatmap without any transformation. 
+<img src="../img/heatmap_01_unscaled.png" width="600px" alt="heatmap unscaled" >
+
+After applying the $$log_{10}$$ transformation, gene expression levels become more comparable. 
+<img src="../img/heatmap_02_log10.png" width="600px" alt="heatmap log10 transformed" >
+
+
+### Grouping genes by profiles
 
 ## Functional enrichment
 To be added: 
@@ -255,5 +350,7 @@ To be added:
 * AgriGO
 
 
-
+# References
+* Kamil Slowikoski blog post about heatmap: https://slowkow.com/notes/pheatmap-tutorial/
+* Z-score calculation: https://www.statisticshowto.datasciencecentral.com/probability-and-statistics/z-score/
 
