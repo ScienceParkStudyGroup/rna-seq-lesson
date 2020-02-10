@@ -29,11 +29,34 @@ dds <- DESeqDataSetFromMatrix(countData = counts_filtered,
 dds <- estimateSizeFactors(dds)
 counts_normalised = counts(dds, normalized = TRUE)
 
+##################
 # diff expression
+#################
 dds <- DESeq(dds)
 res <- results(dds, contrast = c("infected",                       # name of the factor
                                   "Pseudomonas_syringae_DC3000",    # name of the numerator level for fold change
                                   "mock"))                          # name of the denominator level 
+
+
+# how many genes differentially regulated ?
+# threshold of p = 0.01
+res %>% 
+  as.data.frame() %>% 
+  filter(padj < 0.01) %>% 
+  dim()
+
+# threshold of p = 0.001
+res %>% 
+  as.data.frame() %>% 
+  filter(padj < 0.001) %>% 
+  dim()
+
+
+# one can also see the impact of false discovery rate method
+
+res_wo_fdr = results(dds, 
+                     contrast = c("infected", "Pseudomonas_syringae_DC3000", "mock"), 
+                     pAdjustMethod = "none")  
 
 
 #########
@@ -83,18 +106,28 @@ EnhancedVolcano(toptable = resLFC,
 counts_norm_small <- counts_normalised[1:50,]
 
 # not scaled
-pheatmap(counts_norm_small[1:10,])
-pheatmap(counts_norm_small[1:20,])
-pheatmap(counts_norm_small[1:50,])
+pheatmap(counts_norm_small[1:10,], cluster_rows = F, cluster_cols = F)
+pheatmap(counts_norm_small[1:20,], cluster_rows = F, cluster_cols = F)
+pheatmap(counts_norm_small[1:50,], cluster_rows = F, cluster_cols = F)
 
-# calculate z-score -score for each 
-#for(i in seq_len(nrow(counts_normalised))) xx[i,] <- scale(counts_normalised[i,])
-
+# scaled using a log10 transformation
 counts_norm_small[counts_norm_small == 0] <- 1
 
-pheatmap(counts_norm_small[1:50,])
-pheatmap(log10(counts_norm_small[1:50,]))
+pheatmap(log10(counts_norm_small), cluster_rows = F, cluster_cols = F)
 
+
+# clearer heatmaps by filtering out genes not differentially expressed
+genes_differential = 
+  res %>%
+  as.data.frame() %>%
+  mutate(gene = row.names(res)) %>% 
+  filter(padj < 0.01) %>% 
+  select(gene) 
+  
+# use the genes names in res_only_diff to filter the counts_normalised matrix
+dim(counts_normalised) # contains all gene info = 33,768 genes
+
+counts_normalised_only_diff = counts_normalised[row.names(counts_normalised) %in% genes_differential$gene, ]
 
 
 test = matrix(rnorm(200), 20, 10)

@@ -196,6 +196,51 @@ padj                results                                                 BH a
 {: .output}
 
 
+### False discovery rates
+The selected $$\alpha$$ threshold controls for type I error rate: rejecting the _null_ hypothesis ("there is no difference") while it is true. This $$\alpha$$ value is often set at 
+at $$\alpha$$ = 0.05 (5%), $$\alpha$$ = 0.01 (1%) or $$\alpha$$ = 0.001 (0.1%).
+
+
+When you perform thousands of statistical tests (one for each gene), you will by chance call genes differentially expressed while they are not (false positives). You can control for this by applying certain statistical procedures called _multiple hypothesis test correction_.   
+
+
+We can count the number of genes that are differentially regulated at a certain $$\alpha$$ level. 
+~~~
+# threshold of p = 0.01
+res %>% 
+  as.data.frame() %>% 
+  filter(padj < 0.01) %>% 
+  dim()
+
+# threshold of p = 0.001
+res %>% 
+  as.data.frame() %>% 
+  filter(padj < 0.001) %>% 
+  dim()
+~~~
+{: .language-r}
+
+Histogram p-values
+This [blog post](http://varianceexplained.org/statistics/interpreting-pvalue-histogram/) explains in detail what you can expect from each p-value distribution profile
+~~~
+# distribution of adjusted p-values
+hist(res$padj, col = "grey")
+~~~
+{: .language-r}
+
+<img src="../img/p_values_adjusted.png" width="800px" alt="p-values distribution (corrected for false discovery rate)">
+
+~~~
+# distribution of adjusted p-values
+hist(res$padj, col = "grey")
+~~~
+{: .language-r}
+
+<img src="../img/p_values_uncorrected.png" width="800px" alt="p-values distribution (no false discovery rate correction)">
+
+As you can see, the distribution of p-values was already quite similar suggesting that a good proportion of the tests have a significant p-value (inferior to $$\alpha$$ = 0.01 for instance). This
+suggests that a good proportion of these will be true positives (genes truly differentially regulated). 
+
 ## MA plot
 The MA plot originally comes from microarray studies that compared two conditions. From the DESeq2 vignette:
 > In DESeq2, the function `plotMA` shows the log2 fold changes attributable to a given variable over the mean of normalized counts for all the samples in the DESeqDataSet. 
@@ -208,7 +253,7 @@ plotMA(dds, alpha = 0.01)
 
 <img src="../img/MA_plot_raw.png" width="800px" alt="MA plot" >
 
-Shrinkage of effect size (LFC estimates) is useful for visualization and ranking of genes. It is more useful visualize the MA-plot for the shrunken log2 fold changes, which remove the noise associated with log2 fold changes from low count genes without requiring arbitrary filtering thresholds.
+Shrinkage of effect size (LFC estimates) is useful for visualization and ranking of genes. It is more useful visualize the MA-plot for the shrunken log2 fold changes, which remove the noise associated with log2 fold changes from low count genes without requiring arbitrary filtering thresholds. This helps to get more meaningful log2 fold changes for all genes independently of their expression level. 
 ~~~
 resLFC <- lfcShrink(dds = dds, 
                   res = res,
@@ -291,27 +336,27 @@ counts_normalised = counts(dds, normalized = TRUE)
 {: .language-r}
 
 
-Let's plot a few simple heatmaps. 
+Let's plot a few simple heatmaps without any grouping. 
 ~~~
 # load the library if not already done
 library(pheatmap)
 
 # we will take a slice of 50 genes 
-counts_norm_small <- counts_normalised[1:50,]
+counts_small <- counts_normalised[1:50,]
 
 # 10 genes
-pheatmap(counts_norm_small[1:10,])
+pheatmap(counts_small[1:10,], cluster_rows = F, cluster_cols = F)
 
 # 20 genes
-pheatmap(counts_norm_small[1:20,])
+pheatmap(counts_small[1:20,], cluster_rows = F, cluster_cols = F)
 
 # 50 genes
-pheatmap(counts_norm_small[1:50,])
+pheatmap(counts_small[1:50,], cluster_rows = F, cluster_cols = F)
 
 ~~~
 {: .language-r}
 
-> ## first heatmaps
+> ## First heatmaps
 > 
 > From these three different heatmaps, you can already notice one important difference between these three heatmaps. 
 > 
@@ -328,10 +373,10 @@ When creating a heatmap, it is vital to control how scaling is performed. A poss
 One way to quicky scale gene levels so that they become comparable is to apply a $$log$$ transformation. Here we will apply a $$log_{10}$$ transformation. 
 ~~~
 # add an offset of 1 to be able to calculate the log10 (it will be equal to 0 once log transform)
-counts_norm_small[counts_norm_small == 0] <- 1
+counts_small[counts_norm_small == 0] <- 1
 
-pheatmap(counts_norm_small[1:50,])
-pheatmap(log10(counts_norm_small[1:50,]))
+pheatmap(counts_small, cluster_rows = F, cluster_cols = F)
+pheatmap(log10(counts_norm_small, cluster_rows = F, cluster_cols = F)
 ~~~
 {: .language-r}
 
@@ -343,14 +388,53 @@ After applying the $$log_{10}$$ transformation, gene expression levels become mo
 
 
 ### Grouping genes by profiles
+One interesting feature of the 
+
+
+### Filtering out the non-differentially expressed genes
+As for now, we have worked on the gene count matrix that contains genes differentially expressed _and_ not differentially expressed. In other words, we have kept genes that
+are not directly responding to our experimental treatment (here infection by _Pseudomonas syringae_ DC3000).
+
+Clearer heatmaps can be obtained by filtering out genes that are not differentially expressed in our comparison of interest. Let's do just that!
+
+First things first. We create a new object that only contains genes that are differentially expressed. 
+~~~
+genes_differential = 
+  res %>%
+  as.data.frame() %>%
+  mutate(gene = row.names(res)) %>% 
+  filter(padj < 0.01) %>% 
+  select(gene)
+~~~
+{: .language-r} 
+
+We now use this gene list to keep only the genes differentially expressed in the original `counts_normalised` object. 
+Here we filter the `counts_normalised` matrix using its row names (the gene ids) that can be found inside the genes_differentialgene column. 
+~~~
+counts_normalised_only_diff = counts_normalised[row.names(counts_normalised) %in% genes_differential$gene, ]
+
+~~~
+{: .language-r} 
+
+> ## Simple checks
+> 
+> Can you think of a simple way to check that your gene selection has worked? 
+> 
+>
+> > ## Solution
+> > A simple check can be performed using the `dim()` or the `nrow()` functions on the `counts_normalised_only_diff` and the original `counts_normalised` objects. 
+> > While the original `counts_normalised` object has 33,768 genes, the filtered `counts_normalised_only_diff` only has 4979 genes. This indicates that our filtering step has worked. 
+> {: .solution} 
+{: .challenge}
+
 
 ## Functional enrichment
-To be added: 
-* TopGO
-* AgriGO
+Master level!
 
 
 # References
 * Kamil Slowikoski blog post about heatmap: https://slowkow.com/notes/pheatmap-tutorial/
 * Z-score calculation: https://www.statisticshowto.datasciencecentral.com/probability-and-statistics/z-score/
+* Type I and type II error rates in gene expression studies: https://www.ncbi.nlm.nih.gov/pubmed/28637422
+* p-value histograms explained: http://varianceexplained.org/statistics/interpreting-pvalue-histogram/
 
