@@ -86,8 +86,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.54186667"
-     inkscape:cx="9.4488192"
-     inkscape:cy="531.49606"
+     inkscape:cx="-728.74015"
+     inkscape:cy="605.31496"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -180,7 +180,9 @@
       </g>
     </g>
     <g
-       id="g4256">
+       id="g4256"
+       inkscape:export-xdpi="299.96201"
+       inkscape:export-ydpi="299.96201">
       <rect
          ry="75.714287"
          y="16.674004"
@@ -559,13 +561,13 @@
            y="848.28064"
            x="179.32524"
            sodipodi:role="line"><tspan
-   id="tspan4238"
-   style="font-style:normal;text-align:center;text-anchor:middle">Exploration of results</tspan></tspan><tspan
+             id="tspan4238"
+             style="font-style:normal;text-align:center;text-anchor:middle">Exploration of results</tspan></tspan><tspan
            id="tspan4246"
            style="font-style:italic;text-align:center;text-anchor:middle"
            y="885.78064"
            x="179.32524"
-           sodipodi:role="line">ggplot2, heatmap.2</tspan></text>
+           sodipodi:role="line">ggplot2, pheatmap</tspan></text>
       <text
          xml:space="preserve"
          style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:30px;line-height:125%;font-family:Palatino;-inkscape-font-specification:'Palatino Bold';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000080;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
@@ -583,8 +585,8 @@
        id="rect4254"
        width="1116.2926"
        height="1118.1381"
-       x="-1389.5316"
-       y="-28.975471"
+       x="-1400.4409"
+       y="-32.357361"
        ry="0"
        rx="0"
        inkscape:export-xdpi="299.96201"
@@ -850,7 +852,7 @@
     <g
        id="g4425"
        transform="translate(-1351.1016,-12.857147)"
-       style="opacity:0.4">
+       style="opacity:1">
       <rect
          style="opacity:0.647;fill:#ff7f2a;fill-opacity:1;stroke:#000000;stroke-width:1.24189854;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
          id="rect4427"
@@ -958,20 +960,20 @@
        id="text4467"
        y="848.28064"
        x="-1164.6334"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:30px;line-height:125%;font-family:Palatino;-inkscape-font-specification:'Palatino, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;opacity:0.4;"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:30px;line-height:125%;font-family:Palatino;-inkscape-font-specification:'Palatino, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;opacity:0.4;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        xml:space="preserve"><tspan
          id="tspan4469"
-         style="font-style:italic;text-align:center;text-anchor:middle;"
+         style="font-style:italic;text-align:center;text-anchor:middle"
          y="848.28064"
          x="-1164.6334"
          sodipodi:role="line"><tspan
-   id="tspan4471"
-   style="font-style:normal;text-align:center;text-anchor:middle;">Exploration of results</tspan></tspan><tspan
+           id="tspan4471"
+           style="font-style:normal;text-align:center;text-anchor:middle">Exploration of results</tspan></tspan><tspan
          id="tspan4473"
-         style="font-style:italic;text-align:center;text-anchor:middle;"
+         style="font-style:italic;text-align:center;text-anchor:middle"
          y="885.78064"
          x="-1164.6334"
-         sodipodi:role="line">ggplot2, heatmap.2</tspan></text>
+         sodipodi:role="line">ggplot2, pheatmap</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:30px;line-height:125%;font-family:Palatino;-inkscape-font-specification:'Palatino Bold';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000080;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;opacity:0.4;"
@@ -983,5 +985,17 @@
          id="tspan4477"
          x="-1322.4833"
          y="953.17584">plots</tspan></text>
+    <text
+       sodipodi:linespacing="125%"
+       id="text4308"
+       y="845.56287"
+       x="-797.93884"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:30px;line-height:125%;font-family:Palatino;-inkscape-font-specification:'Palatino, Normal';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       xml:space="preserve"><tspan
+         style="font-weight:bold;fill:#000080"
+         y="845.56287"
+         x="-797.93884"
+         id="tspan4310"
+         sodipodi:role="line">Normalization</tspan></text>
   </g>
 </svg>

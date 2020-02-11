@@ -3,8 +3,12 @@ suppressPackageStartupMessages(library(tidyverse))
 suppressPackageStartupMessages(library(apeglm))
 suppressPackageStartupMessages(library(EnhancedVolcano))
 suppressPackageStartupMessages(library(pheatmap))
+suppressPackageStartupMessages(library(RColorBrewer))
+suppressPackageStartupMessages(library(GGally))
 
-## Data import 
+##############
+## Data import
+##############
 counts <- read.delim("counts.txt", header = T, stringsAsFactors = F)
 genes <- counts[,1]
 counts <- counts[,-1]
@@ -12,10 +16,35 @@ row.names(counts) <- genes
 xp_design <- read.delim("experimental_design_modified.txt", header = T, stringsAsFactors = F, colClasses = rep("character",4))
 
 # change col names
-colnames(xp_design) <- c("sample", "growth", "infected", "dpi")
+colnames(xp_design) <- c("sample", "seed", "infected", "dpi")
 
+## Creation of the DESeqDataSet object
+dds <- DESeqDataSetFromMatrix(countData = counts, 
+                              colData = xp_design, 
+                              design = ~ seed + infected + dpi)
+
+# normalised counts
+dds <- estimateSizeFactors(dds)
+counts_normalised = counts(dds, normalized = TRUE)
+
+
+####################
+## sample clustering
+####################
+# custom colors
+blueColours <- brewer.pal(9, "Blues")
+colors <- colorRampPalette(rev(blueColours))(255) # make new colours to extend the 9 colors of the brewer palette (only has 9 color blue levels)
+
+
+
+# as we cannot compute each correlation pair 
+
+
+##################
+# diff expression
+#################
 # Filter design file: keep only mock versus infected
-xp_design_mock_vs_infected = xp_design %>% filter(growth == "MgCl2" & dpi == "7") 
+xp_design_mock_vs_infected = xp_design %>% filter(seed == "MgCl2" & dpi == "7") 
 
 # Filter count file accordingly (so the rows correspond to the columns of the filtered xp_design file)
 counts_filtered = counts[, colnames(counts) %in% xp_design_mock_vs_infected$sample]
@@ -25,15 +54,10 @@ dds <- DESeqDataSetFromMatrix(countData = counts_filtered,
                               colData = xp_design_mock_vs_infected, 
                               design = ~ infected)
 
-# normalised counts
-dds <- estimateSizeFactors(dds)
-counts_normalised = counts(dds, normalized = TRUE)
 
-##################
-# diff expression
-#################
+
 dds <- DESeq(dds)
-res <- results(dds, contrast = c("infected",                       # name of the factor
+res <- results(dds, contrast = c("infected",                        # name of the factor
                                   "Pseudomonas_syringae_DC3000",    # name of the numerator level for fold change
                                   "mock"))                          # name of the denominator level 
 
@@ -53,7 +77,6 @@ res %>%
 
 
 # one can also see the impact of false discovery rate method
-
 res_wo_fdr = results(dds, 
                      contrast = c("infected", "Pseudomonas_syringae_DC3000", "mock"), 
                      pAdjustMethod = "none")  
@@ -68,7 +91,7 @@ plotMA(object = dds, alpha = 0.01)
 # shrink effect size
 resLFC <- lfcShrink(dds = dds, 
                   res = res,
-                  type = "apeglm",
+                  type = "normal",
                   coef = 2) # corresponds to "infected_Pseudomonas_syringae_DC3000_vs_mock" comparison
 ############## 
 # Volcano plot
@@ -129,6 +152,8 @@ dim(counts_normalised) # contains all gene info = 33,768 genes
 
 counts_normalised_only_diff = counts_normalised[row.names(counts_normalised) %in% genes_differential$gene, ]
 
+pheatmap(log10(counts_normalised_only_diff + 1), cluster_rows = T, cluster_cols = T)
+
 
 test = matrix(rnorm(200), 20, 10)
 test[1:10, seq(1, 10, 2)] = test[1:10, seq(1, 10, 2)] + 3
@@ -136,4 +161,11 @@ test[11:20, seq(2, 10, 2)] = test[11:20, seq(2, 10, 2)] + 2
 test[15:20, seq(2, 10, 2)] = test[15:20, seq(2, 10, 2)] + 4
 colnames(test) = paste("Test", 1:10, sep = "")
 rownames(test) = paste("Gene", 1:20, sep = "")
+
+
+annotation_col = data.frame(
+  CellType = factor(rep(c("CT1", "CT2"), 5)), 
+  Time = 1:5)
+rownames(annotation_col) = paste("Test", 1:10, sep = "")
+
 

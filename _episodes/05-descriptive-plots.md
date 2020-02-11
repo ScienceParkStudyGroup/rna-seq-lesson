@@ -5,14 +5,14 @@ exercises: 30
 questions:
 - "How are gene expression levels distributed within a RNA-seq experiment?"
 - "Why do I need to scale/normalize read counts?"
-- "What are some of the visualisations available through `ggplot2`?"
-- "How can I save my plot in a specific format (e.g. png)?"
+- "How do I know that my RNA-seq experiment has worked according to my experimental design?"
+- "How informative is PCA and sample clustering for RNA-seq quality checks?"
 objectives:
-- "Be able to explore RNA-seq count results rapidly using PCA and sample clustering."
+- "Be able to calculate size factors and normalize counts using `DESeq2`."
+- "Be able to create PCA and sample clustering plots to explore RNA-seq count results."
 - "Be able to interpret a PCA plot and discuss its relationship with the experimental design."
-- "Be able to explain sample clustering based on RNA-seq counts."
-- "Be able to normalize counts using `DESeq2`."
 keypoints:
+- "Several biaises including sequencing depth can result in analysis artifacts and must be corrected trough scaling/normalisation."
 - "RNA-seq results in a multivariate output that can be explored through data reduction methods (e.g. PCA)."
 - "Sample clustering and PCA should indicate whether the observed experimental variability can be explained by the experimental design."
 ---
@@ -20,9 +20,10 @@ keypoints:
 ## Table of Contents
 1. [Introduction](#introduction)
 2. [Normalization](#normalization)
-3. [Principal Component Analysis](#principal-component-analysis)
-3. [Sample clustering](#sample-clustering)
-3. [Creating the DESeq2DataSet object](#creating-the-deseq2dataset-object)
+3. [DESeq2 count normalization](#deseq2-count-normalization)
+4. [Sample clustering](#sample-clustering)
+5. [Principal Component Analysis](#principal-component-analysis)
+
 
 
 ## Introduction
@@ -165,7 +166,9 @@ SampleB median ratio = 0.77
 
 ***
 
-## Count normalization 
+## DESeq2 count normalization 
+
+### 1. Data import
 
 ~~~
 ## Data import 
@@ -176,10 +179,10 @@ row.names(counts) <- genes
 xp_design <- read.delim("experimental_design_modified.txt", header = T, stringsAsFactors = F, colClasses = rep("character",4))
 
 # change col names
-colnames(xp_design) <- c("sample", "growth", "infected", "dpi")
+colnames(xp_design) <- c("sample", "seed", "infected", "dpi")
 
 # Filter design file: keep only mock versus infected
-xp_design_mock_vs_infected = xp_design %>% filter(growth == "MgCl2" & dpi == "7") 
+xp_design_mock_vs_infected = xp_design %>% filter(seed == "MgCl2" & dpi == "7") 
 
 # Filter count file accordingly (so the rows correspond to the columns of the filtered xp_design file)
 counts_filtered = counts[, colnames(counts) %in% xp_design_mock_vs_infected$sample]
@@ -188,34 +191,33 @@ counts_filtered = counts[, colnames(counts) %in% xp_design_mock_vs_infected$samp
 {: .language-r}
 
 
-Now that we know the theory of count normalization, we will normalize the counts for the Mov10 dataset using DESeq2. This requires a few steps:
+Now that we know the theory of count normalization, we will normalize the counts using DESeq2. This requires a few steps:
 
-1. Ensure the row names of the metadata dataframe are present and in the same order as the column names of the counts dataframe.
-2. Create a `DESeqDataSet` object
-3. Generate the normalized counts
+1. Ensure the row names of the experimental design dataframe are present and in the same order as the column names of the counts dataframe.
+2. Create a `DESeqDataSet` object.
+3. Generate the normalized counts.
 
-### 1. Match the metadata and counts data
+### 2. Match the experimental design and counts data
 
 We should always make sure that we have sample names that match between the two files, and that the samples are in the right order. DESeq2 will output an error if this is not the case.
 
 ```r
 ### Check that sample names match in both files
-all(colnames(txi$counts) %in% rownames(meta))
-all(colnames(txi$counts) == rownames(meta))
+all(colnames(counts_filtered) %in% rownames(xp_design_mock_vs_infected))
+all(colnames(counts_filtered) == rownames(xp_design_mock_vs_infected))
 ```
 
 If your data did not match, you could use the `match()` function to rearrange them to be matching.
 
-### 2. Create DESEq2 object
+### 3. Create DESeqDataSet object
 
 Bioconductor software packages often define and use a custom class within R for storing data (input data, intermediate data and also results). These custom data structures are similar to `lists` in that they can contain multiple different data types/structures within them. But, unlike lists they have pre-specified `data slots`, which hold specific types/classes of data. The data stored in these pre-specified slots can be accessed by using specific package-defined functions.
 
-Let's start by creating the `DESeqDataSet` object and then we can talk a bit more about what is stored inside it. To create the object we will need the **count matrix** and the **metadata** table as input. We will also need to specify a **design formula**. The design formula specifies the column(s) in the metadata table and how they should be used in the analysis. For our dataset we only have one column we are interested in, that is `~sampletype`. This column has three factor levels, which tells DESeq2 that for each gene we want to evaluate gene expression change with respect to these different levels.
+Let's start by creating the `DESeqDataSet` object and then we can talk a bit more about what is stored inside it. To create the object we will need the **count matrix** and the **experimental design** table as inputs. We will also need to specify a **design formula**. The design formula specifies the column(s) in the experimental design table and how they should be used in the analysis. For this tutorial, we only have one column of interest, that is `~ infected`. This column has two factor levels i.e. `mock` (not inoculated) and `Pseudomonas syringae_ DC3000` (inoculated). This column tells DESeq2 that for each gene we want to evaluate gene expression change with respect to these two different factor levels.
 
-**Our count matrix input is stored inside the `txi` list object**, and so we pass that in using the `DESeqDataSetFromTximport()` function which will extract the counts component and round the values to the nearest whole number.
 
 ~~~
-## Creation of the DESeqDataSet object
+# Creation of the DESeqDataSet object
 dds <- DESeqDataSetFromMatrix(countData = counts_filtered, 
                               colData = xp_design_mock_vs_infected, 
                               design = ~ infected)
@@ -242,7 +244,7 @@ As we go through the workflow we will use the relevant functions to check what i
 The next step is to normalize the count data in order to be able to make fair gene comparisons between samples.
 
 
-<img src="../img/de_workflow_salmon_normalization.png" width="400">
+<img src="../img/workflow_overview_normalisation.png" width="600px">
 
 To perform the **median of ratios method** of normalization, DESeq2 has a single `estimateSizeFactors()` function that will generate size factors for us. We will use the function in the example below, but **in a typical RNA-seq analysis this step is automatically performed by the `DESeq()` function**, which we will see later. 
 
@@ -256,27 +258,8 @@ By assigning the results back to the `dds` object we are filling in the slots of
 sizeFactors(dds)
 ```
 
-Now, to retrieve the normalized counts matrix from `dds`, we use the `counts()` function and add the argument `normalized=TRUE`.
-
-```r
-normalized_counts <- counts(dds, normalized=TRUE)
-```
-
-We can save this normalized data matrix to file for later use:
-
-```r
-write.table(normalized_counts, file="data/normalized_counts.txt", sep="\t", quote=F, col.names=NA)
-```
-
-> **NOTE:** DESeq2 doesn't actually use normalized counts, rather it uses the raw counts and models the normalization inside the Generalized Linear Model (GLM). These normalized counts will be useful for downstream visualization of results, but cannot be used as input to DESeq2 or any other tools that peform differential expression analysis which use the negative binomial model.
-
-
-
-### Estimation of the size factors
-We are first going to calculate the size factors (see previous episode) and display them in a custom plot. 
+We can also plot these size factors. 
 ~~~
-dds <- estimateSizeFactors(dds)
-
 # create a dataframe for convenience
 size_factors_df <- data.frame(sample = names(sizeFactors(dds)), 
                               size = sizeFactors(dds))
@@ -298,7 +281,71 @@ This plot indicates that size factors are all between 0.75 and 1.5 so relatively
 <img src="../img/size_factors_mock_pseudomonas.png" width="800px" alt="experimental design" >
 
 
-### Estimation of the dispersion
+Now, to retrieve the normalized counts matrix from `dds`, we use the `counts()` function and add the argument `normalized=TRUE`.
+
+```r
+normalized_counts <- counts(dds, normalized=TRUE)
+```
+
+We can save this normalized data matrix to file for later use:
+
+```r
+write.table(normalized_counts, file = "data/normalized_counts.txt", sep = "\t", quote = F, col.names = NA)
+```
+
+> **NOTE:** DESeq2 doesn't actually use normalized counts to compute differentially expressed genes. Rather, it uses the raw counts and models the normalization inside the Generalized Linear Model (GLM). These normalized counts will be useful for downstream visualization of results, but cannot be used as input to DESeq2 or any other tools that peform differential expression analysis which use the negative binomial model.
+
+## Sample clustering
+A first simple way to check the quality of the RNA-seq experiment based on the counts is to plot correlations between samples in the form of scatterplots. 
+
+We can first have a peek at two different comparisons between highly correlated samples. 
+
+The first scatterplot is to plot the gene counts of one sample against itself. In this case, the correlation coefficient _r_ will be equal to 1.
+~~~
+# plot
+pairs(x = counts_normalised[,c("ERR1406259","ERR1406259")],pch = 19, log = "xy")
+
+# actual values
+cor(counts_normalised[,c("ERR1406259","ERR1406259")])
+~~~ 
+{: .language-r}
+
+Trivial: if you correlate a sample with itself, it is a perfect correlation. 
+
+<img src="../img/correlation_self.png" width="600px" alt="self-correlation plot" >
+
+We can also take two samples that are highly correlated and take a look at the corresponding scatterplot. 
+* ERR1406259: corresponds to condition MgCl2 / mock / 2 dpi.
+* ERR1406270: corresponds to condition S. melonis Fr1 / mock / 2 dpi. 
+
+~~~
+# plot
+pairs(x = counts_normalised[,c("ERR1406259","ERR1406270")],pch = 19, log = "xy")
+
+# correlation values
+cor(counts_normalised[,c("ERR1406259","ERR1406270")])
+~~~ 
+{: .language-r}
+
+<img src="../img/correlation_strong.png" width="600px" alt="highly correlated samples" >
+
+~~~
+# highly correlated samples 
+pairs(x = counts_normalised[,c("ERR1406264","ERR1406288")],pch = 19, log = "xy")
+
+# correlation values 
+cor(counts_normalised[,c("ERR1406264","ERR1406288")])
+~~~
+{: .language-r}
+
+<img src="../img/correlation_weaker.png" width="600px" alt="weakly correlated samples" >
+
+## Principal Component Analysis
+
+
+
+
+## Estimation of the dispersion
 For Master level!
 
 ## Genome browser
