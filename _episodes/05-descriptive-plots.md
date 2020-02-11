@@ -21,7 +21,7 @@ keypoints:
 1. [Introduction](#introduction)
 2. [Normalization](#normalization)
 3. [DESeq2 count normalization](#deseq2-count-normalization)
-4. [Sample clustering](#sample-clustering)
+4. [Sample correlations](#sample-correlations)
 5. [Principal Component Analysis](#principal-component-analysis)
 
 
@@ -180,13 +180,6 @@ xp_design <- read.delim("experimental_design_modified.txt", header = T, stringsA
 
 # change col names
 colnames(xp_design) <- c("sample", "seed", "infected", "dpi")
-
-# Filter design file: keep only mock versus infected
-xp_design_mock_vs_infected = xp_design %>% filter(seed == "MgCl2" & dpi == "7") 
-
-# Filter count file accordingly (so the rows correspond to the columns of the filtered xp_design file)
-counts_filtered = counts[, colnames(counts) %in% xp_design_mock_vs_infected$sample]
-
 ~~~
 {: .language-r}
 
@@ -203,8 +196,8 @@ We should always make sure that we have sample names that match between the two 
 
 ```r
 ### Check that sample names match in both files
-all(colnames(counts_filtered) %in% rownames(xp_design_mock_vs_infected))
-all(colnames(counts_filtered) == rownames(xp_design_mock_vs_infected))
+all(colnames(counts) %in% rownames(xp_design)
+all(colnames(counts) == rownames(xp_design)
 ```
 
 If your data did not match, you could use the `match()` function to rearrange them to be matching.
@@ -218,26 +211,15 @@ Let's start by creating the `DESeqDataSet` object and then we can talk a bit mor
 
 ~~~
 # Creation of the DESeqDataSet object
-dds <- DESeqDataSetFromMatrix(countData = counts_filtered, 
-                              colData = xp_design_mock_vs_infected, 
-                              design = ~ infected)
-
-
-# extract the normalised counts
-counts_normalised = counts(dds, normalized = TRUE)
+dds <- DESeqDataSetFromMatrix(countData = counts, 
+                              colData = xp_design, 
+                              design = ~ seed + infected + dpi) # the model does not matter here 
 ~~~
 {: .language-r}
 
+We now have a `DESeqDataSet` object that contains both count data and experimental metadata ("data about the data").
+
 ![deseq1](../img/deseq_obj1.png)
-
-
-You can use DESeq-specific functions to access the different slots and retrieve information, if you wish. For example, suppose we wanted the original count matrix we would use `counts()` (*Note: we nested it within the `View()` function so that rather than getting printed in the console we can see it in the script editor*) :
-
-```r
-View(counts(dds))
-```
-
-As we go through the workflow we will use the relevant functions to check what information gets stored inside our object.
 
 ### 3. Generate normalized counts
 
@@ -260,53 +242,63 @@ sizeFactors(dds)
 
 We can also plot these size factors. 
 ~~~
-# create a dataframe for convenience
 size_factors_df <- data.frame(sample = names(sizeFactors(dds)), 
                               size = sizeFactors(dds))
 
 # add the experimental condition of interest for plot labelling
-size_factors_df <- left_join(size_factors_df, xp_design_mock_vs_infected, by = "sample")
+size_factors_df <- left_join(size_factors_df, xp_design, by = "sample")
+
+# sort by seed condition and by infected condition
+size_factors_df <- size_factors_df %>% 
+  arrange(seed, infected)
+
+size_factors_df$sample = factor(size_factors_df$sample, levels = size_factors_df$sample)
 
 # plot
-ggplot(size_factors_df, aes(x = sample, y = size, colour = infected)) + 
+ggplot(size_factors_df, aes(x = sample, y = size, colour = seed)) + 
   geom_segment(aes(x = sample, xend = sample, y = 0, yend = size), color="grey") +
   geom_point(size = 6) + 
   coord_flip() +
-  theme_grey()
+  theme_grey() +
+  facet_wrap(~ infected)
 ~~~
 {:.language-r}
 
-This plot indicates that size factors are all between 0.75 and 1.5 so relatively close to each other. 
+This plot indicates that size factors are all between \~0.70 and \~1.8 so relatively close to each other. 
 
-<img src="../img/size_factors_mock_pseudomonas.png" width="800px" alt="experimental design" >
+<img src="../img/size_factors_all.png" width="800px" alt="experimental design" >
 
+You can use DESeq-specific functions to access the different slots and retrieve information, if you wish. For example, suppose we wanted the original count matrix we would use `counts()`. For instance, to retrieve the normalized counts matrix from `dds`, we use the `counts()` function and add the argument `normalized=TRUE`.
+~~~
+# extract the normalised counts
+counts_normalised = counts(dds, normalized = TRUE)
 
-Now, to retrieve the normalized counts matrix from `dds`, we use the `counts()` function and add the argument `normalized=TRUE`.
+# we reorder samples according to their conditions
+counts_normalised = counts[, xp_design$sample]
+~~~
+{: .language-r}
 
-```r
-normalized_counts <- counts(dds, normalized=TRUE)
-```
+As we go through the workflow we will use the relevant functions to check what information gets stored inside our object.
 
 We can save this normalized data matrix to file for later use:
 
-```r
-write.table(normalized_counts, file = "data/normalized_counts.txt", sep = "\t", quote = F, col.names = NA)
-```
+~~~
+write.table(counts_normalised, file = "data/normalized_counts.txt", sep = "\t", quote = F, col.names = NA)
+~~~
+{: .language-r}
 
 > **NOTE:** DESeq2 doesn't actually use normalized counts to compute differentially expressed genes. Rather, it uses the raw counts and models the normalization inside the Generalized Linear Model (GLM). These normalized counts will be useful for downstream visualization of results, but cannot be used as input to DESeq2 or any other tools that peform differential expression analysis which use the negative binomial model.
 
-## Sample clustering
+## Sample correlations
 A first simple way to check the quality of the RNA-seq experiment based on the counts is to plot correlations between samples in the form of scatterplots. 
 
-We can first have a peek at two different comparisons between highly correlated samples. 
-
-The first scatterplot is to plot the gene counts of one sample against itself. In this case, the correlation coefficient _r_ will be equal to 1.
+The first scatterplot consist of the gene counts of one sample against itself. In this case, the correlation coefficient _r_ will be equal to 1.
 ~~~
-# plot
-pairs(x = counts_normalised[,c("ERR1406259","ERR1406259")],pch = 19, log = "xy")
+# plot the first column against the first column of the matrix
+pairs(x = counts_normalised[,c(1,1)],pch = 19, log = "xy")
 
 # actual values
-cor(counts_normalised[,c("ERR1406259","ERR1406259")])
+cor(counts_normalised[,c(1,1)])
 ~~~ 
 {: .language-r}
 
@@ -314,36 +306,67 @@ Trivial: if you correlate a sample with itself, it is a perfect correlation.
 
 <img src="../img/correlation_self.png" width="600px" alt="self-correlation plot" >
 
-We can also take two samples that are highly correlated and take a look at the corresponding scatterplot. 
-* ERR1406259: corresponds to condition MgCl2 / mock / 2 dpi.
-* ERR1406270: corresponds to condition S. melonis Fr1 / mock / 2 dpi. 
-
+Samples from the same biological conditions should be highly correlated to one another.
 ~~~
-# plot
-pairs(x = counts_normalised[,c("ERR1406259","ERR1406270")],pch = 19, log = "xy")
-
-# correlation values
-cor(counts_normalised[,c("ERR1406259","ERR1406270")])
+pairs(x = counts_normalised[,c(1:4)],pch = 19, log = "xy")
+cor(counts_normalised[,c(1:4)]) # consecutive numbers
 ~~~ 
 {: .language-r}
 
-<img src="../img/correlation_strong.png" width="600px" alt="highly correlated samples" >
+<img src="../img/correlation_between_biological_replicates.png" width="600px" alt="highly correlated samples" >
 
+Samples from different conditions should not be highly correlated. 
 ~~~
-# highly correlated samples 
-pairs(x = counts_normalised[,c("ERR1406264","ERR1406288")],pch = 19, log = "xy")
-
-# correlation values 
-cor(counts_normalised[,c("ERR1406264","ERR1406288")])
+# weakly correlated samples 
+pairs(x = counts_normalised[,c(1,9,17,25)],pch = 19, log = "xy")
+cor(counts_normalised[,c(1,9,17,25)])
 ~~~
 {: .language-r}
 
-<img src="../img/correlation_weaker.png" width="600px" alt="weakly correlated samples" >
+<img src="../img/correlation_different_conditions.png" width="600px" alt="weakly correlated samples" >
 
 ## Principal Component Analysis
+Perform a principal component analysis (PCA) in which multivariate data (i.e. more than 1 variable) is transformed to a new coordinate system in which each component (axis) explains as as much variance as possible. PCA therefore can be used to visualize (and summarize) the distance between objects (and variables) from a multi-dimensional space to a 2 dimensional plot.
+
+In the context of an RNA-seq experiment, it can be used to visualize the differences (distances) between samples and how it relates to the experimental design.
 
 
+The PCA plot, log transform the data to prevent that the largest values will dominate the analyses. Center the data in order to be to analyze the relation between the objects and not the relation of the objects between the origin (0).
+~~~
+# transform
+counts_norm_trans = t(scale(t(log10(counts_normalised + 1)),scale=FALSE,center = TRUE))
 
+# perform the PCA analysis
+pca <- princomp(counts_norm_trans)
+
+# plot the percentage of variance explained by the 10 first principal components
+screeplot(pca, ylim=c(0,0.25))
+~~~
+
+<img src="../img/screeplot.png" width="600px" alt="Screeplot" >
+
+Let's plot the samples along the two first components that explain \~40% of the total variance.
+~~~
+# copy the data from the first 2 components
+T12 = as.data.frame(pca$loadings[,1:2])
+
+# add the experimental design data to the PCA data.frame
+T12c <- cbind.data.frame(T12, xp_design)
+
+# calculate the explained variance per component
+explained_var = round(x = pca$sdev^2 / sum(pca$sdev^2)*100, digits = 1)
+
+# plot the PCA score plot
+p <- ggplot(data = T12c, aes(x = Comp.1, y = Comp.2, col = seed, shape = infected, size = dpi)) + 
+              geom_point() + 
+              xlab(paste0('PC1(',explained_var[1],'%)')) + 
+              ylab(paste0('PC2(',explained_var[2],'%)')) + 
+  ggtitle('PCA log10 transformed (centered) data')
+
+~~~
+{: .language-r}
+
+<img src="../img/pca_all_factors.png" width="800px" alt="complete PCA" >
 
 ## Estimation of the dispersion
 For Master level!

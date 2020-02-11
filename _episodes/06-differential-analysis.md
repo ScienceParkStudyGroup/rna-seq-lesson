@@ -3,10 +3,10 @@ title: "Differential expression analysis"
 teaching: 30
 exercises: 60 
 questions:
-- "Q1"
-- "Q2"
-- "Q3"
-- "Q4"
+- "What are factor levels and why is it important for different expression analysis?"
+- "How can I call the genes differentially regulated in response to my experimental design?"
+- "What is a volcano plot and how can I create one?"
+- "What is a heatmap and how can it be informative for my comparison of interest?"
 objectives:
 - "O1"
 - "O2"
@@ -27,8 +27,11 @@ keypoints:
 
 ## Introduction
 
-In this episode, we will see how to perform a simple one-condition experimental comparison. We will compare the transcriptome of Arabidopsis in response to infection by the leaf pathogenic bacteria _Pseudomonas syringae DC3000_ after 7 days (7 dpi). 
+Differential expression analysis is the process of determining which of the genes are significantly affected by my experimental design. In the example study that we use, Arabidopsis plants were for instance infected or not by a pathogenic bacteria called _Pseudomonas syringae_ DC3000. One comparison of interest could be to determine which of the Arabidopsis leaf genes are transcriptionally affected by the presence of this pathogenic bacteria.
 
+In this episode, we will see how to perform a simple one-condition experimental comparison with `DESeq2`. We will compare the transcriptome of Arabidopsis in response to infection by the leaf pathogenic bacteria _Pseudomonas syringae_ DC3000 after 7 days (7 dpi). 
+
+This will yield a table containing genes $$log_{2}$$ fold change and their corrected p-values. We will also see how to create a few typical representations classically used to display RNA-seq results. 
 
 ## Creating the DESeqDataSet object
 We are first going to import the count file and the experimental design file required to build
@@ -175,7 +178,7 @@ So in our case, since we specified `contrast = c("infected", "Pseudomonas_syring
 
 Additional information on the DESeqResult columns is available using the `mcols` function. 
 ~~~
-mcols(resLFC)
+mcols(res)
 ~~~
 {: .language-r}
 
@@ -257,7 +260,7 @@ Shrinkage of effect size (LFC estimates) is useful for visualization and ranking
 ~~~
 resLFC <- lfcShrink(dds = dds, 
                   res = res,
-                  type = "apeglm",
+                  type = "normal",
                   coef = 2) # corresponds to "infected_Pseudomonas_syringae_DC3000_vs_mock" comparison
 ~~~
 {: .language-r}
@@ -388,7 +391,7 @@ After applying the $$log_{10}$$ transformation, gene expression levels become mo
 
 
 ### Grouping genes by profiles
-One interesting feature of the 
+One interesting feature of the heatmap visualisation is the ability to group genes by their expression profile. Similarly to the 
 
 
 ### Filtering out the non-differentially expressed genes
