@@ -176,7 +176,7 @@ counts <- read.delim("counts.txt", header = T, stringsAsFactors = F)
 genes <- counts[,1]
 counts <- counts[,-1]
 row.names(counts) <- genes
-xp_design <- read.delim("experimental_design_modified.txt", header = T, stringsAsFactors = F, colClasses = rep("character",4))
+xp_design <- read.delim("experimental_design.txt", header = T, stringsAsFactors = F, colClasses = rep("character",4))
 
 # change col names
 colnames(xp_design) <- c("sample", "seed", "infected", "dpi")
@@ -202,7 +202,7 @@ all(colnames(counts) == rownames(xp_design)
 
 If your data did not match, you could use the `match()` function to rearrange them to be matching.
 
-### 3. Create DESeqDataSet object
+### 3. Create the DESeqDataSet object
 
 Bioconductor software packages often define and use a custom class within R for storing data (input data, intermediate data and also results). These custom data structures are similar to `lists` in that they can contain multiple different data types/structures within them. But, unlike lists they have pre-specified `data slots`, which hold specific types/classes of data. The data stored in these pre-specified slots can be accessed by using specific package-defined functions.
 
@@ -217,14 +217,13 @@ dds <- DESeqDataSetFromMatrix(countData = counts,
 ~~~
 {: .language-r}
 
-We now have a `DESeqDataSet` object that contains both count data and experimental metadata ("data about the data").
+We now have a `DESeqDataSet` object that contains both count data and experimental metadata that is the relationship between samples and their combination of experimental factors. 
 
 ![deseq1](../img/deseq_obj1.png)
 
-### 3. Generate normalized counts
+### 4. Generate normalized counts
 
 The next step is to normalize the count data in order to be able to make fair gene comparisons between samples.
-
 
 <img src="../img/workflow_overview_normalisation.png" width="600px">
 
@@ -240,7 +239,7 @@ By assigning the results back to the `dds` object we are filling in the slots of
 sizeFactors(dds)
 ```
 
-We can also plot these size factors. 
+We can plot these size factors to see how much they differ between samples. 
 ~~~
 size_factors_df <- data.frame(sample = names(sizeFactors(dds)), 
                               size = sizeFactors(dds))
@@ -342,10 +341,12 @@ pca <- princomp(counts_norm_trans)
 # plot the percentage of variance explained by the 10 first principal components
 screeplot(pca, ylim=c(0,0.25))
 ~~~
+{: .language-r}
 
 <img src="../img/screeplot.png" width="600px" alt="Screeplot" >
 
 Let's plot the samples along the two first components that explain \~40% of the total variance.
+We are going to do it the complicated way but with full control of what we are doing!
 ~~~
 # copy the data from the first 2 components
 T12 = as.data.frame(pca$loadings[,1:2])
@@ -362,11 +363,36 @@ p <- ggplot(data = T12c, aes(x = Comp.1, y = Comp.2, col = seed, shape = infecte
               xlab(paste0('PC1(',explained_var[1],'%)')) + 
               ylab(paste0('PC2(',explained_var[2],'%)')) + 
   ggtitle('PCA log10 transformed (centered) data')
-
 ~~~
 {: .language-r}
 
 <img src="../img/pca_all_factors.png" width="800px" alt="complete PCA" >
+
+This can also be done with the `plotPCA()` function of the `DESeq2` package. While the function call is much simpler, we do not have a clear transparent view of how the plot is constructed. 
+But first, we need to stabilise the variance across genes with different means using a variance stabilising transformation or `vst()` . If interested, you can check the [corresponding detailed section in the DESeq2 vignette](https://bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#data-transformations-and-visualization).
+~~~
+# variance-stabilizing transformation
+vst_dds <- vst(dds)
+
+# plot the PCA
+plotPCA(vst_dds, intgroup = c("seed", "infected", "dpi"))
+~~~
+{: .language-r}
+
+You can also extract the PCA data and customize the plot using `ggplot2`.
+~~~
+# customised PCA plot
+pcaData <- plotPCA(vst_dds, intgroup = c("seed", "infected", "dpi"), returnData = TRUE)
+percentVar <- round(100 * attr(pcaData, "percentVar"))
+ggplot(pcaData, aes(PC1, PC2, color = seed, shape = infected, size = dpi)) +
+  geom_point() +
+  xlab(paste0("PC1: ",percentVar[1],"% variance")) +
+  ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
+  coord_fixed()
+~~~
+{: .language-r}
+
+<img src="../img/pca_customized.png" width="800px" alt="customized PCA plot" >
 
 ## Estimation of the dispersion
 For Master level!

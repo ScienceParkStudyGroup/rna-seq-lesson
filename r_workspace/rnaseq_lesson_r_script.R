@@ -1,6 +1,5 @@
 suppressPackageStartupMessages(library(DESeq2))
 suppressPackageStartupMessages(library(tidyverse))
-suppressPackageStartupMessages(library(apeglm))
 suppressPackageStartupMessages(library(EnhancedVolcano))
 suppressPackageStartupMessages(library(pheatmap))
 
@@ -103,11 +102,33 @@ T12c <- cbind.data.frame(T12,xp_design)
 explained_var = round(pca$sdev^2/sum(pca$sdev^2)*100,1)
 # plot the PCA score plot
 
-p <- ggplot(data = T12c, aes(x = Comp.1, y = Comp.2, col = seed, shape = infected, size = dpi)) + 
-              geom_point() + 
-              xlab(paste0('PC1(',explained_var[1],'%)')) + 
-              ylab(paste0('PC2(',explained_var[2],'%)')) + 
+p <- ggplot(data = T12c, 
+            aes(x = Comp.1, y = Comp.2, col = seed, shape = infected, size = dpi)
+            ) + 
+  geom_point() + 
+  xlab(paste0('PC1(',explained_var[1],'%)')) + 
+  ylab(paste0('PC2(',explained_var[2],'%)')) + 
   ggtitle('PCA log10 transformed (centered) data')
+
+
+# PCA using the plotPCA function
+# variance-stabilizing transformation
+vst_dds <- vst(dds)
+
+# plot the PCA
+# without customisation
+plotPCA(vst_dds, intgroup = c("seed", "infected", "dpi"))
+
+# customised PCA plot
+pcaData <- plotPCA(vst_dds, intgroup = c("seed", "infected", "dpi"), returnData = TRUE)
+percentVar <- round(100 * attr(pcaData, "percentVar"))
+ggplot(pcaData, aes(PC1, PC2, color = seed, shape = infected, size = dpi)) +
+  geom_point() +
+  xlab(paste0("PC1: ",percentVar[1],"% variance")) +
+  ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
+  coord_fixed() +
+  ggtitle("PCA customized plot")
+
 
 #####################################
 # Episode 06: differential expression
@@ -123,16 +144,16 @@ xp_design_mock_vs_infected = xp_design %>% filter(seed == "MgCl2" & dpi == "7")
 counts_filtered = counts[, colnames(counts) %in% xp_design_mock_vs_infected$sample]
 
 ## Creation of the DESeqDataSet object
-dds <- DESeqDataSetFromMatrix(countData = counts_filtered, 
+dds2 <- DESeqDataSetFromMatrix(countData = counts_filtered, 
                               colData = xp_design_mock_vs_infected, 
                               design = ~ infected)
 
 
 
-dds <- DESeq(dds)
-res <- results(dds, contrast = c("infected",                        # name of the factor
-                                  "Pseudomonas_syringae_DC3000",    # name of the numerator level for fold change
-                                  "mock"))                          # name of the denominator level 
+dds2 <- DESeq(dds2)
+res <- results(dds2, contrast = c("infected",                        # name of the factor
+                                  "Pseudomonas_syringae_DC3000",     # name of the numerator level for fold change
+                                  "mock"))                           # name of the denominator level 
 
 
 # how many genes differentially regulated ?
@@ -150,7 +171,7 @@ res %>%
 
 
 # one can also see the impact of false discovery rate method
-res_wo_fdr = results(dds, 
+res_wo_fdr = results(dds2, 
                      contrast = c("infected", "Pseudomonas_syringae_DC3000", "mock"), 
                      pAdjustMethod = "none")  
 
@@ -159,10 +180,10 @@ res_wo_fdr = results(dds,
 # MA plot
 #########
 # MA plot
-plotMA(object = dds, alpha = 0.01)
+plotMA(object = dds2, alpha = 0.01)
 
 # shrink effect size
-resLFC <- lfcShrink(dds = dds, 
+resLFC <- lfcShrink(dds = dds2, 
                   res = res,
                   type = "normal",
                   coef = 2) # corresponds to "infected_Pseudomonas_syringae_DC3000_vs_mock" comparison
@@ -227,19 +248,5 @@ dim(counts_normalised) # contains all gene info = 33,768 genes
 counts_normalised_only_diff = counts_normalised[row.names(counts_normalised) %in% genes_differential$gene, ]
 
 pheatmap(log10(counts_normalised_only_diff + 1), cluster_rows = T, cluster_cols = T)
-
-
-test = matrix(rnorm(200), 20, 10)
-test[1:10, seq(1, 10, 2)] = test[1:10, seq(1, 10, 2)] + 3
-test[11:20, seq(2, 10, 2)] = test[11:20, seq(2, 10, 2)] + 2
-test[15:20, seq(2, 10, 2)] = test[15:20, seq(2, 10, 2)] + 4
-colnames(test) = paste("Test", 1:10, sep = "")
-rownames(test) = paste("Gene", 1:20, sep = "")
-
-
-annotation_col = data.frame(
-  CellType = factor(rep(c("CT1", "CT2"), 5)), 
-  Time = 1:5)
-rownames(annotation_col) = paste("Test", 1:10, sep = "")
 
 

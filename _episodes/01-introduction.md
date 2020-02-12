@@ -64,11 +64,4 @@ This lesson has been formatted according to the [Carpentries Foundation](https:/
 
 This material builds from a lot of fantastic materials developed by others in the open data science community. Most of the content derives from the [Harvard Chan Bioinformatics Core](https://github.com/hbctraining) which are greatly acknowledge for the quality of their teaching materials.
 
-It also pulls from the following resources, which are highly recommended for further learning and as resources later on. Specific lessons will also cite more resources.
-
-- [R for Data Science](http://r4ds.had.co.nz/) by Hadley Wickham and Garrett Grolemund
-- [STAT 545](http://stat545.com/) by Jenny Bryan
-- [Happy Git with R](http://happygitwithr.com) by Jenny Bryan
-- [Software Carpentry](https://software-carpentry.org/lessons/) by the Carpentries
-
 {% include links.md %}
