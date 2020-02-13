@@ -30,6 +30,8 @@ xp_design <- read.delim("experimental_design_modified.txt", header = T, stringsA
 # change col names
 colnames(xp_design) <- c("sample", "seed", "infected", "dpi")
 
+# reorder
+counts <- counts[,xp_design$sample]
 
 ## Creation of the DESeqDataSet object
 dds <- DESeqDataSetFromMatrix(countData = counts, 
@@ -67,9 +69,6 @@ ggplot(size_factors_df, aes(x = sample, y = size, colour = seed)) +
 # extract normalised counts
 counts_normalised = counts(dds, normalized = TRUE)
 
-# we reorder samples according to their experimental conditions
-counts_normalised = counts[, xp_design$sample]
-
 ####################
 ## sample correlations
 ####################
@@ -96,40 +95,10 @@ cor(counts_normalised[,c(1,9,17,25)])
 ##########
 # PCA plot
 ##########
-# The PCA plot, log transform the data to prevent that the largest values will dominate the analyses. Center the data in order to be to analyze the relation between the objects and not the relation of the objects between the origin (0).
-
-counts_norm_trans = t(scale(t(log10(counts_normalised + 1)),scale = FALSE, center = TRUE))
-
-# perform the PCA analysis
-pca <- princomp(counts_norm_trans)
-
-# screeplot
-screeplot(pca, ylim=c(0,0.25))
-
-# copy the data from the first 2 components
-T12 = as.data.frame(pca$loadings[,1:2])
-# add the experimental design data to the PCA data.frame
-T12c <- cbind.data.frame(T12,xp_design)
-# calculate the explained variance per component
-explained_var = round(pca$sdev^2/sum(pca$sdev^2)*100,1)
-# plot the PCA score plot
-
-p <- ggplot(data = T12c, 
-            aes(x = Comp.1, y = Comp.2, col = seed, shape = infected, size = dpi)
-            ) + 
-  geom_point() + 
-  xlab(paste0('PC1(',explained_var[1],'%)')) + 
-  ylab(paste0('PC2(',explained_var[2],'%)')) + 
-  ggtitle('PCA log10 transformed (centered) data')
-
 
 # PCA using the plotPCA function
 # variance-stabilizing transformation
 vst_dds <- vst(dds)
-
-# plot the PCA
-# without customisation
-plotPCA(vst_dds, intgroup = c("seed", "infected", "dpi"))
 
 # customised PCA plot
 pcaData <- plotPCA(vst_dds, intgroup = c("seed", "infected", "dpi"), returnData = TRUE)
@@ -139,7 +108,7 @@ ggplot(pcaData, aes(PC1, PC2, color = seed, shape = infected, size = dpi)) +
   xlab(paste0("PC1: ",percentVar[1],"% variance")) +
   ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
   coord_fixed() +
-  ggtitle("PCA customized plot")
+  ggtitle("PCA plot")
 
 
 #####################################
@@ -240,11 +209,11 @@ pheatmap(counts_norm_small[1:10,], cluster_rows = F, cluster_cols = F)
 pheatmap(counts_norm_small[1:20,], cluster_rows = F, cluster_cols = F)
 pheatmap(counts_norm_small[1:50,], cluster_rows = F, cluster_cols = F)
 
-# scaled using a log10 transformation
+# scaled using a log2 transformation
 counts_norm_small[counts_norm_small == 0] <- 1
 
-pheatmap(log10(counts_norm_small), cluster_rows = F, cluster_cols = F)
-
+pheatmap(log2(counts_norm_small), cluster_rows = F, cluster_cols = F)
+pheatmap(scale(x = log2(counts_norm_small), center = T, scale = F), cluster_rows = F, cluster_cols = F)
 
 # clearer heatmaps by filtering out genes not differentially expressed
 genes_differential = 
@@ -259,7 +228,7 @@ dim(counts_normalised) # contains all gene info = 33,768 genes
 
 counts_normalised_only_diff = counts_normalised[row.names(counts_normalised) %in% genes_differential$gene, ]
 
-pheatmap(log10(counts_normalised_only_diff + 1), cluster_rows = T, cluster_cols = T)
+pheatmap(log2(counts_normalised_only_diff + 1), cluster_rows = F, cluster_cols = F)
 
 ~~~
 {: .language-r}
