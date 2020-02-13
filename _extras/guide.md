@@ -30,7 +30,7 @@ xp_design <- read.delim("experimental_design_modified.txt", header = T, stringsA
 # change col names
 colnames(xp_design) <- c("sample", "seed", "infected", "dpi")
 
-# reorder
+# reorder counts columns according to the experimental design file
 counts <- counts[,xp_design$sample]
 
 ## Creation of the DESeqDataSet object
@@ -85,16 +85,18 @@ cor(counts_normalised[,c(1:4)])
 pairs(x = counts_normalised[,c(1,9,17,25)],pch = 19, log = "xy")
 cor(counts_normalised[,c(1,9,17,25)])
 
-#counts_normalised_scaled = t(scale(t(counts_normalised), center = T, scale = F))
-#ggcorrplot::ggcorrplot(cor(counts_normalised_scaled))
-
-
-#counts_normalised_scaled = t(scale(t(log10(counts_normalised+1)), center = T, scale = F))
-#ggcorrplot::ggcorrplot(cor(counts_normalised_scaled))
-
 ##########
 # PCA plot
 ##########
+
+# log transform and center the data
+counts_norm_trans = t(scale(t(log10(counts_normalised + 1)),scale = FALSE, center = TRUE))
+
+# perform the PCA analysis
+pca <- princomp(counts_norm_trans)
+
+# screeplot
+screeplot(pca, ylim=c(0,0.25), main = "Screeplot")
 
 # PCA using the plotPCA function
 # variance-stabilizing transformation
@@ -102,7 +104,9 @@ vst_dds <- vst(dds)
 
 # customised PCA plot
 pcaData <- plotPCA(vst_dds, intgroup = c("seed", "infected", "dpi"), returnData = TRUE)
+
 percentVar <- round(100 * attr(pcaData, "percentVar"))
+
 ggplot(pcaData, aes(PC1, PC2, color = seed, shape = infected, size = dpi)) +
   geom_point() +
   xlab(paste0("PC1: ",percentVar[1],"% variance")) +
@@ -152,9 +156,9 @@ res %>%
 
 
 # one can also see the impact of false discovery rate method
-res_wo_fdr = results(dds2, 
-                     contrast = c("infected", "Pseudomonas_syringae_DC3000", "mock"), 
-                     pAdjustMethod = "none")  
+hist(res$pvalue, col="grey", main = "Non-adjusted p-value distribution")
+hist(res$padj, col="lightblue", main = "Adjusted p-value distribution")
+
 
 
 #########
@@ -168,6 +172,11 @@ resLFC <- lfcShrink(dds = dds2,
                   res = res,
                   type = "normal",
                   coef = 2) # corresponds to "infected_Pseudomonas_syringae_DC3000_vs_mock" comparison
+
+# MA plot shrinked
+plotMA(object = resLFC, alpha = 0.01)
+
+
 ############## 
 # Volcano plot
 #############
@@ -230,5 +239,8 @@ counts_normalised_only_diff = counts_normalised[row.names(counts_normalised) %in
 
 pheatmap(log2(counts_normalised_only_diff + 1), cluster_rows = F, cluster_cols = F)
 
+
+
+pheatmap(log2(counts_normalised_only_diff + 1), cluster_rows = F, cluster_cols = F)
 ~~~
 {: .language-r}

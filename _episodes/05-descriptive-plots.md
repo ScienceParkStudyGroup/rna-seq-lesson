@@ -329,16 +329,14 @@ Perform a principal component analysis (PCA) in which multivariate data (i.e. mo
 
 In the context of an RNA-seq experiment, it can be used to visualize the differences (distances) between samples and how it relates to the experimental design.
 
-
-The PCA plot, log transform the data to prevent that the largest values will dominate the analyses. Center the data in order to be to analyze the relation between the objects and not the relation of the objects between the origin (0).
 ~~~
-# transform
-counts_norm_trans = t(scale(t(log10(counts_normalised + 1)),scale=FALSE,center = TRUE))
+# log transform and center the data
+counts_norm_trans = t(scale(t(log10(counts_normalised + 1)),scale = FALSE, center = TRUE))
 
 # perform the PCA analysis
 pca <- princomp(counts_norm_trans)
 
-# plot the percentage of variance explained by the 10 first principal components
+# screeplot
 screeplot(pca, ylim=c(0,0.25))
 ~~~
 {: .language-r}
@@ -346,53 +344,30 @@ screeplot(pca, ylim=c(0,0.25))
 <img src="../img/screeplot.png" width="600px" alt="Screeplot" >
 
 Let's plot the samples along the two first components that explain \~40% of the total variance.
-We are going to do it the complicated way but with full control of what we are doing!
+
+This can be done with the `plotPCA()` function of the `DESeq2` package. First, we need to stabilise the variance across genes with different means using a variance stabilising transformation or `vst()` . If interested, you can check the [corresponding detailed section in the DESeq2 vignette](https://bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#data-transformations-and-visualization).
+
 ~~~
-# copy the data from the first 2 components
-T12 = as.data.frame(pca$loadings[,1:2])
-
-# add the experimental design data to the PCA data.frame
-T12c <- cbind.data.frame(T12, xp_design)
-
-# calculate the explained variance per component
-explained_var = round(x = pca$sdev^2 / sum(pca$sdev^2)*100, digits = 1)
-
-# plot the PCA score plot
-p <- ggplot(data = T12c, aes(x = Comp.1, y = Comp.2, col = seed, shape = infected, size = dpi)) + 
-              geom_point() + 
-              xlab(paste0('PC1(',explained_var[1],'%)')) + 
-              ylab(paste0('PC2(',explained_var[2],'%)')) + 
-  ggtitle('PCA log10 transformed (centered) data')
-~~~
-{: .language-r}
-
-<img src="../img/pca_all_factors.png" width="800px" alt="complete PCA" >
-
-This can also be done with the `plotPCA()` function of the `DESeq2` package. While the function call is much simpler, we do not have a clear transparent view of how the plot is constructed. 
-But first, we need to stabilise the variance across genes with different means using a variance stabilising transformation or `vst()` . If interested, you can check the [corresponding detailed section in the DESeq2 vignette](https://bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#data-transformations-and-visualization).
-~~~
+# PCA using the plotPCA function
 # variance-stabilizing transformation
 vst_dds <- vst(dds)
 
-# plot the PCA
-plotPCA(vst_dds, intgroup = c("seed", "infected", "dpi"))
-~~~
-{: .language-r}
-
-You can also extract the PCA data and customize the plot using `ggplot2`.
-~~~
 # customised PCA plot
 pcaData <- plotPCA(vst_dds, intgroup = c("seed", "infected", "dpi"), returnData = TRUE)
+
 percentVar <- round(100 * attr(pcaData, "percentVar"))
+
 ggplot(pcaData, aes(PC1, PC2, color = seed, shape = infected, size = dpi)) +
   geom_point() +
   xlab(paste0("PC1: ",percentVar[1],"% variance")) +
   ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
-  coord_fixed()
+  coord_fixed() +
+  ggtitle("PCA plot")
 ~~~
 {: .language-r}
 
-<img src="../img/pca_customized.png" width="800px" alt="customized PCA plot" >
+<img src="../img/pca.png" width="800px" alt="complete PCA" >
+
 
 ## Estimation of the dispersion
 For Master level!

@@ -12,7 +12,7 @@ objectives:
 - "O2"
 - "O3"
 keypoints:
-- "KP1"
+- "Make sure you understand what you are comparing and to what."
 - "KP2"
 - "KP3"
 
@@ -41,12 +41,15 @@ a DESeqDataSet object from input tables.
 # import counts and experimental design 
 counts <- read.delim("counts.txt", header = T, stringsAsFactors = F)
 genes <- counts[,1]
-counts <- counts[,-1] # to eliminate the gene columns that won't match sample names in the design file.
-
+counts <- counts[,-1]
+row.names(counts) <- genes
 xp_design <- read.delim("experimental_design_modified.txt", header = T, stringsAsFactors = F, colClasses = rep("character",4))
 
 # change col names
-colnames(xp_design) <- c("sample", "growth", "infected", "dpi")
+colnames(xp_design) <- c("sample", "seed", "infected", "dpi")
+
+# reorder counts columns according to the experimental design file
+counts <- counts[,xp_design$sample]
 ~~~
 {:.language-r}
 
@@ -60,7 +63,7 @@ xp_design_mock_vs_infected = xp_design %>% filter(growth == "MgCl2" & dpi == "7"
 counts_filtered = counts[, colnames(counts) %in% xp_design_mock_vs_infected$sample]
 
 ## Creation of the DESeqDataSet
-dds <- DESeqDataSetFromMatrix(countData = counts_filtered, 
+dds2 <- DESeqDataSetFromMatrix(countData = counts_filtered, 
                               colData = xp_design_mock_vs_infected, 
                               design = ~ infected)
 
@@ -73,7 +76,7 @@ Please consult [the dedicated section of the DESeq2 vignette](http://bioconducto
 
 One way to see how levels are interpreted within the DESeqDataSet object is to display the factor levels. 
 ~~~
-dds$infected
+dds2$infected
 ~~~
 {:.language-r}
 
@@ -96,8 +99,8 @@ Differential gene expression analysis will consist of simply two lines of code:
 2. Then, results are extracted using the `results` function on the `dds` object and results will be extracted as a table under the name `res` (short for results). 
 
 ~~~
-dds <- DESeq(dds)
-res <- results(dds)
+dds2 <- DESeq(dds2)
+res <- results(dds2)
 
 # have a peek at the DESeqResults object 
 res
@@ -126,7 +129,7 @@ The complete explanation comes from the [DESeq2 vignette](http://bioconductor.or
 A possible preferred way is to specify the comparison of interest explicitly. We are going to name this new result object `res2` and compare it with the previous one called `res`.
 
 ~~~
-res2 <- results(dds, contrast = c("infected",                       # name of the factor
+res2 <- results(dds2, contrast = c("infected",                       # name of the factor
                                   "Pseudomonas_syringae_DC3000",    # name of the numerator level for fold change
                                   "mock"))                          # name of the denominator level    
 
@@ -224,18 +227,18 @@ res %>%
 {: .language-r}
 
 Histogram p-values
-This [blog post](http://varianceexplained.org/statistics/interpreting-pvalue-histogram/) explains in detail what you can expect from each p-value distribution profile
+This [blog post](http://varianceexplained.org/statistics/interpreting-pvalue-histogram/) explains in detail what you can expect from each p-value distribution profile.
 ~~~
 # distribution of adjusted p-values
-hist(res$padj, col = "grey")
+hist(res$padj, col="lightblue", main = "Adjusted p-value distribution")
 ~~~
 {: .language-r}
 
 <img src="../img/p_values_adjusted.png" width="800px" alt="p-values distribution (corrected for false discovery rate)">
 
 ~~~
-# distribution of adjusted p-values
-hist(res$padj, col = "grey")
+# distribution of non-adjusted p-values
+hist(res$pvalue, col="grey", main = "Non-adjusted p-value distribution")
 ~~~
 {: .language-r}
 
@@ -250,7 +253,7 @@ The MA plot originally comes from microarray studies that compared two condition
 > Points will be colored red if the adjusted p value is less than 0.1. Points which fall out of the window are plotted as open triangles pointing either up or down.
 
 ~~~
-plotMA(dds, alpha = 0.01)
+plotMA(dds2, alpha = 0.01)
 ~~~
 {: .language-r}
 
@@ -258,17 +261,22 @@ plotMA(dds, alpha = 0.01)
 
 Shrinkage of effect size (LFC estimates) is useful for visualization and ranking of genes. It is more useful visualize the MA-plot for the shrunken log2 fold changes, which remove the noise associated with log2 fold changes from low count genes without requiring arbitrary filtering thresholds. This helps to get more meaningful log2 fold changes for all genes independently of their expression level. 
 ~~~
-resLFC <- lfcShrink(dds = dds, 
+resLFC <- lfcShrink(dds = dds2, 
                   res = res,
                   type = "normal",
                   coef = 2) # corresponds to "infected_Pseudomonas_syringae_DC3000_vs_mock" comparison
 ~~~
 {: .language-r}
 
-You can see that genes with low counts are now 
+
+~~~
+plotMA(resLFC, alpha = 0.01)
+~~~
+{: .language-r}
+
+You can see that genes with low counts are now shrinked. 
+
 <img src="../img/MA_plot_shrinked.png" width="800px" alt="MA plot" >
-
-
 
 
 ## Volcano plot

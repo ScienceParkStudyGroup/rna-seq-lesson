@@ -26,10 +26,10 @@ title:
 
 > ## What you need to download.
 >
-> Please download the necessary data files for the lesson [from the Zenodo archive](https://zenodo.org/record/3627021).  
+> Please download the necessary data files for the lesson [from the Zenodo archive](https://doi.org/10.5281/zenodo.3666262).  
 >
 > - **Counts**: A `counts.txt` dataframe of the sample raw counts. It is a tab separated file therefore data are in tabulated separated columns.
-> - **Experimental design**: the `Experimental_design.txt` dataframe indicates the correspondence between samples and experimental conditions (e.g. control, treated).   
+> - **Experimental design**: the `experimental_design.txt` dataframe indicates the correspondence between samples and experimental conditions (e.g. control, treated).   
 > - Please read the original study description below and have a look at the file preview to understand their format.  
 > - These two files were obtained by running the `v0.1.1` version of a [RNA-Seq bioinformatic pipeline](https://github.com/KoesGroup/Snakemake_hisat-DESeq/blob/master/README.md) on the [mRNA-Seq sequencing files from Vogel et al. (2016)](https://www.ebi.ac.uk/ena/data/view/PRJEB13938).
 {: .prereq}
