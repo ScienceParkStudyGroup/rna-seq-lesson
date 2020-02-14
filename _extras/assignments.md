@@ -29,4 +29,10 @@ Assignments are mainly designed for student curriculums but can be also used to 
 ## Back to back
 By comparing the outputs of paired assignments, we can answer some specific questions:
 
-Back to back 1: 
+
+| back to back | question                                          | comparison                         |
+|--------------|---------------------------------------------------|------------------------------------|
+| A            | early versus late DC3000 infection                | tutorial versus assignment #2      |
+| B            | early versus late effect of Fr1 seed coating      | assignment #2 versus assignment #3 |
+| C            | early versus late effect of PA1 seed coating      | assignment #4 versus assignment #5 |
+| D            | effect of Fr1 on the response to DC3000 infection | assignment #6 versus assignment #7 |
