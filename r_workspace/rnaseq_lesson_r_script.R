@@ -77,15 +77,6 @@ cor(counts_normalised[,c(1,9,17,25)])
 # PCA plot
 ##########
 
-# log transform and center the data
-counts_norm_trans = t(scale(t(log10(counts_normalised + 1)),scale = FALSE, center = TRUE))
-
-# perform the PCA analysis
-pca <- princomp(counts_norm_trans)
-
-# screeplot
-screeplot(pca, ylim=c(0,0.25), main = "Screeplot")
-
 # PCA using the plotPCA function
 # variance-stabilizing transformation
 vst_dds <- vst(dds)
