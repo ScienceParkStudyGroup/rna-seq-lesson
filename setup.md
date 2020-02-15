@@ -29,7 +29,7 @@ title:
 > Please download the necessary data files for the lesson [from the Zenodo archive](https://doi.org/10.5281/zenodo.3666262).  
 >
 > - **Counts**: A `counts.txt` dataframe of the sample raw counts. It is a tab separated file therefore data are in tabulated separated columns.
-> - **Experimental design**: the `experimental_design.txt` dataframe indicates the correspondence between samples and experimental conditions (e.g. control, treated).   
+> - **Experimental design**: the `experimental_design_modified.txt` dataframe indicates the correspondence between samples and experimental conditions (e.g. control, treated).   
 > - Please read the original study description below and have a look at the file preview to understand their format.  
 > - These two files were obtained by running the `v0.1.1` version of a [RNA-Seq bioinformatic pipeline](https://github.com/KoesGroup/Snakemake_hisat-DESeq/blob/master/README.md) on the [mRNA-Seq sequencing files from Vogel et al. (2016)](https://www.ebi.ac.uk/ena/data/view/PRJEB13938).
 {: .prereq}
@@ -63,55 +63,55 @@ The dimension of this table are 33,769 rows x 49 columns.
 
 #### Experimental design table
 
-| sample     | growth condition                             | infect                      | sampling time point (days) |
-|------------|----------------------------------------------|-----------------------------|----------------------------|
-| ERS1147158 | 10 mM MgCl2                                  | mock                        | 2                          |
-| ERS1147169 | 10 mM MgCl2                                  | mock                        | 2                          |
-| ERS1147182 | 10 mM MgCl2                                  | mock                        | 2                          |
-| ERS1147194 | 10 mM MgCl2                                  | mock                        | 2                          |
-| ERS1147204 | 10 mM MgCl2                                  | mock                        | 7                          |
-| ERS1147206 | 10 mM MgCl2                                  | mock                        | 7                          |
-| ERS1147207 | 10 mM MgCl2                                  | mock                        | 7                          |
-| ERS1147208 | 10 mM MgCl2                                  | mock                        | 7                          |
-| ERS1147159 | 10 mM MgCl2                                  | Pseudomonas syringae DC3000 | 2                          |
-| ERS1147160 | 10 mM MgCl2                                  | Pseudomonas syringae DC3000 | 2                          |
-| ERS1147161 | 10 mM MgCl2                                  | Pseudomonas syringae DC3000 | 2                          |
-| ERS1147209 | 10 mM MgCl2                                  | Pseudomonas syringae DC3000 | 2                          |
-| ERS1147162 | 10 mM MgCl2                                  | Pseudomonas syringae DC3000 | 7                          |
-| ERS1147163 | 10 mM MgCl2                                  | Pseudomonas syringae DC3000 | 7                          |
-| ERS1147164 | 10 mM MgCl2                                  | Pseudomonas syringae DC3000 | 7                          |
-| ERS1147165 | 10 mM MgCl2                                  | Pseudomonas syringae DC3000 | 7                          |
-| ERS1147186 | Methylobacterium extorquens PA1 colonization | mock                        | 2                          |
-| ERS1147187 | Methylobacterium extorquens PA1 colonization | mock                        | 2                          |
-| ERS1147188 | Methylobacterium extorquens PA1 colonization | mock                        | 2                          |
-| ERS1147189 | Methylobacterium extorquens PA1 colonization | mock                        | 2                          |
-| ERS1147190 | Methylobacterium extorquens PA1 colonization | mock                        | 7                          |
-| ERS1147191 | Methylobacterium extorquens PA1 colonization | mock                        | 7                          |
-| ERS1147192 | Methylobacterium extorquens PA1 colonization | mock                        | 7                          |
-| ERS1147195 | Methylobacterium extorquens PA1 colonization | mock                        | 7                          |
-| ERS1147196 | Methylobacterium extorquens PA1 colonization | Pseudomonas syringae DC3000 | 2                          |
-| ERS1147197 | Methylobacterium extorquens PA1 colonization | Pseudomonas syringae DC3000 | 2                          |
-| ERS1147198 | Methylobacterium extorquens PA1 colonization | Pseudomonas syringae DC3000 | 2                          |
-| ERS1147199 | Methylobacterium extorquens PA1 colonization | Pseudomonas syringae DC3000 | 2                          |
-| ERS1147200 | Methylobacterium extorquens PA1 colonization | Pseudomonas syringae DC3000 | 7                          |
-| ERS1147201 | Methylobacterium extorquens PA1 colonization | Pseudomonas syringae DC3000 | 7                          |
-| ERS1147202 | Methylobacterium extorquens PA1 colonization | Pseudomonas syringae DC3000 | 7                          |
-| ERS1147203 | Methylobacterium extorquens PA1 colonization | Pseudomonas syringae DC3000 | 7                          |
-| ERS1147166 | Sphingomonas melonis Fr1 colonization        | mock                        | 2                          |
-| ERS1147167 | Sphingomonas melonis Fr1 colonization        | mock                        | 2                          |
-| ERS1147168 | Sphingomonas melonis Fr1 colonization        | mock                        | 2                          |
-| ERS1147171 | Sphingomonas melonis Fr1 colonization        | mock                        | 2                          |
-| ERS1147172 | Sphingomonas melonis Fr1 colonization        | mock                        | 7                          |
-| ERS1147173 | Sphingomonas melonis Fr1 colonization        | mock                        | 7                          |
-| ERS1147174 | Sphingomonas melonis Fr1 colonization        | mock                        | 7                          |
-| ERS1147175 | Sphingomonas melonis Fr1 colonization        | mock                        | 7                          |
-| ERS1147176 | Sphingomonas melonis Fr1 colonization        | Pseudomonas syringae DC3000 | 2                          |
-| ERS1147177 | Sphingomonas melonis Fr1 colonization        | Pseudomonas syringae DC3000 | 2                          |
-| ERS1147178 | Sphingomonas melonis Fr1 colonization        | Pseudomonas syringae DC3000 | 2                          |
-| ERS1147179 | Sphingomonas melonis Fr1 colonization        | Pseudomonas syringae DC3000 | 2                          |
-| ERS1147181 | Sphingomonas melonis Fr1 colonization        | Pseudomonas syringae DC3000 | 7                          |
-| ERS1147183 | Sphingomonas melonis Fr1 colonization        | Pseudomonas syringae DC3000 | 7                          |
-| ERS1147184 | Sphingomonas melonis Fr1 colonization        | Pseudomonas syringae DC3000 | 7                          |
-| ERS1147185 | Sphingomonas melonis Fr1 colonization        | Pseudomonas syringae DC3000 | 7                          |
+dpi: days post-inoculation. 
 
-
+| sample     | growth                          | infected                    | dpi |
+|------------|---------------------------------|-----------------------------|-----|
+| ERR1406259 | MgCl2                           | mock                        | 2   |
+| ERR1406271 | MgCl2                           | mock                        | 2   |
+| ERR1406282 | MgCl2                           | mock                        | 2   |
+| ERR1406294 | MgCl2                           | mock                        | 2   |
+| ERR1406305 | MgCl2                           | mock                        | 7   |
+| ERR1406306 | MgCl2                           | mock                        | 7   |
+| ERR1406307 | MgCl2                           | mock                        | 7   |
+| ERR1406308 | MgCl2                           | mock                        | 7   |
+| ERR1406260 | MgCl2                           | Pseudomonas_syringae_DC3000 | 2   |
+| ERR1406261 | MgCl2                           | Pseudomonas_syringae_DC3000 | 2   |
+| ERR1406262 | MgCl2                           | Pseudomonas_syringae_DC3000 | 2   |
+| ERR1406309 | MgCl2                           | Pseudomonas_syringae_DC3000 | 2   |
+| ERR1406263 | MgCl2                           | Pseudomonas_syringae_DC3000 | 7   |
+| ERR1406264 | MgCl2                           | Pseudomonas_syringae_DC3000 | 7   |
+| ERR1406265 | MgCl2                           | Pseudomonas_syringae_DC3000 | 7   |
+| ERR1406266 | MgCl2                           | Pseudomonas_syringae_DC3000 | 7   |
+| ERR1406287 | Methylobacterium_extorquens_PA1 | mock                        | 2   |
+| ERR1406288 | Methylobacterium_extorquens_PA1 | mock                        | 2   |
+| ERR1406289 | Methylobacterium_extorquens_PA1 | mock                        | 2   |
+| ERR1406290 | Methylobacterium_extorquens_PA1 | mock                        | 2   |
+| ERR1406291 | Methylobacterium_extorquens_PA1 | mock                        | 7   |
+| ERR1406292 | Methylobacterium_extorquens_PA1 | mock                        | 7   |
+| ERR1406293 | Methylobacterium_extorquens_PA1 | mock                        | 7   |
+| ERR1406296 | Methylobacterium_extorquens_PA1 | mock                        | 7   |
+| ERR1406297 | Methylobacterium_extorquens_PA1 | Pseudomonas_syringae_DC3000 | 2   |
+| ERR1406298 | Methylobacterium_extorquens_PA1 | Pseudomonas_syringae_DC3000 | 2   |
+| ERR1406299 | Methylobacterium_extorquens_PA1 | Pseudomonas_syringae_DC3000 | 2   |
+| ERR1406300 | Methylobacterium_extorquens_PA1 | Pseudomonas_syringae_DC3000 | 2   |
+| ERR1406301 | Methylobacterium_extorquens_PA1 | Pseudomonas_syringae_DC3000 | 7   |
+| ERR1406302 | Methylobacterium_extorquens_PA1 | Pseudomonas_syringae_DC3000 | 7   |
+| ERR1406303 | Methylobacterium_extorquens_PA1 | Pseudomonas_syringae_DC3000 | 7   |
+| ERR1406304 | Methylobacterium_extorquens_PA1 | Pseudomonas_syringae_DC3000 | 7   |
+| ERR1406268 | Sphingomonas_melonis_Fr1        | mock                        | 2   |
+| ERR1406269 | Sphingomonas_melonis_Fr1        | mock                        | 2   |
+| ERR1406270 | Sphingomonas_melonis_Fr1        | mock                        | 2   |
+| ERR1406272 | Sphingomonas_melonis_Fr1        | mock                        | 2   |
+| ERR1406273 | Sphingomonas_melonis_Fr1        | mock                        | 7   |
+| ERR1406274 | Sphingomonas_melonis_Fr1        | mock                        | 7   |
+| ERR1406275 | Sphingomonas_melonis_Fr1        | mock                        | 7   |
+| ERR1406276 | Sphingomonas_melonis_Fr1        | mock                        | 7   |
+| ERR1406277 | Sphingomonas_melonis_Fr1        | Pseudomonas_syringae_DC3000 | 2   |
+| ERR1406278 | Sphingomonas_melonis_Fr1        | Pseudomonas_syringae_DC3000 | 2   |
+| ERR1406279 | Sphingomonas_melonis_Fr1        | Pseudomonas_syringae_DC3000 | 2   |
+| ERR1406280 | Sphingomonas_melonis_Fr1        | Pseudomonas_syringae_DC3000 | 2   |
+| ERR1406281 | Sphingomonas_melonis_Fr1        | Pseudomonas_syringae_DC3000 | 7   |
+| ERR1406284 | Sphingomonas_melonis_Fr1        | Pseudomonas_syringae_DC3000 | 7   |
+| ERR1406285 | Sphingomonas_melonis_Fr1        | Pseudomonas_syringae_DC3000 | 7   |
+| ERR1406286 | Sphingomonas_melonis_Fr1        | Pseudomonas_syringae_DC3000 | 7   |
