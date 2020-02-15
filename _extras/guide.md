@@ -1,7 +1,6 @@
 ---
 title: "Instructor Notes"
 ---
-FIXME
 
 {% include links.md %}
 
@@ -88,15 +87,6 @@ cor(counts_normalised[,c(1,9,17,25)])
 ##########
 # PCA plot
 ##########
-
-# log transform and center the data
-counts_norm_trans = t(scale(t(log10(counts_normalised + 1)),scale = FALSE, center = TRUE))
-
-# perform the PCA analysis
-pca <- princomp(counts_norm_trans)
-
-# screeplot
-screeplot(pca, ylim=c(0,0.25), main = "Screeplot")
 
 # PCA using the plotPCA function
 # variance-stabilizing transformation
@@ -209,38 +199,75 @@ EnhancedVolcano(toptable = resLFC,
 ######### 
 # Heatmap
 #########
-counts_normalised_scaled = t(scale(t(counts_normalised), center = T, scale = F))
-
-counts_norm_small <- counts_normalised[1:50,]
+#counts_normalised_scaled = t(scale(t(counts_normalised), center = T, scale = F))
 
 # not scaled
-pheatmap(counts_norm_small[1:10,], cluster_rows = F, cluster_cols = F)
-pheatmap(counts_norm_small[1:20,], cluster_rows = F, cluster_cols = F)
-pheatmap(counts_norm_small[1:50,], cluster_rows = F, cluster_cols = F)
+pheatmap(counts_normalised[1:10,], cluster_rows = F, cluster_cols = F)
+pheatmap(counts_normalised[1:20,], cluster_rows = F, cluster_cols = F)
+pheatmap(counts_normalised[1:50,], cluster_rows = F, cluster_cols = F)
 
 # scaled using a log2 transformation
-counts_norm_small[counts_norm_small == 0] <- 1
+counts_normalised[counts_normalised == 0] <- 1
 
-pheatmap(log2(counts_norm_small), cluster_rows = F, cluster_cols = F)
-pheatmap(scale(x = log2(counts_norm_small), center = T, scale = F), cluster_rows = F, cluster_cols = F)
+pheatmap(log2(counts_normalised[1:50,]), cluster_rows = F, cluster_cols = F)
 
 # clearer heatmaps by filtering out genes not differentially expressed
 genes_differential = 
   res %>%
   as.data.frame() %>%
   mutate(gene = row.names(res)) %>% 
-  filter(padj < 0.01) %>% 
+  filter(padj < 0.001) %>% 
   select(gene) 
   
 # use the genes names in res_only_diff to filter the counts_normalised matrix
 dim(counts_normalised) # contains all gene info = 33,768 genes
 
+# filter
 counts_normalised_only_diff = counts_normalised[row.names(counts_normalised) %in% genes_differential$gene, ]
+dim(counts_normalised_only_diff)
 
-pheatmap(log2(counts_normalised_only_diff + 1), cluster_rows = F, cluster_cols = F)
+# no clustering
+pheatmap(log2(counts_normalised_only_diff + 1), 
+         cluster_rows = F, 
+         cluster_cols = F, 
+         show_rownames = F, 
+         show_colnames = F,
+         main = "No clustering")
 
+# cluster genes
+pheatmap(log2(counts_normalised_only_diff + 1), 
+         cluster_rows = T, 
+         cluster_cols = F,
+         show_rownames = F, 
+         show_colnames = F, 
+         main = "Clustering of genes")
 
+# cluster genes and samples
+pheatmap(log2(counts_normalised_only_diff + 1), 
+         cluster_rows = T, 
+         cluster_cols = T,
+         show_rownames = F, 
+         show_colnames = F, 
+         main = "Clustering of genes and samples")
 
-pheatmap(log2(counts_normalised_only_diff + 1), cluster_rows = F, cluster_cols = F)
+# even clearer heatmaps by filtering out genes not differentially expressed
+# and genes with a high fold change
+genes_differential_fold = 
+  res %>%
+  as.data.frame() %>%
+  mutate(gene = row.names(res)) %>% 
+  filter(padj < 0.001) %>% 
+  filter(log2FoldChange > 4) %>% 
+  select(gene) 
+
+counts_normalised_only_diff_fold = counts_normalised[row.names(counts_normalised) %in% genes_differential_fold$gene, ]
+
+# cluster genes and samples
+pheatmap(log2(counts_normalised_only_diff_fold + 1), 
+         cluster_rows = T, 
+         cluster_cols = T,
+         show_rownames = F, 
+         show_colnames = F, 
+         main = "Clustering of genes and samples")
 ~~~
 {: .language-r}
