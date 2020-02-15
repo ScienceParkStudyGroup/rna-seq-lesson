@@ -325,25 +325,11 @@ cor(counts_normalised[,c(1,9,17,25)])
 <img src="../img/correlation_different_conditions.png" width="600px" alt="weakly correlated samples" >
 
 ## Principal Component Analysis
-Perform a principal component analysis (PCA) in which multivariate data (i.e. more than 1 variable) is transformed to a new coordinate system in which each component (axis) explains as as much variance as possible. PCA therefore can be used to visualize (and summarize) the distance between objects (and variables) from a multi-dimensional space to a 2 dimensional plot.
-
+Perform a principal component analysis (PCA) in which multivariate data (i.e. more than 1 variable) is transformed to a new coordinate system in which each component (axis) explains as as much variance as possible. PCA therefore can be used to visualize (and summarize) the relation between objects (and variables) from a multi-dimensional space to a two dimensional plot.
+ 
 In the context of an RNA-seq experiment, it can be used to visualize the differences (distances) between samples and how it relates to the experimental design.
 
-~~~
-# log transform and center the data
-counts_norm_trans = t(scale(t(log10(counts_normalised + 1)),scale = FALSE, center = TRUE))
-
-# perform the PCA analysis
-pca <- princomp(counts_norm_trans)
-
-# screeplot
-screeplot(pca, ylim=c(0,0.25))
-~~~
-{: .language-r}
-
-<img src="../img/screeplot.png" width="600px" alt="Screeplot" >
-
-Let's plot the samples along the two first components that explain \~40% of the total variance.
+Let's plot the samples along the two first components.
 
 This can be done with the `plotPCA()` function of the `DESeq2` package. First, we need to stabilise the variance across genes with different means using a variance stabilising transformation or `vst()` . If interested, you can check the [corresponding detailed section in the DESeq2 vignette](https://bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#data-transformations-and-visualization).
 
