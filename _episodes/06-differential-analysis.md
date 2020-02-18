@@ -40,7 +40,7 @@ This will yield a table containing genes $$log_{2}$$ fold change and their corre
 
 Since we do not want to work on all comparisons, we will filter out the samples and conditions that we do not need. Only the mock growth and the _P. syringae_ infected condition will remain.  
 
-You should still have the `counts` and `xp_design` objects in your R environment. If not please check the previous episode. 
+You should still have the `counts` and `xp_design` objects in your R environment. If not please check the previous episode section _DESeq2 count normalization_.
 
 ~~~
 # filter design file (mock versus P. syringae at 7 dpi)
