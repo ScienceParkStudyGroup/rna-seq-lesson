@@ -199,8 +199,8 @@ We should always make sure that we have sample names that match between the two 
 
 ```r
 ### Check that sample names match in both files
-all(colnames(counts) %in% rownames(xp_design)
-all(colnames(counts) == rownames(xp_design)
+all(colnames(counts) %in% xp_design$sample)
+all(colnames(counts) == xp_design$sample)
 ```
 
 If your data did not match, you could use the `match()` function to rearrange them to be matching.
