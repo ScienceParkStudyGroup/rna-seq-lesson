@@ -180,6 +180,9 @@ xp_design <- read.delim("experimental_design.txt", header = T, stringsAsFactors 
 
 # change col names
 colnames(xp_design) <- c("sample", "seed", "infected", "dpi")
+
+# reorder counts columns according to the experimental design file
+counts <- counts[,xp_design$sample]
 ~~~
 {: .language-r}
 
