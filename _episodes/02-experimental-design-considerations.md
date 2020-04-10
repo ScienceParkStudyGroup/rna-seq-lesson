@@ -1,37 +1,53 @@
 ---
 title: "Experimental design"
-teaching: 30
-exercises: 0
+teaching: 60
+exercises: 30
 questions:
+- "What are the key statistical concepts I need to know for experimental design?"
+- "What are type I and type II errors?"
+- "What are the source of variability in an experiment?"
+- "What are the 3 cores principles of (good) experimental design?"
 - "Why is replication important in an (RNA-seq) experiment?"
 - "What can I do to avoid confounding factors?"
 - "How can I solve typical issues such as batch effects?"
 objectives:
-- "Describe the importance of replicates for RNA-seq differential expression experiments."
+- "Explain the statistical concepts of population, samples, hypothesis and different types of error."
+- "Prepare an experiment following best practices in experimental design."
+- "Be able to select the number of biological replicates needed for a certain Describe the importance of replicates for RNA-seq differential expression experiments."
 - "Explain the relationship between the number of biological replicates, sequencing depth and the differentially expressed genes identified."
 - "Demonstrate how to design an RNA-seq experiment that avoids confounding and batch effects."
 keypoints:
-- "Key point 1."
-- "Key point 2."
-- "Key point 3."
+- "Replication, randomization and blocking are the three core principles of proper experimental design."
+- "Confounding happens when two sources of variation cannot be distinguished from one another."
+- "Randomize what you cannot control, block what you can control."
+- "Maximizing the number of biological replicates in RNA-seq experiments is key to increase statistical power and lower the number of false negatives."
 ---
 
 ## Table of Contents
-1. [Introduction](#introduction)
-2. [Replicates](#replicates)
+- [Introduction](#introduction)
+- [Replicates](#replicates)
+- [Confounding](#confounding)
+- [Batch effects](#batch-effects)
+  - [How to know whether you have batches?](#how-to-know-whether-you-have-batches)
+  - [Best practices regarding batches:](#best-practices-regarding-batches)
 
 ## Introduction
-While most scientists would rapidly dive into sample preparation and searching for a sequencing provider, it is crucial to spend enough time on the design of the RNA-seq experiment itself. 
+While most scientists would rapidly dive into RNA-seq sample preparation and searching for a sequencing provider, it is crucial to spend enough time on the design of the experiment itself. After all, a typical RNA-seq experiment is also an experiment like any other.  
 
-Understanding the steps in the experimental process of RNA extraction and preparation of RNA-Seq libraries is helpful for designing an RNA-Seq experiment, but there are special considerations that should be highlighted that can greatly affect the quality of a differential expression analysis. 
+Statistics are often overlooked (at best) or avoided (very often) by wet-lab biologists since it is often thought of being both complex and boring. Yet, this episode will hopefully prove that is can be simply explained and that a few pragmatic considerations will usually save a considerable amount of time and money.  
 
-These important considerations include:
+## Statistical refresher
+First, let's have a quick look at important notions useful to understand the rest of this episode. 
 
-1. Number and type of **replicates**
-2. Avoiding **confounding**
-3. Addressing **batch effects**
+### Population and sample 
 
-We will go over each of these considerations in detail, discussing best practice and optimal design.
+
+
+
+
+
+
+
 
 ## Replicates
 
@@ -191,5 +207,3 @@ Your experiment has three different treatment groups, A, B, and C. Due to the le
   | sample11 | C | M | 3 |
   | sample12 | C | M | 4 |
 
-***    
-*This lesson has been developed by members of the teaching team at the [Harvard Chan Bioinformatics Core (HBC)](http://bioinformatics.sph.harvard.edu/). These are open access materials distributed under the terms of the [Creative Commons Attribution license](https://creativecommons.org/licenses/by/4.0/) (CC BY 4.0), which permits unrestricted use, distribution, and reproduction in any medium, provided the original author and source are credited.*
