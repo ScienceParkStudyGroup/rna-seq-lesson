@@ -34,8 +34,6 @@ To cite this lesson, please consult with [CITATION](CITATION)
 ## Credits
 This lesson is heavily based on teaching materials from the [Harvard Chan Bioinformatics Core (HBC) in-depth NGS data analysis course](https://hbctraining.github.io/In-depth-NGS-Data-Analysis-Course/). Materials have been adapted and some exercises created to comply with the [Carpentries Foundation teaching requirements](https://carpentries.github.io/instructor-training/).
 
-[lesson-example]: https://carpentries.github.io/lesson-example
-
 ## Contributing
 
 We welcome all contributions to improve the lesson! Maintainers will do their best to help you if you have any
