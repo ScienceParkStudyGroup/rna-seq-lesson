@@ -41,29 +41,29 @@ The first step in the DE analysis workflow is count normalization, which is nece
 The counts of mapped reads for each gene is proportional to the expression of RNA ("interesting") in addition to many other factors ("uninteresting"). Normalization is the process of scaling raw count values to account for the "uninteresting" factors. In this way the expression levels are more comparable between and/or within samples.
 
 The main factors often considered during normalization are:
- 
+
  - **Sequencing depth:** Accounting for sequencing depth is necessary for comparison of gene expression between samples. In the example below, each gene appears to have doubled in expression in *Sample A* relative to *Sample B*, however this is a consequence of *Sample A* having double the sequencing depth. 
 
     <img src="../img/normalization_methods_depth.png" width="400">
-  
+
   >***NOTE:** In the figure above, each pink and green rectangle represents a read aligned to a gene. Reads connected by dashed lines connect a read spanning an intron.*
- 
+
  - **Gene length:** Accounting for gene length is necessary for comparing expression between different genes within the same sample. In the example, *Gene X* and *Gene Y* have similar levels of expression, but the number of reads mapped to *Gene X* would be many more than the number mapped to *Gene Y* because *Gene X* is longer.
- 
+
     <img src="../img/normalization_methods_length.png" width="200">
- 
+
  - **RNA composition:** A few highly differentially expressed genes between samples, differences in the number of genes expressed between samples, or presence of contamination can skew some types of normalization methods. Accounting for RNA composition is recommended for accurate comparison of expression between samples, and is particularly important when performing differential expression analyses [[1](https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-10-r106)]. 
- 
+
   In the example, imagine the sequencing depths are similar between Sample A and Sample B, and every gene except for gene DE presents similar expression level between samples. The counts in Sample B would be greatly skewed by the DE gene, which takes up most of the counts. Other genes for Sample B would therefore appear to be less expressed than those same genes in Sample A. 
-  
+
 <img src="../img/normalization_methods_composition.png" width="400">
     
 ***While normalization is essential for differential expression analyses, it is also necessary for exploratory data analysis, visualization of data, and whenever you are exploring or comparing counts between or within samples.***
- 
+
 ### Common normalization methods
 
 Several common normalization methods exist to account for these differences:
-  
+
 | Normalization method | Description | Accounted factors | Recommendations for use |
 | ---- | ---- | ---- | ---- |
 | **CPM** (counts per million) | counts scaled by total number of reads | sequencing depth | gene count comparisons between replicates of the same samplegroup; **NOT for within sample comparisons or DE analysis**  |
@@ -73,7 +73,7 @@ Several common normalization methods exist to account for these differences:
 | EdgeR's **trimmed mean of M values (TMM)** [[2](https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-3-r25)] | uses a weighted trimmed mean of the log expression ratios between samples | sequencing depth, RNA composition, and gene length | gene count comparisons between and within samples and for **DE analysis** |
 
 ### RPKM/FPKM (not recommended for between sample comparisons)
- 
+
 While TPM and RPKM/FPKM normalization methods both account for sequencing depth and gene length, RPKM/FPKM are not recommended. **The reason  is that the normalized count values output by the RPKM/FPKM method are not comparable between samples.** 
 
 Using RPKM/FPKM normalization, the total number of RPKM/FPKM normalized counts for each sample will be different. Therefore, you cannot compare the normalized counts for each gene equally between samples. 
@@ -129,7 +129,7 @@ The median value (column-wise for the above table) of all ratios for a given sam
 `normalization_factor_sampleA <- median(c(1.28, 1.3, 1.39, 1.35, 0.59))`
 
 `normalization_factor_sampleB <- median(c(0.78, 0.77, 0.72, 0.74, 1.35))`
- 
+
 The figure below illustrates the median value for the distribution of all gene ratios for a single sample (frequency is on the y-axis).
 
 <img src="../img/deseq_median_of_ratios.png" width="400">
@@ -148,19 +148,19 @@ SampleB median ratio = 0.77
 
 **Raw Counts**
 
-| gene | sampleA | sampleB |  
+| gene | sampleA | sampleB |
 | ----- |:-----:|:-----:|
-| gene1 | 1489 | 906 | 
-| gene2 | 22 | 13 | 
-| ... | ... | ... | 
+| gene1 | 1489 | 906 |
+| gene2 | 22 | 13 |
+| ... | ... | ... |
 
 **Normalized Counts**
 
 | gene | sampleA | sampleB |
 | ----- |:-----:|:-----:|
-| gene1 | 1489 / 1.3 = **1145.39** | 906 / 0.77 = **1176.62** | 
-| gene2 | 22 / 1.3 = **16.92** | 13 / 0.77 = **16.88** | 
-| ... | ... | ... | 
+| gene1 | 1489 / 1.3 = **1145.39** | 906 / 0.77 = **1176.62** |
+| gene2 | 22 / 1.3 = **16.92** | 13 / 0.77 = **16.88** |
+| ... | ... | ... |
 
 > Please note that normalized count values are not whole numbers.
 
@@ -301,7 +301,7 @@ pairs(x = counts_normalised[,c(1,1)],pch = 19, log = "xy")
 
 # actual values
 cor(counts_normalised[,c(1,1)])
-~~~ 
+~~~
 {: .language-r}
 
 Trivial: if you correlate a sample with itself, it is a perfect correlation. 
@@ -312,7 +312,7 @@ Samples from the same biological conditions should be highly correlated to one a
 ~~~
 pairs(x = counts_normalised[,c(1:4)],pch = 19, log = "xy")
 cor(counts_normalised[,c(1:4)]) # consecutive numbers
-~~~ 
+~~~
 {: .language-r}
 
 <img src="../img/correlation_between_biological_replicates.png" width="600px" alt="highly correlated samples" >
@@ -328,8 +328,40 @@ cor(counts_normalised[,c(1,9,17,25)])
 <img src="../img/correlation_different_conditions.png" width="600px" alt="weakly correlated samples" >
 
 ## Principal Component Analysis
-Perform a principal component analysis (PCA) in which multivariate data (i.e. more than 1 variable) is transformed to a new coordinate system in which each component (axis) explains as as much variance as possible. PCA therefore can be used to visualize (and summarize) the relation between objects (and variables) from a multi-dimensional space to a two dimensional plot.
- 
+In (bio)chemical analysis the data matrices can be very large. An infrared spectrum (800 wavelengths) for 50 samples for example would give a data matrix of size 40,000 (50x800) numbers.  A genomic data (e.g. 20,000 genes) for 100 patients would lead to a huge data matrix of (100x20,000) = 2,000,000 numbers. 
+
+These matrices are so large that we need convenient ways to extract the important information from these large data matrices. 
+
+Using principal component analysis (PCA) 
+
+- The data is reduced to smaller matrices so they can more easily be examined, plotted and interpreted.
+- The most important factors are extracted (principal components). These factors describe the multivariate (more than one variable) interactions between the measured variables.
+- The samples can be classified to identify compound spectra, determine biomarkers etc.
+
+
+
+To have an idea of how PCA works it should be noted that if there is a mutual relationship between two or more measurements (e.g. samples) they are correlated. These correlations can be strong (e.g. mass of object and weight on earth's surface) or weak (e.g. capabilities in sport and month of birth). In the example below there is a strong linear relationship between height and age for young children (*Moore, D.S. and McCabe G.P., Introduction to the Practice of Statistics (1989)*).
+
+<img src="..\img\age_height.png" alt="age_height" style="zoom:80%;" />
+
+To explain PCA we use the example above and **project** the cases (observations) on a new coordinate system defined by principal component 1 (PC1) and principal component 2 (PC2) .
+
+![image-20200416135736225](..\img\age_height_to_scores.png)
+
+In this new coordinate system, PC1 explains 99.77% of the total variation of the original data set while PC2 only explains 0.23%. Consequently, only variable (PC1) is sufficient to describe the whole data set which would support the conclusion that there is only 1 underlying factor, in this case age.
+
+If the original data has more than two variables (e.g. n), which usually is the case, the projection would be in the n-dimensional space. Consequently more than two principal components can be calculated. By using an optimal projection, the principal components describe the maximum variance and are calculated in order of importance e.g.
+
+![image-20200416141609987](..\img\pc_exp_var_tbl.png)
+
+The ability of PCA to capture as much variance as possible in the main principal components enables us to  to visualize (and summarize) the relation between objects (and variables) from a multi-dimensional space to a two dimensional plot. In the example below there is clear separation of the three types of [flowers](https://en.wikipedia.org/wiki/Iris_flower_data_set) which points to shared interactions between the different variables per group. 
+
+
+
+![img](..\img\pca_iris.png)
+
+
+
 In the context of an RNA-seq experiment, it can be used to visualize the differences (distances) between samples and how it relates to the experimental design.
 
 Let's plot the samples along the two first components.
