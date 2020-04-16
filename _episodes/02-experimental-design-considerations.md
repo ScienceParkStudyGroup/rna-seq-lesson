@@ -1,6 +1,6 @@
 ---
 title: "Experimental design"
-teaching: 60
+teaching: 90
 exercises: 30
 questions:
 - "What are the key statistical concepts I need to know for experimental design?"
@@ -12,10 +12,10 @@ questions:
 - "How can I solve typical issues such as batch effects?"
 objectives:
 - "Explain the statistical concepts of population, samples, hypothesis and different types of error."
-- "Prepare an experiment following best practices in experimental design."
-- "Be able to select the number of biological replicates needed for a certain Describe the importance of replicates for RNA-seq differential expression experiments."
-- "Explain the relationship between the number of biological replicates, sequencing depth and the differentially expressed genes identified."
-- "Demonstrate how to design an RNA-seq experiment that avoids confounding and batch effects."
+- "Recognize the different sources of variability in an experiment."
+- "Memorize the three principles of a good design: replication, randomization and blocking."
+- "Prepare an experiment following best practices in experimental design to avoid confounding and batch effects."
+- "Justify the importance of biological replicates for RNA-seq differential expression experiments."
 keypoints:
 - "Replication, randomization and blocking are the three core principles of proper experimental design."
 - "Confounding happens when two sources of variation cannot be distinguished from one another."
@@ -42,8 +42,9 @@ First, let's have a quick look at important notions useful to understand the res
 ### Population and sample 
 
 
+### Hypothesis test
 
-
+### Type I and type II errors 
 
 
 
