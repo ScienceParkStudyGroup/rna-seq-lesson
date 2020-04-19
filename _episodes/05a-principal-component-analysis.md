@@ -14,17 +14,17 @@ Using principal component analysis (PCA)
 
 To have an idea of how PCA works it should be noted that if there is a mutual relationship between two or more measurements (e.g. samples) they are correlated. These correlations can be strong (e.g. mass of object and weight on earth's surface) or weak (e.g. capabilities in sport and month of birth). In the example below there is a strong linear relationship between height and age for young children (*Moore, D.S. and McCabe G.P., Introduction to the Practice of Statistics (1989)*).
 
-<img src="D:/Clouds/Surf2019/Projects/Misc/MG/rna-seq-lesson/img/age_height.png" alt="age_height" style="zoom:80%;" />
+<img src="../img/age_height.png" alt="age_height" style="zoom:80%;" />
 
 To explain PCA we use the example above and **project** the cases (observations) on a new coordinate system defined by principal component 1 (PC1) and principal component 2 (PC2) .
 
-![image-20200416135736225](D:/Clouds/Surf2019/Projects/Misc/MG/rna-seq-lesson/img/age_height_to_scores.png)
+![image-20200416135736225](../img/age_height_to_scores.png)
 
 In this new coordinate system, PC1 explains 99.77% of the total variation of the original data set while PC2 only explains 0.23%. Consequently, only variable (PC1) is sufficient to describe the whole data set which would support the conclusion that there is only 1 underlying factor, in this case age.
 
 If the original data has more than two variables (e.g. n), which usually is the case, the projection would be in the n-dimensional space. Consequently more than two principal components can be calculated. By using an optimal projection, the principal components describe the maximum variance and are calculated in order of importance e.g.
 
-![image-20200416141609987](D:/Clouds/Surf2019/Projects/Misc/MG/rna-seq-lesson/img/pc_exp_var_tbl.png)
+![image-20200416141609987](../img/pc_exp_var_tbl.png)
 
 
 
@@ -108,7 +108,7 @@ p <- ggplot(dfev,aes(x=PC,y=exp_var)) + ylab('explained variance (%)')
 p+ggtitle('explained variance per component') + geom_bar(stat = "identity")
 ```
 
-![pca_iris_exp_var](D:\Clouds\Surf2019\Projects\Misc\MG\rna-seq-lesson\img\pca_iris_exp_var.png)
+![pca_iris_exp_var](../img/pca_iris_exp_var.png)
 
 It is clear that the PCA really reduces our data to almost 1 variable (component) which explains over 90% of all the variance of the data. The second component only explains 5.3%. The third and fourth even less.
 
@@ -121,11 +121,11 @@ p<- ggplot(scores) + geom_point(aes(x=PC1,y=PC2,shape=Species,col=Species)) + xl
 p+ggtitle('PCA score plot')
 ```
 
-![pca_iris_new](D:\Clouds\Surf2019\Projects\Misc\MG\rna-seq-lesson\img\pca_iris_new.png)
+![pca_iris_new](../img/pca_iris_new.png)
 
 From the score plot it is clear that the Setosa flowers are clearly different from the Versicolor/Virginica flowers. Versicolor and Virginica cannot be separated on PC1 and/or PC2. Looking at the PC1 vs PC3 however, the two groups can be separated better. It is very important to understand that even if a principal component explains a low amount of variance it still can contain interesting (biological) information. 
 
-![pca_iris_1_3](D:\Clouds\Surf2019\Projects\Misc\MG\rna-seq-lesson\img\pca_iris_1_3.png)
+![pca_iris_1_3](../img/pca_iris_1_3.png)
 
 
 
@@ -147,13 +147,11 @@ p
 
 
 
-![pca_iris_loadings](D:\Clouds\Surf2019\Projects\Misc\MG\rna-seq-lesson\img\pca_iris_loadings.png)
+![pca_iris_loadings](../img/pca_iris_loadings.png)
 
 
 
-From the loading plot for PC1 it is clear that Petal.Length is the most important factor while Sepal.Width is the one which is least important. Because PC1 explains 92.5 % of the total variance we can conclude that Petal.Length is the most important factor that separates the three groups of flowers. 
-
-
+From the loading plot for PC1 it is clear that Petal.Length is the most important factor while Sepal.Width is the one which is least important. Because PC1 explains 92.5 % of the total variance we can conclude that Petal.Length is the most important factor that separates the three groups of flowers. There are many more things to learn on PCA (e.g. scaling, filtering) but that is out of the scope of these exercises. 
 
 
 
