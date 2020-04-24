@@ -176,13 +176,13 @@ counts <- read.delim("counts.txt", header = T, stringsAsFactors = F)
 genes <- counts[,1]
 counts <- counts[,-1]
 row.names(counts) <- genes
-xp_design <- read.delim("experimental_design.txt", header = T, stringsAsFactors = F, colClasses = rep("character",4))
+xp_design <- read.delim("experimental_design_modified.txt", header = T, stringsAsFactors = F, colClasses = rep("character",4))
 
 # change col names
 colnames(xp_design) <- c("sample", "seed", "infected", "dpi")
 
 # reorder counts columns according to the experimental design file
-counts <- counts[,xp_design$sample]
+counts <- counts[, xp_design$sample]
 ~~~
 {: .language-r}
 
@@ -223,6 +223,24 @@ dds <- DESeqDataSetFromMatrix(countData = counts,
 We now have a `DESeqDataSet` object that contains both count data and experimental metadata that is the relationship between samples and their combination of experimental factors. 
 
 ![deseq1](../img/deseq_obj1.png)
+
+You can inspect this object by typing its name in your R console.
+~~~
+dds
+~~~
+{: .language-r}
+
+~~~
+class: DESeqDataSet 
+dim: 33768 48 
+metadata(1): version
+assays(1): counts
+rownames(33768): AT1G01010 AT1G01020 ... ATMG01400 ATMG01410
+rowData names(0):
+colnames(48): ERR1406259 ERR1406271 ... ERR1406285 ERR1406286
+colData names(4): sample seed infected dpi
+~~~
+{: .output}
 
 ### 4. Generate normalized counts
 
@@ -370,43 +388,38 @@ We can use the Fisher's famous Iris flower dataset from 1936 that describes thre
 | <img src="../img/Iris_setosa.jpg" width="200px"/> | <img src="../img/Iris_versicolor.jpg" width="200px"/> | <img src="../img/Iris_virginica.jpg" width="200px" />|
 
 
-
-
 In the example below there is clear separation of the three types of [flowers](https://en.wikipedia.org/wiki/Iris_flower_data_set) which points to shared interactions between the different variables per group. 
-
-From Wikipedia page
-
 
 
 To load this data in R  first the appropriate dataset have to be installed and loaded.
-
 ~~~
 library(datasets)
-library(DESeq2, quietly = TRUE)
-library(ggplot2)
-library(reshape2)
 data(iris)
-summary(iris)
+head(iris)
 ~~~
 {: .language-r}
+
+~~~
+Sepal.Length Sepal.Width Petal.Length Petal.Width Species
+1          5.1         3.5          1.4         0.2  setosa
+2          4.9         3.0          1.4         0.2  setosa
+3          4.7         3.2          1.3         0.2  setosa
+4          4.6         3.1          1.5         0.2  setosa
+5          5.0         3.6          1.4         0.2  setosa
+6          5.4         3.9          1.7         0.4  setosa
+~~~
+{: .output}
 
 The summary of the iris data set display the content of the data. In this case the data consists of 150 objects with 5 variables. The last variable Species is a factor variable that specifies the class of the object.
 
 ~~~
-##   Sepal.Length    Sepal.Width     Petal.Length    Petal.Width   
-##  Min.   :4.300   Min.   :2.000   Min.   :1.000   Min.   :0.100  
-##  1st Qu.:5.100   1st Qu.:2.800   1st Qu.:1.600   1st Qu.:0.300  
-##  Median :5.800   Median :3.000   Median :4.350   Median :1.300  
-##  Mean   :5.843   Mean   :3.057   Mean   :3.758   Mean   :1.199  
-##  3rd Qu.:6.400   3rd Qu.:3.300   3rd Qu.:5.100   3rd Qu.:1.800  
-##  Max.   :7.900   Max.   :4.400   Max.   :6.900   Max.   :2.500  
-##        Species  
-##  setosa    :50  
-##  versicolor:50  
-##  virginica :50  
-##                 
-##                 
-## 
+ Sepal.Length    Sepal.Width     Petal.Length    Petal.Width          Species  
+ Min.   :4.300   Min.   :2.000   Min.   :1.000   Min.   :0.100   setosa    :50  
+ 1st Qu.:5.100   1st Qu.:2.800   1st Qu.:1.600   1st Qu.:0.300   versicolor:50  
+ Median :5.800   Median :3.000   Median :4.350   Median :1.300   virginica :50  
+ Mean   :5.843   Mean   :3.057   Mean   :3.758   Mean   :1.199                  
+ 3rd Qu.:6.400   3rd Qu.:3.300   3rd Qu.:5.100   3rd Qu.:1.800                  
+ Max.   :7.900   Max.   :4.400   Max.   :6.900   Max.   :2.500 
 ~~~
 {: .output}
 
@@ -457,7 +470,7 @@ In order to have an idea of how effective the 'compression' or variable reductio
 
 ```R
 # add a convenient column number for the bar plot to display
-dfev <- data.frame(PC = c(1,2,3,4)), explained_variance  = pca$explained_var)
+df_eXPv <- data.frame(PC = c(1,2,3,4)), explained_variance  = pca$explained_var)
 
 # make the plot
 scree_plot <- ggplot(dfev, aes(x = PC, y = explained_variance)) +
@@ -523,6 +536,15 @@ In the context of an RNA-seq experiment, it can be used to visualize the differe
 Let's plot the samples along the two first components.
 
 This can be done with the `plotPCA()` function of the `DESeq2` package. First, we need to stabilise the variance across genes with different means using a variance stabilising transformation or `vst()` . If interested, you can check the [corresponding detailed section in the DESeq2 vignette](https://bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#data-transformations-and-visualization).
+
+First, let's load the library that we need. 
+~~~
+library(DESeq2, quietly = TRUE)
+library(ggplot2)
+library(reshape2)
+~~~
+{: .language-r}
+
 
 ~~~
 # PCA using the plotPCA function

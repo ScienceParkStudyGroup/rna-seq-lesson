@@ -44,7 +44,7 @@ You should still have the `counts` and `xp_design` objects in your R environment
 
 ~~~
 # filter design file (mock versus P. syringae at 7 dpi)
-xp_design_mock_vs_infected = xp_design %>% filter(growth == "MgCl2" & dpi == "7")
+xp_design_mock_vs_infected = xp_design %>% filter(seed == "MgCl2" & dpi == "7")
 
 # Filter count file accordingly (so the rows correspond to the columns of the filtered xp_design file)
 counts_filtered = counts[, colnames(counts) %in% xp_design_mock_vs_infected$sample]
