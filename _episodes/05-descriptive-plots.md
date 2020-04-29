@@ -439,9 +439,17 @@ There are different methods to perform clustering and they go way beyond this co
 
 Here, we are going to use the Ward's clustering method. 
 ~~~
-
+clustering_of_samples <- hclust(distances_between_samples, method = "ward.D2")
 ~~~
-{}
+{: .language-r}
+
+Finally, let's plot your results. 
+~~~
+plot(clustering_of_samples)
+~~~
+{: .language-r}
+
+<img src="../img/05-dendro.png" width="600px">
 
 
 
@@ -589,12 +597,17 @@ It is clear that the PCA really reduces our data to almost 1 variable (component
 
 The whole idea behind the analysis is to visualize the high-dimensional data (e.g. a score plot). In R we can do that with the following lines of code
 
-```R
+~~~
 # plot the scores of the first 2 components
-p<- ggplot(scores) + geom_point(aes(x=PC1,y=PC2,shape=Species,col=Species)) + xlab(paste0('PC1(',explained_var[1],'%)')) + 
-  ylab(paste0('PC2(',explained_var[2],'%)'))
-p+ggtitle('PCA score plot')
-```
+p <- ggplot(scores) + 
+       geom_point(aes(x = PC1, y = PC2, shape = Species, col = Species)) + 
+       xlab(paste0('PC1(',explained_var[1],'%)')) + 
+       ylab(paste0('PC2(',explained_var[2],'%)')) + 
+       ggtitle('PCA score plot')
+p
+~~~
+{: .language-r}
+
 <img src="../img/pca_iris_new.png" width="600px" alt="pca_iris_new">
 
 
