@@ -1,5 +1,5 @@
 ---
-title: "Exploration of RNA-seq results"
+title: "Exploration of RNA-seq count results"
 teaching: 30
 exercises: 30 
 questions:
@@ -18,6 +18,38 @@ keypoints:
 ---
 
 ## Table of Contents
+<!-- MarkdownTOC autoanchor="false" -->
+
+- 1. Introduction
+- 2. Normalization
+	- 2.1 Common normalization methods
+	- 2.2 RPKM/FPKM \(not recommended for between sample comparisons\)
+	- 2.3 DESeq2-normalized counts: Median of ratios method
+- 3. DESeq2 count normalization
+	- 3.1 Data import
+	- 3.2 Match the experimental design and counts data
+	- 3.3 Create the DESeqDataSet object
+	- 3.4 Generate normalized counts
+- 4. Sample clustering
+	- 4.1 Distance calculation
+- 5. Principal Component Analysis
+	- 5.1 Introduction to PCA
+	- 5.2 The Iris data set
+	- 5.3 PCA applied to RNA-seq
+- 6. Bonus: home-made DESeq normalization function
+	- 6.1 step by step explanation
+	- 6.2 DESeq2-style normalization function
+	- 6.3 Sanity check
+- References
+	- Useful links
+
+<!-- /MarkdownTOC -->
+
+
+
+
+
+
 1. [Introduction](#introduction)
 2. [Normalization](#normalization)
 3. [DESeq2 count normalization](#deseq2-count-normalization)
@@ -25,18 +57,17 @@ keypoints:
 5. [Principal Component Analysis](#principal-component-analysis)
 
 
+# 1. Introduction
+The ultimate goal of most RNA-seq experiments is to accurately quantify the different transcripts present in a biological sample of interest. Yet, due to technical and biological causes, RNA-seq is prone to several biases that can affect sample / condition comparisons and therefore result interpretation.
 
-## Introduction
-The ultimate goal of most RNA-seq experiments is to accurately quantify the different transcripts present in a biological sample of interest. Yet, due to technical and biological causes, RNA-seq is prone to several biases that can affect sample / condition comparisons and therefore result interpretation:
+# 2. Normalization
 
-* Sequencing depth: samples have a total number of sequencing reads that is different. Genes from one sample might have more reads on average not due to expression differences but due to a higher number of sequencing reads.  
-* Gene length: not all genes have the same length and longer genes will have relatively more reads assigned to them than shorter genes.
+To be able to perform some quality check of our RNA-seq experiment and relate it to the experimental design, we will:
+1. Normalize (scale) the gene counts obtained upon completion of the bioinformatic workflow. 
+2. Perform some 
+, which is necessary to make accurate comparisons of gene expression between samples.
 
-## Normalization
-
-The first step in the DE analysis workflow is count normalization, which is necessary to make accurate comparisons of gene expression between samples.
-
-<img src="../img/workflow_overview_01.png" width="600px">
+<img src="../img/workflow_overview_episode05.png" width="600px">
 
 The counts of mapped reads for each gene is proportional to the expression of RNA ("interesting") in addition to many other factors ("uninteresting"). Normalization is the process of scaling raw count values to account for the "uninteresting" factors. In this way the expression levels are more comparable between and/or within samples.
 
@@ -60,7 +91,7 @@ The main factors often considered during normalization are:
     
 ***While normalization is essential for differential expression analyses, it is also necessary for exploratory data analysis, visualization of data, and whenever you are exploring or comparing counts between or within samples.***
 
-### Common normalization methods
+## 2.1 Common normalization methods
 
 Several common normalization methods exist to account for these differences:
 
@@ -72,7 +103,7 @@ Several common normalization methods exist to account for these differences:
 | DESeq2's **median of ratios** [[1](https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-10-r106)] | counts divided by sample-specific size factors determined by median ratio of gene counts relative to geometric mean per gene | sequencing depth and RNA composition | gene count comparisons between samples and for **DE analysis**; **NOT for within sample comparisons** |
 | EdgeR's **trimmed mean of M values (TMM)** [[2](https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-3-r25)] | uses a weighted trimmed mean of the log expression ratios between samples | sequencing depth, RNA composition, and gene length | gene count comparisons between and within samples and for **DE analysis** |
 
-### RPKM/FPKM (not recommended for between sample comparisons)
+## 2.2 RPKM/FPKM (not recommended for between sample comparisons)
 
 While TPM and RPKM/FPKM normalization methods both account for sequencing depth and gene length, RPKM/FPKM are not recommended. **The reason  is that the normalized count values output by the RPKM/FPKM method are not comparable between samples.** 
 
@@ -80,55 +111,55 @@ Using RPKM/FPKM normalization, the total number of RPKM/FPKM normalized counts f
 
 **RPKM-normalized counts table**
 
-| gene | sampleA | sampleB |
-| ----- |:-----:|:-----:|
-| gene1 | 5.5 | 5.5 |
-| gene2 | 73.4 | 21.8 |
-| ... | ... | ... |
-|Total RPKM-normalized counts | 1,000,000 | 1,500,000 |
+| gene   | sample_A | sample_B |
+| ------ |:-----  : |:-------: |
+| gene_1 | 5.5      | 5.5      |
+| gene_2 | 73.4     | 21.8     |
+| ...    | ...      | ...      |
+|Total RPKM-normalized counts  | 1,000,000 | 1,500,000 |
 
-For example, in the table above, SampleA has a greater proportion of counts associated with XCR1 (5.5/1,000,000) than does sampleB (5.5/1,500,000) even though the RPKM count values are the same. Therefore, we cannot directly compare the counts for XCR1 (or any other gene) between sampleA and sampleB because the total number of normalized counts are different between samples. 
+For example, in the table above, Sample_A has a greater proportion of counts associated with gene_1  (5.5/1,000,000) than does sample_B (5.5/1,500,000) even though the RPKM count values are the same. Therefore, we cannot directly compare the counts for gene_1 (or any other gene) between sample_A and sample_B because the total number of normalized counts are different between samples. 
 
 > *NOTE:* [This video by StatQuest](http://www.rna-seqblog.com/rpkm-fpkm-and-tpm-clearly-explained/) shows in more detail why TPM should be used in place of RPKM/FPKM if needing to normalize for sequencing depth and gene length.
 
-### DESeq2-normalized counts: Median of ratios method
+## 2.3 DESeq2-normalized counts: Median of ratios method
 
 Since tools for differential expression analysis are comparing the counts between sample groups for the same gene, gene length does not need to be accounted for by the tool. However, **sequencing depth** and **RNA composition** do need to be taken into account.
 
 To normalize for sequencing depth and RNA composition, DESeq2 uses the median of ratios method. On the user-end there is only one step, but on the back-end there are multiple steps involved, as described below.
 
-> **NOTE:**  The steps below describe in detail some of the steps performed by DESeq2 when you run a single function to get DE genes. Basically, for a typical RNA-seq analysis, **you would not run these steps individually**.
+> **NOTE:**  The steps below describe in detail some of the steps performed by DESeq2 when you run a single function to get DE genes. Basically, for a typical RNA-seq analysis, **you would not run these steps individually** but rather make use of the `results()` function of `DESeq2`. 
 
 **Step 1: creates a pseudo-reference sample (row-wise geometric mean)**
 
 For each gene, a pseudo-reference sample is created that is equal to the geometric mean across all samples.
 
-| gene | sampleA | sampleB | pseudo-reference sample  |
+| gene | sample_A | sample_B | pseudo-reference sample  |
 | ----- |:-----:|:-----:|:-----:|
-| gene1 | 1489 | 906 | sqrt(1489 * 906) = **1161.5** |
-| gene2 | 22 | 13 | sqrt(22 * 13) = **17.7** |
+| gene_1 | 1489 | 906 | sqrt(1489 * 906) = **1161.5** |
+| gene_2 | 22 | 13 | sqrt(22 * 13) = **17.7** |
 | ... | ... | ... | ... |
 
 **Step 2: calculates ratio of each sample to the reference**
 
 For every gene in a sample, the ratios (sample/ref) are calculated (as shown below). This is performed for each sample in the dataset. Since the majority of genes are not differentially expressed, the majority of genes in each sample should have similar ratios within the sample.
 
-| gene | sampleA | sampleB | pseudo-reference sample  | ratio of sampleA/ref | ratio of sampleB/ref |
+| gene | sample_A | sample_B | pseudo-reference sample  | ratio of sample_A/ref | ratio of sample_B/ref |
 | ----- |:-----:|:-----:|:-----:| :-----: | :-----: |
-| gene1 | 1489 | 906 | 1161.5 | 1489/1161.5 = **1.28** | 906/1161.5 = **0.78** |
-| gene2 | 22 | 13 | 16.9 | 22/16.9 = **1.30** | 13/16.9 = **0.77** |
-| gene3 | 793 | 410 | 570.2 | 793/570.2 = **1.39** | 410/570.2 = **0.72**
-| gene4 | 76 | 42 | 56.5 | 76/56.5 = **1.35** | 42/56.5 = **0.74**
-| gene5 | 521 | 1196 | 883.7 | 521/883.7 = **0.590** | 1196/883.7 = **1.35** |
+| gene_1 | 1489 | 906 | 1161.5 | 1489/1161.5 = **1.28** | 906/1161.5 = **0.78** |
+| gene_2 | 22 | 13 | 16.9 | 22/16.9 = **1.30** | 13/16.9 = **0.77** |
+| gene_3 | 793 | 410 | 570.2 | 793/570.2 = **1.39** | 410/570.2 = **0.72**
+| gene_4 | 76 | 42 | 56.5 | 76/56.5 = **1.35** | 42/56.5 = **0.74**
+| gene_5 | 521 | 1196 | 883.7 | 521/883.7 = **0.590** | 1196/883.7 = **1.35** |
 | ... | ... | ... | ... |
 
 **Step 3: calculate the normalization factor for each sample (size factor)**
 
 The median value (column-wise for the above table) of all ratios for a given sample is taken as the normalization factor (size factor) for that sample, as calculated below. Notice that the differentially expressed genes should not affect the median value:
 
-`normalization_factor_sampleA <- median(c(1.28, 1.3, 1.39, 1.35, 0.59))`
+`normalization_factor_sample_A <- median(c(1.28, 1.3, 1.39, 1.35, 0.59))`
 
-`normalization_factor_sampleB <- median(c(0.78, 0.77, 0.72, 0.74, 1.35))`
+`normalization_factor_sample_B <- median(c(0.78, 0.77, 0.72, 0.74, 1.35))`
 
 The figure below illustrates the median value for the distribution of all gene ratios for a single sample (frequency is on the y-axis).
 
@@ -140,38 +171,40 @@ The median of ratios method makes the assumption that not ALL genes are differen
 
 **Step 4: calculate the normalized count values using the normalization factor**
 
-This is performed by dividing each raw count value in a given sample by that sample's normalization factor to generate normalized count values. This is performed for all count values (every gene in every sample). For example, if the median ratio for SampleA was 1.3 and the median ratio for SampleB was 0.77, you could calculate normalized counts as follows:
+This is performed by dividing each raw count value in a given sample by that sample's normalization factor to generate normalized count values. This is performed for all count values (every gene in every sample). For example, if the median ratio for sample_A was 1.3 and the median ratio for sample_B was 0.77, you could calculate normalized counts as follows:
 
-SampleA median ratio = 1.3
+sample_A median ratio = 1.3
 
-SampleB median ratio = 0.77
+sample_B median ratio = 0.77
 
 **Raw Counts**
 
-| gene | sampleA | sampleB |
+| gene | sample_A | sample_B |
 | ----- |:-----:|:-----:|
-| gene1 | 1489 | 906 |
-| gene2 | 22 | 13 |
+| gene_1 | 1489 | 906 |
+| gene_2 | 22 | 13 |
 | ... | ... | ... |
 
 **Normalized Counts**
 
-| gene | sampleA | sampleB |
+| gene | sample_A | sample_B |
 | ----- |:-----:|:-----:|
-| gene1 | 1489 / 1.3 = **1145.39** | 906 / 0.77 = **1176.62** |
-| gene2 | 22 / 1.3 = **16.92** | 13 / 0.77 = **16.88** |
+| gene_1 | 1489 / 1.3 = **1145.39** | 906 / 0.77 = **1176.62** |
+| gene_2 | 22 / 1.3 = **16.92** | 13 / 0.77 = **16.88** |
 | ... | ... | ... |
 
-> Please note that normalized count values are not whole numbers.
+> ## Important note
+> Please note that normalized count values are not integers anymore but rather decimal numbers. This is a good way to rapidly check whether you are dealing with normalised/scaled data and not raw gene counts. 
+{: .callout}
 
 ***
 
-## DESeq2 count normalization 
+# 3. DESeq2 count normalization 
 
-### 1. Data import
+## 3.1 Data import
 
 ~~~
-## Data import 
+# Data import 
 counts <- read.delim("counts.txt", header = T, stringsAsFactors = F)
 genes <- counts[,1]
 counts <- counts[,-1]
@@ -186,26 +219,43 @@ counts <- counts[, xp_design$sample]
 ~~~
 {: .language-r}
 
+This is how the first five rows/columns of the `counts` dataframe look like:
+~~~
+counts[1:5,1:5]
+~~~
+{: .language-r}
 
-Now that we know the theory of count normalization, we will normalize the counts using DESeq2. This requires a few steps:
+You can see that numbers in the matrix are not decimal numbers but rather integers. 
+~~~
+          ERR1406259 ERR1406271 ERR1406282 ERR1406294 ERR1406305
+AT1G01010         59         79         61         71        123
+AT1G01020        365        365        441        534        648
+AT1G03987          8         14         14          4         20
+AT1G01030        111        189        124        161        220
+AT1G03993        131        155        183        236        250
+~~~
+{: .output}
+
+
+Now that we know the theory of count normalization, we will normalize the counts using `DESeq2`. This requires a few steps:
 
 1. Ensure the row names of the experimental design dataframe are present and in the same order as the column names of the counts dataframe.
 2. Create a `DESeqDataSet` object.
 3. Generate the normalized counts.
 
-### 2. Match the experimental design and counts data
+## 3.2 Match the experimental design and counts data
 
 We should always make sure that we have sample names that match between the two files, and that the samples are in the right order. DESeq2 will output an error if this is not the case.
 
 ```r
-### Check that sample names match in both files
+## Check that sample names match in both files
 all(colnames(counts) %in% xp_design$sample)
 all(colnames(counts) == xp_design$sample)
 ```
 
 If your data did not match, you could use the `match()` function to rearrange them to be matching.
 
-### 3. Create the DESeqDataSet object
+## 3.3 Create the DESeqDataSet object
 
 Bioconductor software packages often define and use a custom class within R for storing data (input data, intermediate data and also results). These custom data structures are similar to `lists` in that they can contain multiple different data types/structures within them. But, unlike lists they have pre-specified `data slots`, which hold specific types/classes of data. The data stored in these pre-specified slots can be accessed by using specific package-defined functions.
 
@@ -221,8 +271,6 @@ dds <- DESeqDataSetFromMatrix(countData = counts,
 {: .language-r}
 
 We now have a `DESeqDataSet` object that contains both count data and experimental metadata that is the relationship between samples and their combination of experimental factors. 
-
-![deseq1](../img/deseq_obj1.png)
 
 You can inspect this object by typing its name in your R console.
 ~~~
@@ -242,11 +290,10 @@ colData names(4): sample seed infected dpi
 ~~~
 {: .output}
 
-### 4. Generate normalized counts
+## 3.4 Generate normalized counts
 
 The next step is to normalize the count data in order to be able to make fair gene comparisons between samples.
 
-<img src="../img/workflow_overview_normalisation.png" width="600px">
 
 To perform the **median of ratios method** of normalization, DESeq2 has a single `estimateSizeFactors()` function that will generate size factors for us. We will use the function in the example below, but **in a typical RNA-seq analysis this step is automatically performed by the `DESeq()` function**, which we will see later. 
 
@@ -262,92 +309,70 @@ sizeFactors(dds)
 
 We can plot these size factors to see how much they differ between samples. 
 ~~~
-size_factors_df <- data.frame(sample = names(sizeFactors(dds)), 
-                              size = sizeFactors(dds))
+library(dplyr)
 
-# add the experimental condition of interest for plot labelling
-size_factors_df <- left_join(size_factors_df, xp_design, by = "sample")
+# create a dplyr tibble
+size_factors_df <- tibble(
+  sample = names(sizeFactors(dds)), 
+  correction_factor = sizeFactors(dds)
+  )
 
-# sort by seed condition and by infected condition
-size_factors_df <- size_factors_df %>% 
-  arrange(seed, infected)
+# line plot to connect the different size factor values
+p <- ggplot(size_factors_df, aes(x = sample, y = correction_factor, group = 1)) +
+  geom_point() + 
+  geom_line() +
+  theme(axis.text.x = element_text(angle = 90, size = 5)) +
+  scale_y_continuous(limits = c(0.5,2))
 
-size_factors_df$sample = factor(size_factors_df$sample, levels = size_factors_df$sample)
-
-# plot
-ggplot(size_factors_df, aes(x = sample, y = size, colour = seed)) + 
-  geom_segment(aes(x = sample, xend = sample, y = 0, yend = size), color="grey") +
-  geom_point(size = 6) + 
-  coord_flip() +
-  theme_grey() +
-  facet_wrap(~ infected)
+# to display the plot
+p
 ~~~
 {:.language-r}
 
 This plot indicates that size factors are all between \~0.70 and \~1.8 so relatively close to each other. 
 
-<img src="../img/size_factors_all.png" width="800px" alt="experimental design" >
+<img src="../img/05-size-factors.png" width="600px" alt="size factor plots" >
 
 You can use DESeq-specific functions to access the different slots and retrieve information, if you wish. For example, suppose we wanted the original count matrix we would use `counts()`. For instance, to retrieve the normalized counts matrix from `dds`, we use the `counts()` function and add the argument `normalized=TRUE`.
 ~~~
 # extract the normalised counts
 counts_normalised = counts(dds, normalized = TRUE)
-
-# we reorder samples according to their conditions
-counts_normalised = counts[, xp_design$sample]
 ~~~
 {: .language-r}
 
-As we go through the workflow we will use the relevant functions to check what information gets stored inside our object.
-
-We can save this normalized data matrix to file for later use:
-
-~~~
-write.table(counts_normalised, file = "data/normalized_counts.txt", sep = "\t", quote = F, col.names = NA)
-~~~
+Let's take a peek at the first five rows and columns.
+~~~~
+counts_normalised[1:5,1:5]
+~~~~
 {: .language-r}
 
-> **NOTE:** DESeq2 doesn't actually use normalized counts to compute differentially expressed genes. Rather, it uses the raw counts and models the normalization inside the Generalized Linear Model (GLM). These normalized counts will be useful for downstream visualization of results, but cannot be used as input to DESeq2 or any other tools that peform differential expression analysis which use the negative binomial model.
 
-## Sample correlations
-A first simple way to check the quality of the RNA-seq experiment based on the counts is to plot correlations between samples in the form of scatterplots. 
-
-The first scatterplot consist of the gene counts of one sample against itself. In this case, the correlation coefficient _r_ will be equal to 1.
 ~~~
-# plot the first column against the first column of the matrix
-pairs(x = counts_normalised[,c(1,1)],pch = 19, log = "xy")
-
-# actual values
-cor(counts_normalised[,c(1,1)])
+          ERR1406259 ERR1406271 ERR1406282 ERR1406294 ERR1406305
+AT1G01010  72.152831   96.30085   66.47355  61.669649   88.51520
+AT1G01020 446.369208  444.93431  480.57105 463.825247  466.32399
+AT1G03987   9.783435   17.06597   15.25622   3.474346   14.39272
+AT1G01030 135.745156  230.39064  135.12655 139.842443  158.31987
+AT1G03993 160.203743  188.94471  199.42064 204.986439  179.90895
 ~~~
-{: .language-r}
+{: .output}
+You now see that integers have become decimal numbers. All good!
 
-Trivial: if you correlate a sample with itself, it is a perfect correlation. 
 
-<img src="../img/correlation_self.png" width="600px" alt="self-correlation plot" >
+> ## NOTE 
+> `DESeq2` doesn't actually use normalized counts to compute differentially expressed genes. Rather, it uses the raw counts and models the normalization inside the Generalized Linear Model (GLM). These normalized counts will be useful for downstream visualization of results, but cannot be used as input to DESeq2 or any other tools that peform differential expression analysis which use the negative binomial model.
+{: .callout}
 
-Samples from the same biological conditions should be highly correlated to one another.
-~~~
-pairs(x = counts_normalised[,c(1:4)],pch = 19, log = "xy")
-cor(counts_normalised[,c(1:4)]) # consecutive numbers
-~~~
-{: .language-r}
 
-<img src="../img/correlation_between_biological_replicates.png" width="600px" alt="highly correlated samples" >
+# 4. Sample clustering
 
-Samples from different conditions should not be highly correlated. 
-~~~
-# weakly correlated samples 
-pairs(x = counts_normalised[,c(1,9,17,25)],pch = 19, log = "xy")
-cor(counts_normalised[,c(1,9,17,25)])
-~~~
-{: .language-r}
+## 4.1 Distance calculation
 
-<img src="../img/correlation_different_conditions.png" width="600px" alt="weakly correlated samples" >
 
-# Principal Component Analysis
 
-## Introduction to PCA
+# 5. Principal Component Analysis
+
+## 5.1 Introduction to PCA
 In (bio)chemical analysis the data matrices can be very large. An infrared spectrum (800 wavelengths) for 50 samples for example would give a data matrix of size 40,000 (50x800) numbers.  A genomic data (e.g. 20,000 genes) for 100 patients would lead to a huge data matrix of (100x20,000) = 2,000,000 numbers. 
 
 These matrices are so large that we need convenient ways to extract the important information from these large data matrices. 
@@ -375,7 +400,7 @@ If the original data has more than two variables (e.g. n), which usually is the 
 ![image-20200416141609987](..\img\pc_exp_var_tbl.png)
 
 
-## IRIS data set
+## 5.2 The Iris data set
 
 ​The ability of PCA to capture as much variance as possible in the main principal components enables us to  to visualize (and summarize) the relation between objects (and variables) from a multi-dimensional space to a two dimensional plot.  
 
@@ -529,7 +554,7 @@ From the loading plot for PC1 it is clear that Petal.Length is the most importan
 
 
 
-## PCA applied to RNA-seq
+## 5.3 PCA applied to RNA-seq
 
 In the context of an RNA-seq experiment, it can be used to visualize the differences (distances) between samples and how it relates to the experimental design.
 
@@ -568,10 +593,164 @@ ggplot(pcaData, aes(PC1, PC2, color = seed, shape = infected, size = dpi)) +
 <img src="../img/pca.png" width="800px" alt="complete PCA" >
 
 
-## Estimation of the dispersion
-For Master level!
+# 6. Bonus: home-made DESeq normalization function
 
-## Genome browser
-For Master level!
+
+The median of ratios method is a normalization method used to account for sequencing differences in library size and RNA composition of samples. This makes it a suitable method to use when comparing between samples. It does not account for differences in gene length, making it unsuitable for within sample comparisons.
+
+The median of ratios method is applied in the DESeq2 package, used for differential expression testing. In the DESeq2 package, normalization is conducted easily with a function. Although this is convenient, it is useful to understand the step-by-step breakdown of the median of ratios method. 
+
+Sample expression count data was taken from: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE49110 and cut to create a manageable dataset for the tutorial. 
+
+In Section 1, steps of the median of ratios method are shown. In Section 2, a function including all steps is shown. In Section 3, the normalized counts are compared with the DESeq2 method to ensure the results are the same. References used are listed at the end. 
+
+## 6.1 step by step explanation 
+
+Step 1: Upload data 
+Rows (genes) and columns (samples) are seen below. 
+~~~
+data = read.csv("sample_count_data.csv", row.names = 1)
+head(data)
+~~~
+{: .language-r}
+
+The following few steps are used to create a pseudo-reference sample for each gene. To do this, we need to calculate the geometric mean for each gene. 
+
+Step 2: Take the log of all values
+~~~
+log_data = log(data)
+head(log_data)
+~~~
+{: .language-r}
+
+
+Step 3: Take the average of each row
+~~~
+library(dplyr)
+library(tibble)
+~~~
+{: .language-r}
+
+~~~
+log_data = log_data %>% rownames_to_column('gene') %>% mutate (pseudo_reference = rowMeans(log_data))
+
+head(log_data)
+~~~
+{: .language-r}
+
+Step 4: Filter out all of the genes with -Inf as their average
+They will not be used to calculate the median.
+~~~
+filtered_log_data = log_data %>% filter(pseudo_reference != "-Inf")
+head(filtered_log_data)
+~~~
+{: .language-r}
+
+Step 5: Subtract the gene pseudo-references from log counts
+In this step, you are subtracting the average of the logs from the log of the original data. Log(x/y) is a ratio. 
+~~~
+ratio_data = sweep(filtered_log_data[,2:9], 1, filtered_log_data[,10], "-")
+head(ratio_data)
+~~~
+{: .language-r}
+
+Step 6: Find the median of the ratios for each sample
+~~~
+sample_medians = apply(ratio_data, 2, median)
+sample_medians
+~~~
+{: .language-r}
+
+Step 7: Convert medians to scaling factors
+scaling factor = e^median
+~~~
+scaling_factors = exp(sample_medians)
+scaling_factors
+~~~
+{: .language-r}
+
+Step 8: Divide the original counts (not log version) by the scaling factors 
+~~~
+manually_normalized = sweep(data, 2, scaling_factors, "/")
+head(manually_normalized)
+~~~
+{: .language-r}
+
+## 6.2 DESeq2-style normalization function
+
+Below is one function to "manually" normalize data with the median of ratios method. Import data before using the function.
+
+mor = median of ratios
+
+~~~
+mor_normalization = function(data){
+  library(dplyr)
+  library(tibble)
+  #take the log
+  log_data = log(data) 
+  #find the psuedo-references per sample by taking the geometric mean
+  log_data = log_data %>% rownames_to_column('gene') %>% mutate (gene_averages = rowMeans(log_data)) %>% filter(gene_averages != "-Inf")
+  #find the ratio of the log data to the pseudo-reference
+  ratios = sweep(log_data[,2:9], 1, log_data[,10], "-")
+  #find the median of the ratios
+  sample_medians = apply(ratio_data, 2, median)
+  #convert the median to a scaling factor
+  scaling_factors = exp(sample_medians)
+  #use scaling factors to scale the original data
+  manually_normalized = sweep(data, 2, scaling_factors, "/")
+  return(manually_normalized)
+}
+~~~
+{: .language-r}
+
+## 6.3 Sanity check 
+Normalization within DESeq2 is used to compare to our manually normalized data. 
+
+~~~
+library(DESeq2)
+~~~
+{: .language-r}
+
+~~~
+# samples (columns names) of the data should be named
+samples = as.data.frame(colnames(data))
+
+# create a DESeqDataSet object. The design can be altered based on experimental design. A design of 1 means no design. 
+dds = DESeqDataSetFromMatrix(countData = data, colData = samples, design = ~1)
+
+# this function generates the size factors
+dds = estimateSizeFactors(dds)
+~~~
+{: .language-r}
+
+We can compare the scaling factors that were found manually vs. the scaling factors (termed, "size factors") from DESeq2. 
+~~~
+#scaling_factors were manually found
+#sizeFactors(dds) is used to find the scaling factors from DESeq2
+scaling_factors == sizeFactors(dds)
+~~~
+{: .language-r}
+
+Lastly, we can use counts() to normalize the original data in DESeq2. When counts() is used with the normalized = TRUE arguments, the counts will be normalized. When you do not use this argument, counts(dds) returns the original counts. 
+~~~
+normalized_deseq2 = counts(dds, normalized = TRUE)
+~~~
+{: .language-r}
+
+The normalized counts are identical between DESeq2 and the manual method. 
+~~~
+normalized_deseq2 == manually_normalized
+~~~
+{: .language-r}
+
+# References
+
+## Useful links
+1. [Gabriel Martos cluster analysis](https://rpubs.com/gabrielmartos/ClusterAnalysis)
+1. Love, M.I., Huber, W., Anders, S. (2014) Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2. Genome Biology, 15:550. 10.1186/s13059-014-0550-8
+2. Statquest: https://www.youtube.com/watch?v=UFB993xufUU
+3. https://hbctraining.github.io/DGE_workshop/lessons/02_DGE_count_normalization.html
+
+
 
 
