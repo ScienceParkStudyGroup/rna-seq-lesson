@@ -7,9 +7,7 @@ questions:
 - "What are type I and type II errors?"
 - "What are the source of variability in an experiment?"
 - "What are the 3 cores principles of (good) experimental design?"
-- "Why is replication important in an (RNA-seq) experiment?"
-- "What can I do to avoid confounding factors?"
-- "How can I solve typical issues such as batch effects?"
+- "Why is having biological replicates important in an (RNA-seq) experiment?"
 objectives:
 - "Explain the statistical concepts of population, samples, hypothesis and different types of error."
 - "Recognize the different sources of variability in an experiment."
@@ -40,7 +38,7 @@ Statistics are often overlooked (at best) or avoided (very often) by wet-lab bio
 
 # 1. Statistical refresher
 First, let's have a quick look at important notions useful to understand the rest of this episode. 
-
+These concepts will be important to understand experimental design applied to RNA-seq. 
 
 
 ### 1.1 Population and sample 
@@ -48,40 +46,109 @@ First, let's have a quick look at important notions useful to understand the res
 
 The first question you need to ask yourself is "what is the population that I am considering in my experiment from which I will gather measurements?". If you are working on wild-type tomato plants from the cultivar Moneymaker for instance, then your population of interest would be _all_ plants from the Moneymaker cultivar on which you measure a particular phenotype. 
 
-If you are working on the height of the population from the Netherlands, then your population would be "all people in the Netherlands at time point X".  A sample is a subset of that population that must be _representative_ of that population. It therefore has to be selected randomly 
+If you are working on the height of the population from the Netherlands, then your population would be "all people in the Netherlands". A sample is a subset of that population that must be _representative_ of that population. It therefore has to be selected randomly from the whole population. 
 
-Make sure you distinguish between descriptive and inferential statistics. 
+Related to this, one has to be able to make the distinction between __descriptive statistics__ and __inferential statistics__. 
 
-> Discussion
+> ## Discussion
 > Let's imagine that we study the height of people in the Netherlands. We take a representative sample of 1000 people. Could you give examples of descriptive statistics on that sample?
 {: .discussion}
 
+On the one hand, descriptive statistics would for instance calculate the average height based on the 1000 people sampled. But it would make no assumption on the general population in the Netherlands.   
+On the other hand, inferential statistics would try to impute the Netherlands population height based on this representative 1000 people sample. 
 
-Descriptive statistics will for instance calculate the average of the height of a group of people sampled from one country population. Descriptive statistics can be displayed in the form of graphics. 
 
-> ## Exercise
->  
+## 1.2 Central tendency and spread
 
-### 1.2 Hypothesis test
+Here is a boxplot made from the world's population heights (one point is the average height in one country).
 
-In your RNA-seq journey, you will work with thousands of genes. But before you do so, it is important to understand how statistical tests work with one gene. 
+<img src="../img/02-boxplot-world-pop.png" alt="boxplot of world population height" height="400px"> 
 
-Say you are studying a gene that you think will react to heat stress. You therefore measure this gene transcript level in two conditions: normal and stressed.
+In particular, the __measures of central tendency and spread__ are of interest to us because they will also have important consequences for RNA-seq. __One example of a measure of central tendency is the mean__ for instance. The mean is displayed on the boxplot as a red diamond.
+
+> ## Exercise: central tendency
+> Take another look at the boxplot above. Can you name a measure of the central tendency other than the mean?
+>
+> > ## Solution
+> > The median is another measure of central tendency. The median is the value separating the higher half from the lower half of a data sample or a population (source Wikipedia).
+> {: .solution}
+{: .challenge}
+
+If you look at the boxplot, you will see that points are dispersed along the boxplot suggesting that some countries might have an "extreme" height compared to the majority. This measure of heterogeneity in data distribution is called the __spread__ or [statistical dispersion](https://en.wikipedia.org/wiki/Statistical_dispersion) and can be estimated with measures such as the __standard deviation__. 
+
+> ## Exercise: spread
+> Can you name a measure of the spread other than the standard deviation?
+>
+> > ## Solution
+> > The variance (square of the standard deviation) is another measure of the spread. 
+> {: .solution}
+{: .challenge}
+
+
+### 1.3 Hypothesis test
+
+These notions of central tendency and spread are vital to the rest of this episode. In your RNA-seq journey, you will work with thousands of genes. But before you do so, it is important to understand how statistical tests and the infamous p-values are computed  by working with one gene. 
+
+Say you are studying a plant gene called ["heat stress transcription factor A-2" (HSFA2)](https://www.uniprot.org/uniprot/O80982) whose expression could be increased by heat stress...Well the gene name is definitely giving a clue! :blush: You therefore measure this gene transcript level in two conditions: normal and heat stressed.
 
 Then, you make a hypothesis saying: 
+> "The average HSFA2 gene expression _is the same_ in normal conditions than under heat stress in my Arabidopsis seedlings". 
+
+This is called the __H<sub>0</sub> hypothesis or the null hypothesis__. 
+
+<br>
+
+The alternative hypothesis would be:
+> "The average HSFA2 gene expression _is different_ under heat stress compared to normal conditions in my Arabidopsis seedlings". 
+
+This is called the __H<sub>1</sub> hypothesis or alternative hypothesis__. 
+
+
+Imagine you would be the best scientist ever and you would be capable of sampling 1000 Arabidopsis plantlets in normal conditions. 
+:seedling: :seedling: :seedling: :seedling: :seedling: 
+~~~
+xp_normal_conditions <- tibble(
+  expression = rnorm(             # randomly sample numbers from a normal distribution
+    n = 1000,                     # number of drawings
+    mean = 2,                     # mean of the normal distribution
+    sd = 0.1),                    # standard deviation of the normal distribution
+  condition = "normal"            # used later on for data frame row binding with heat stress
+  )
+
+head(xp_normal_conditions)
+~~~
+{: .language-r}
+
+~~~
+# A tibble: 6 x 2
+  expression condition
+       <dbl> <chr>    
+1       1.98 normal   
+2       2.04 normal   
+3       1.99 normal   
+4       2.03 normal   
+5       2.03 normal   
+6       2.03 normal  
+~~~
+{: .output}
+
+If you plot the HSF2A gene expression distribution, you get a nice schoolbook guaussian curve.
+
+<img src="../img/02-normal-hist.png" alt="Histogram of HSFA2 gene expression value in normal conditions (n = 1000)" height="600px">
 
 
 
-The coefficient of variation (CV) is also known as _relative standard deviation (RSD)_
 
 
 
 
 
+
+Ok but you're not so fantastic, just a fantastic scientist. So you sample 5 Arabidopsis plantlets per condition :seedling:
 
 ### 1.3 Type I and type II errors 
 
-Type I errors occur when the _null_ hypothesis is rejected wrongly (e.g., that two treatment means are equal) in favor of an alternative hypothesis (e.g., that the two means are different). Type I errors are probably most familiar to researchers and much effort is expended to ensure that Type I errors are minimized. 
+Type I errors occur when the __H<sub>0</sub> (null) hypothesis__ is rejected wrongly (e.g., the two treatment means are equal) in favor of an alternative hypothesis (e.g., that the two means are different). Type I errors are probably most familiar to researchers and much effort is expended to ensure that Type I errors are minimized. 
 
 Type II errors also are common in hypothesis testing. These errors result from accepting the null hypothesis when in fact a treatment effect exists.  
 
