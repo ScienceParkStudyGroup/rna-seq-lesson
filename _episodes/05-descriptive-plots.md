@@ -362,17 +362,17 @@ Using principal component analysis (PCA)
 
 To have an idea of how PCA works it should be noted that if there is a mutual relationship between two or more measurements (e.g. samples) they are correlated. These correlations can be strong (e.g. mass of object and weight on earth's surface) or weak (e.g. capabilities in sport and month of birth). In the example below there is a strong linear relationship between height and age for young children (*Moore, D.S. and McCabe G.P., Introduction to the Practice of Statistics (1989)*).
 
-<img src="..\img\age_height.png" alt="age_height" style="zoom:80%;" />
+<img src="../img/age_height.png" alt="age_height" style="zoom:80%;" />
 
 To explain PCA we use the example above and **project** the cases (observations) on a new coordinate system defined by principal component 1 (PC1) and principal component 2 (PC2) .
 
-![image-20200416135736225](..\img\age_height_to_scores.png)
+<img src="../img/age_height_to_scores.png"/>
 
 In this new coordinate system, PC1 explains 99.77% of the total variation of the original data set while PC2 only explains 0.23%. Consequently, only variable (PC1) is sufficient to describe the whole data set which would support the conclusion that there is only 1 underlying factor, in this case age.
 
 If the original data has more than two variables (e.g. n), which usually is the case, the projection would be in the n-dimensional space. Consequently more than two principal components can be calculated. By using an optimal projection, the principal components describe the maximum variance and are calculated in order of importance e.g.
 
-![image-20200416141609987](..\img\pc_exp_var_tbl.png)
+![image-20200416141609987](../img/pc_exp_var_tbl.png)
 
 
 ## IRIS data set
@@ -502,7 +502,7 @@ From the score plot it is clear that the Setosa flowers are clearly different fr
 
 
 
-As scores are indicative of how the objects in the data set score in the new component space. The loadings indicate how the variables score in the component space. The score plots above for example show a separation on PC1 between the 3 groups. If we would like to know which variables are important for this separation we can try to interpret our data.
+The scores are indicative of how the objects in the data set score in the new component space, correspondingly the loadings indicate how the variables score in the component space. The score plots above for example show a separation on PC1 between the 3 groups. If we would like to know which variables are important for this separation we can try to interpret our data.
 
 
 
