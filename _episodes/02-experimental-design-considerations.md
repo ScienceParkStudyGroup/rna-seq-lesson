@@ -434,6 +434,7 @@ If *any* of the answers is **‘No’**, then you have batches.
 
 # References 
 - [The power analysis section of the RNA-seq blog](https://www.rna-seqblog.com/tag/power-analysis/)
+- [The Scotty power analysis webtool](http://scotty.genetics.utah.edu/)
 
 ## Credits
 

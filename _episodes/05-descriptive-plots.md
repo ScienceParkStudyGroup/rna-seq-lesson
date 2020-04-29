@@ -18,43 +18,28 @@ keypoints:
 ---
 
 ## Table of Contents
-<!-- MarkdownTOC autoanchor="false" -->
-
-- 1. Introduction
-- 2. Normalization
+- [1. Introduction](#1-introduction)
+- [2. Normalization](#2-normalization)
 	- 2.1 Common normalization methods
 	- 2.2 RPKM/FPKM \(not recommended for between sample comparisons\)
 	- 2.3 DESeq2-normalized counts: Median of ratios method
-- 3. DESeq2 count normalization
+- [3. DESeq2 count normalization](#3-deseq2-count-normalization)
 	- 3.1 Data import
 	- 3.2 Match the experimental design and counts data
 	- 3.3 Create the DESeqDataSet object
 	- 3.4 Generate normalized counts
-- 4. Sample clustering
+- [4. Sample clustering](#4-sample-clustering)
 	- 4.1 Distance calculation
-- 5. Principal Component Analysis
+- [5. Principal Component Analysis](#5-principal-component-analysis)
 	- 5.1 Introduction to PCA
 	- 5.2 The Iris data set
 	- 5.3 PCA applied to RNA-seq
-- 6. Bonus: home-made DESeq normalization function
+- [6. Bonus: home-made DESeq normalization function](#6-bonus-home-made-deseq-normalization-function)
 	- 6.1 step by step explanation
 	- 6.2 DESeq2-style normalization function
 	- 6.3 Sanity check
-- References
+- [7. References](#7-references)
 	- Useful links
-
-<!-- /MarkdownTOC -->
-
-
-
-
-
-
-1. [Introduction](#introduction)
-2. [Normalization](#normalization)
-3. [DESeq2 count normalization](#deseq2-count-normalization)
-4. [Sample correlations](#sample-correlations)
-5. [Principal Component Analysis](#principal-component-analysis)
 
 
 # 1. Introduction
@@ -359,14 +344,106 @@ AT1G03993 160.203743  188.94471  199.42064 204.986439  179.90895
 You now see that integers have become decimal numbers. All good!
 
 
-> ## NOTE 
+> ## Note 
 > `DESeq2` doesn't actually use normalized counts to compute differentially expressed genes. Rather, it uses the raw counts and models the normalization inside the Generalized Linear Model (GLM). These normalized counts will be useful for downstream visualization of results, but cannot be used as input to DESeq2 or any other tools that peform differential expression analysis which use the negative binomial model.
 {: .callout}
 
 
 # 4. Sample clustering
+To assess if samples from the same condition are grouped together, we are going to perform a clustering analysis. It has two main steps:
+- Calculate the distance between samples based on their normalized gene counts.
+- Perform a hierarchical cluster analysis using `hclust`.
+- Convert the result to a dendrogram and plot the resulting sample tree.  
 
 ## 4.1 Distance calculation
+The Euclidean distance will be calculated between each sample based on the 
+There are many ways to define a distance between two points.
+
+
+Simple example first!
+~~~
+# sample 1 and 2
+sample_a = c(1,2,3)
+sample_b = c(1,2,3)
+
+# Source: https://stackoverflow.com/questions/5559384/euclidean-distance-of-two-vectors
+euc.dist <- function(x1, x2) sqrt(sum((x1 - x2) ^ 2))
+euc.dist(sample_a, sample_b)
+~~~
+{: .language-r}
+
+The distance is 0 because the two samples have the same coordinates in their 3-dimensional space (x = 1, y = 1, z = 1).
+
+~~~
+sample_a = c(1,2,6)
+sample_b = c(1,2,3)
+euc.dist(sample_a, sample_b) # equal to 3
+
+# if you do it manually
+sqrt(sum(1 - 1)^2 + sum(2 - 2)^2 + sum(6 -3)^2)
+~~~
+{: .language-r}
+
+This should give you the same result. 
+
+Now, imagine you'd have to calculate the distance between each sample in a _N_ dimensional space (here N = 33,768 genes). Normally only Neo can see through the Matrix but maybe you do too...
+
+<img src="../img/05-neo-matrix.jpg" width="600px">
+
+Let's use R instead. 
+
+We will work on the complete `counts_normalised` matrix as we only have to compute the distance between 48 samples. If you would do this for the \~33000 genes, it would take much much more time and you will have to stop your R session. 
+
+~~~
+# calculate the sample Euclidean distances 
+distances_between_samples <- dist(
+	t(counts_normalised),               # notice the t() for transpose. Otherwise you get the distance between genes
+	method = "euclidean")  
+as.matrix(distances_between_samples)[1:5,1:5]
+~~~
+{: .language-r}
+
+~~~
+           ERR1406259 ERR1406271 ERR1406282 ERR1406294 ERR1406305
+ERR1406259        0.0   207590.4   167892.5   543575.1   823124.6
+ERR1406271   207590.4        0.0   192718.5   417620.6   677362.6
+ERR1406282   167892.5   192718.5        0.0   413844.6   692401.0
+ERR1406294   543575.1   417620.6   413844.6        0.0   333604.2
+ERR1406305   823124.6   677362.6   692401.0   333604.2        0.0
+~~~
+{: .output}
+
+> ## Question
+> How can you check that you have indeed calculated a distance between samples? 
+> > ## Solution
+> > You can notice that the distance between identical a sample and itself (e.g. ERR1406259 and ERR1406259) is equal to 0. 
+> {: .solution}
+{: .challenge}
+
+## 4.2 Hierarchical clustering
+This is the step where you will define your clusters. We will use the distance matrix computed before. 
+
+There are different methods to perform clustering and they go way beyond this course but here is a note on the different methods ([see the original source](https://uc-r.github.io/hc_clustering#algorithms)).
+
+> ## Methods
+> **Maximum or complete linkage clustering:** It computes all pairwise dissimilarities between the elements in cluster 1 and the elements in cluster 2, and considers the largest value (i.e., maximum value) of these dissimilarities as the distance between the two clusters. It tends to produce more compact clusters.  
+>
+> **Minimum or single linkage clustering:** It computes all pairwise dissimilarities between the elements in cluster 1 and the elements in cluster 2, and considers the smallest of these dissimilarities as a linkage criterion. It tends to produce long, “loose” clusters.  
+>
+> **Mean or average linkage clustering:** It computes all pairwise dissimilarities between the elements in cluster 1 and the elements in cluster 2, and considers the average of these dissimilarities as the distance between the two clusters.  
+>
+> **Centroid linkage clustering:** It computes the dissimilarity between the centroid for cluster 1 (a mean vector of length p variables) and the centroid for cluster 2.  
+>
+> **Ward’s minimum variance method:** It minimizes the total within-cluster variance. At each step the pair of clusters with minimum between-cluster distance are merged.
+{: .callout}
+
+Here, we are going to use the Ward's clustering method. 
+~~~
+
+~~~
+{}
+
+
 
 
 
@@ -747,10 +824,12 @@ normalized_deseq2 == manually_normalized
 
 ## Useful links
 1. [Gabriel Martos cluster analysis](https://rpubs.com/gabrielmartos/ClusterAnalysis)
-1. Love, M.I., Huber, W., Anders, S. (2014) Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2. Genome Biology, 15:550. 10.1186/s13059-014-0550-8
-2. Statquest: https://www.youtube.com/watch?v=UFB993xufUU
-3. https://hbctraining.github.io/DGE_workshop/lessons/02_DGE_count_normalization.html
+2. [Bradley Boehmke](https://uc-r.github.io/hc_clustering)
+3. Love, M.I., Huber, W., Anders, S. (2014) Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2. Genome Biology, 15:550. 10.1186/s13059-014-0550-8
+4. Statquest: https://www.youtube.com/watch?v=UFB993xufUU
+5. [Harvard Bioinformatic Core Training program](https://hbctraining.github.io/DGE_workshop/lessons/02_DGE_count_normalization.html)
 
-
+## Photo credits
+<a style="background-color:black;color:white;text-decoration:none;padding:4px 6px;font-family:-apple-system, BlinkMacSystemFont, &quot;San Francisco&quot;, &quot;Helvetica Neue&quot;, Helvetica, Ubuntu, Roboto, Noto, &quot;Segoe UI&quot;, Arial, sans-serif;font-size:12px;font-weight:bold;line-height:1.2;display:inline-block;border-radius:3px" href="https://unsplash.com/@markusspiske?utm_medium=referral&amp;utm_campaign=photographer-credit&amp;utm_content=creditBadge" target="_blank" rel="noopener noreferrer" title="Download free do whatever you want high-resolution photos from Markus Spiske"><span style="display:inline-block;padding:2px 3px"><svg xmlns="http://www.w3.org/2000/svg" style="height:12px;width:auto;position:relative;vertical-align:middle;top:-2px;fill:white" viewBox="0 0 32 32"><title>unsplash-logo</title><path d="M10 9V0h12v9H10zm12 5h10v18H0V14h10v9h12v-9z"></path></svg></span><span style="display:inline-block;padding:2px 3px">Markus Spiske</span></a>
 
 
