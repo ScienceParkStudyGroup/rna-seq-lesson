@@ -17,13 +17,14 @@ objectives:
 - "Prepare an experiment following best practices in experimental design to avoid confounding and batch effects."
 - "Justify the importance of biological replicates for RNA-seq differential expression experiments."
 keypoints:
+- "Low statistical power reduces the chance of detecting a true effect."
 - "Replication, randomization and blocking are the three core principles of proper experimental design."
 - "Confounding happens when two sources of variation cannot be distinguished from one another."
 - "Randomize what you cannot control, block what you can control."
 - "Maximizing the number of biological replicates in RNA-seq experiments is key to increase statistical power and lower the number of false negatives."
 ---
 
-## Table of Contents
+# Table of Contents
 - [Introduction](#introduction)
 - [Replicates](#replicates)
 - [Confounding](#confounding)
@@ -31,28 +32,120 @@ keypoints:
   - [How to know whether you have batches?](#how-to-know-whether-you-have-batches)
   - [Best practices regarding batches:](#best-practices-regarding-batches)
 
-## Introduction
-While most scientists would rapidly dive into RNA-seq sample preparation and searching for a sequencing provider, it is crucial to spend enough time on the design of the experiment itself. After all, a typical RNA-seq experiment is also an experiment like any other.  
+# Introduction
+While most scientists would rapidly dive into RNA-seq sample preparation and searching for a sequencing provider, it is crucial to spend enough time to refresh one's statistical knowledge and embrace good experimental design practices. After all, a typical RNA-seq experiment is also an experiment like any other. We will nethertheless see some specificities of RNA-seq experiments at the end of this episode.
 
 Statistics are often overlooked (at best) or avoided (very often) by wet-lab biologists since it is often thought of being both complex and boring. Yet, this episode will hopefully prove that is can be simply explained and that a few pragmatic considerations will usually save a considerable amount of time and money.  
 
-## Statistical refresher
+
+# 1. Statistical refresher
 First, let's have a quick look at important notions useful to understand the rest of this episode. 
 
-### Population and sample 
 
 
-### Hypothesis test
-
-### Type I and type II errors 
+### 1.1 Population and sample 
 
 
+The first question you need to ask yourself is "what is the population that I am considering in my experiment from which I will gather measurements?". If you are working on wild-type tomato plants from the cultivar Moneymaker for instance, then your population of interest would be _all_ plants from the Moneymaker cultivar on which you measure a particular phenotype. 
+
+If you are working on the height of the population from the Netherlands, then your population would be "all people in the Netherlands at time point X".  A sample is a subset of that population that must be _representative_ of that population. It therefore has to be selected randomly 
+
+Make sure you distinguish between descriptive and inferential statistics. 
+
+> Discussion
+> Let's imagine that we study the height of people in the Netherlands. We take a representative sample of 1000 people. Could you give examples of descriptive statistics on that sample?
+{: .discussion}
+
+
+Descriptive statistics will for instance calculate the average of the height of a group of people sampled from one country population. Descriptive statistics can be displayed in the form of graphics. 
+
+> ## Exercise
+>  
+
+### 1.2 Hypothesis test
+
+In your RNA-seq journey, you will work with thousands of genes. But before you do so, it is important to understand how statistical tests work with one gene. 
+
+Say you are studying a gene that you think will react to heat stress. You therefore measure this gene transcript level in two conditions: normal and stressed.
+
+Then, you make a hypothesis saying: 
 
 
 
-## Replicates
+The coefficient of variation (CV) is also known as _relative standard deviation (RSD)_
 
-Experimental replicates can be performed as **technical replicates** or **biological replicates**. 
+
+
+
+
+
+### 1.3 Type I and type II errors 
+
+Type I errors occur when the _null_ hypothesis is rejected wrongly (e.g., that two treatment means are equal) in favor of an alternative hypothesis (e.g., that the two means are different). Type I errors are probably most familiar to researchers and much effort is expended to ensure that Type I errors are minimized. 
+
+Type II errors also are common in hypothesis testing. These errors result from accepting the null hypothesis when in fact a treatment effect exists.  
+
+<br>
+<br>
+
+
+| Type I error (false positive): "You're pregnant!" | Type II error (false negative): "Sorry you're not pregnant" |
+|-----------------------------------|---------------|-------------------------------------------------------------|
+| <img src="../img/pregnant-man.jpg" alt="pregnant man" height="400px"> | <img src="../img/pregnant_woman.jpg" alt="pregnant woman" height="400px"> |
+
+These two types of errors are related to one another. 
+
+<img src="../img/type_one_type_two_errors.png" alt="table of type I and type II errors" width="70%">
+
+## 1.4 Putting it all together
+These parameters are crucial in your experimental design and will influence one another:
+- **Type I error:** controlled by the $$\alpha$$ value. Often set to 0.01 (1%) or 0.001 (0.1%) in RNA-seq experiments. 
+- **Type II error:** controlled by the $$\beta$$ value. 1 - $$\beta$$ will give Should be set to 70 or 80% but the number of biological replicates is hard to reach in practice.   
+- **Effect size:** this is a parameter you will set. For instance, if you want to investigate genes that differ between treatments with a difference of their mean of 2 then the effect siwe  
+
+
+
+
+ This probability is conditioned on an effect size, a threshold probability for Type I error (α level), and sample size
+
+# 2. Best practices for experimental design
+
+
+## 2.1 Sources of variability
+
+In a typical biological experiment, you will encounter various sources of variation that you are either desirable (because they are part of your experimental factors) or undesirable (unwanted).
+
+For instance, 
+
+# 3. Challenges relevant to RNA-seq
+
+## 3.1 Sequencing
+barcodes
+multiplexing
+flow cell 
+lanes
+
+## 3.2 Low power
+
+RNA-seq experiments often suffer from a low statistical power. 
+
+
+A low statistical power reflects type II error: 
+- You are missing "true effects" and there are many false negatives: genes that you should have been called differential but are not. - It also affects the _positive predictive value_ (PVV) of your findings which is the probability that a differential gene (p < 0.01) is a real true finding. 
+Power is therefore linked to the ability to claim "true findings". 
+
+
+A series of recent publications have emphasized that low power can lead to a lack of reproducibility of the research findings. For instance, in their publication entitled ["Power failure: why small sample size undermines the reliability of neuroscience"](https://www.nature.com/articles/nrn3475), Button and coauthors state that:
+> Research that produces novel results, statistically significant results (that is, typically p < 0.05) and seemingly 'clean' results is more likely to be published. As a consequence, researchers have strong incentives to engage in research practices that make their findings publishable quickly, even if those practices reduce the likelihood that the findings reflect a true (that is, non-null) effect. Such practices include using **flexible study designs** and flexible statistical analyses and **running small studies with low statistical power**.
+  
+
+The number of replicates is one of the critical parameter related to the power of an analysis. But first, let's discuss what you understand by "replicates". 
+
+> ## Discussion
+> What sort of replicates can you name?
+{: .discussion}
+
+Two types of experimental replicates coexist: **technical replicates** or **biological replicates**. 
 
 <img src="../img/replicates.png" width="500">
 
@@ -118,6 +211,96 @@ Replicates are almost always preferred to greater sequencing depth for bulk RNA-
   
 > **NOTE:** The factor used to estimate the depth of sequencing for genomes is "coverage" - how many times do the number nucleotides sequenced "cover" the genome. This metric is not exact for genomes, but it works okay. It **does not work for transcriptomes** because expression of the genes depend on the condition being studied.
   
+
+## 3.3 Pooling of samples
+
+Yes if absolutely necessary. For instance, you are collecting roots from very young seedlings and you won't have enough material to isolate RNA. 
+
+:warning: One reason not to pool is that you cannot identify potential outliers. Think about one seedling that would be stressed (for some unknown reason) and that might be mixed with several unstressed seedlings. This would potentially affect the level of stress-related genes in your pooled sample. Unfortunately, you would not be able to spot this outlier seedling and isolate it _in silico_. 
+
+
+# Exploration of the raw counts
+
+Raw counts is a quick and dirty way to refer to "RNA-seq count results that have not been normalised (scaled)". This is the raw material you will obtain after the bioinformatic part of this lesson. This dataset will be used for differential expression. 
+
+## Distribution of counts
+Half of the genes have count values lower than ...
+
+The max value is ... while the ...
+
+## CV of genes
+What are 
+
+
+~~~
+library(tidyverse)
+
+# read the raw counts (df stands for dataframe)
+df <- read.delim("counts.txt", header = T, stringsAsFactors = F)
+
+# calculate the coefficient of variation for each gene
+cv_from_counts <- pivot_longer(counts, 
+                               cols = - Geneid, 
+                               names_to = "sample", 
+                               values_to = "counts") %>% 
+  group_by(Geneid) %>% 
+  summarise(coef_var_counts = sd(counts) / mean(counts))
+
+# create a distribution histogram of the different cv 
+ggplot(cv_from_counts, aes(x = coef_var_counts)) + 
+  geom_histogram()
+~~~
+{: .language-r}
+
+On this plot, you can see that most of the genes have a coefficient of variation 
+
+
+~~~
+summary(cv_from_counts$coef_var_counts)
+~~~
+{: .language-r}
+
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+ 0.1839  0.2565  0.3465  1.1658  1.2622  6.9282    2354 
+
+
+## 
+
+
+## Rarefaction curve
+
+## Some simulations
+
+
+
+
+# References
+
+- [Scotty, a web-tool for power calculation](http://scotty.genetics.utah.edu/help.html)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## Confounding
   
 A confounded RNA-Seq experiment is one where you **cannot distinguish the separate effects of two different sources of variation** in the data. 
@@ -181,30 +364,12 @@ If *any* of the answers is **‘No’**, then you have batches.
     <img src="../img/metadata_batch.png" width="300">
     
  > **NOTE:** *The sample preparation of cell line "biological" replicates "should be performed as independently as possible" (as batches), "meaning that cell culture media should be prepared freshly for each experiment, different frozen cell stocks and growth factor batches, etc. should be used [[2](http://paasp.net/accurate-design-of-in-vitro-experiments-why-does-it-matter/)]." However, preparation across all conditions should be performed at the same time.*
-    
- ***
- **Exercise**
- 
-Your experiment has three different treatment groups, A, B, and C. Due to the lengthy process of tissue extraction, you can only isolate the RNA from two samples at the same time. You plan to have 4 replicates per group.
 
-1. Fill in the `RNA isolation` column of the metadata table. Since we can only prepare 2 samples at a time and we have 12 samples total, you will need to isolate RNA in 6 batches. In the `RNA isolation` column, enter one of the following values for each sample: `group1`, `group2`, `group3`, `group4`, `group5`, `group6`. Make sure to fill in the table so as to avoid confounding by batch of `RNA isolation`. 
+# References 
+- [The power analysis section of the RNA-seq blog](https://www.rna-seqblog.com/tag/power-analysis/)
 
-	Click [here](https://github.com/hbctraining/Intro-to-rnaseq-hpc-salmon/blob/master/data/exp_design_table.xlsx?raw=true) to download the below table as an **Excel file**.
+## Credits
 
-2. **BONUS:** To perform the RNA isolations more quickly, you devote two researchers to perform the RNA isolations. Create a `researcher` column and fill in the researchers' initials for the samples they will prepare: use initials `AB` or `CD`.
 
-  | sample | treatment | sex | replicate | RNA isolation |
-  | --- | --- | --- | --- | --- |
-  | sample1 | A | F | 1 | 
-  | sample2 | A | F | 2 |
-  | sample3 | A | M | 3 |
-  | sample4 | A | M | 4 |
-  | sample5 | B | F | 1 |
-  | sample6 | B | F | 2 |
-  | sample7 | B | M | 3 |
-  | sample8 | B | M | 4 |
-  | sample9 | C | F | 1 |
-  | sample10 | C | F | 2 |
-  | sample11 | C | M | 3 |
-  | sample12 | C | M | 4 |
+<a style="background-color:black;color:white;text-decoration:none;padding:4px 6px;font-family:-apple-system, BlinkMacSystemFont, &quot;San Francisco&quot;, &quot;Helvetica Neue&quot;, Helvetica, Ubuntu, Roboto, Noto, &quot;Segoe UI&quot;, Arial, sans-serif;font-size:12px;font-weight:bold;line-height:1.2;display:inline-block;border-radius:3px" href="https://unsplash.com/@ayahya09?utm_medium=referral&amp;utm_campaign=photographer-credit&amp;utm_content=creditBadge" target="_blank" rel="noopener noreferrer" title="Download free do whatever you want high-resolution photos from Ali Yahya"><span style="display:inline-block;padding:2px 3px"><svg xmlns="http://www.w3.org/2000/svg" style="height:12px;width:auto;position:relative;vertical-align:middle;top:-2px;fill:white" viewBox="0 0 32 32"><title>unsplash-logo</title><path d="M10 9V0h12v9H10zm12 5h10v18H0V14h10v9h12v-9z"></path></svg></span><span style="display:inline-block;padding:2px 3px">Ali Yahya</span></a>
 
