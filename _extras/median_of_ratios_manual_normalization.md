@@ -1,5 +1,5 @@
 ---
-title:
+title: ""
 ---
 
 # Median of ratios manual normalization
