@@ -35,9 +35,6 @@ keypoints:
 	- 5.2 The Iris data set
 	- 5.3 PCA applied to RNA-seq
 - [6. Bonus: home-made DESeq normalization function](#6-bonus-home-made-deseq-normalization-function)
-	- 6.1 step by step explanation
-	- 6.2 DESeq2-style normalization function
-	- 6.3 Sanity check
 - [7. References](#7-references)
 	- Useful links
 
@@ -642,8 +639,6 @@ p
 From the loading plot for PC1 it is clear that Petal.Length is the most important factor while Sepal.Width is the one which is least important. Because PC1 explains 92.5 % of the total variance we can conclude that Petal.Length is the most important factor that separates the three groups of flowers. There are many more things to learn on PCA (e.g. scaling, filtering) but that is out of the scope of these exercises. 
 
 
-
-
 ## 5.3 PCA applied to RNA-seq
 
 In the context of an RNA-seq experiment, it can be used to visualize the differences (distances) between samples and how it relates to the experimental design.
@@ -685,7 +680,7 @@ ggplot(pcaData, aes(PC1, PC2, color = seed, shape = infected, size = dpi)) +
 
 # 6. Bonus: home-made DESeq normalization function
 
-Refer to this page in [extras/](../median_of_ratios_manual_normalization/index.html)
+Please consult the step-by-step R code to normalize the DESeq2 way [here](../median_of_ratios_manual_normalization/index.html).
 
 # References
 
