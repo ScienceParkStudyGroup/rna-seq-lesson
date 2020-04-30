@@ -11,7 +11,7 @@ In this training you will learn the basics of a typical RNA-Sequencing experimen
 
 We will use mostly R and its companion RStudio to perform our RNA-Seq analyses and visualisations. 
 
-Depending on the level of participants, the bioinformatic part might be performed (QC of fastq files, genome alignment, counting, etc.)  
+Depending on the level of participants, the bioinformatic part might be performed (QC of fastq files, genome alignment, counting, etc.)
 
 Before you begin, be sure you are all set up (see below). For complete information, see the Setup section. 
 
@@ -39,6 +39,14 @@ This lesson will introduce you to the basics of gene expression analysis using R
 {: .prereq}
 
 {% include links.md %}
+
+## Citation
+If you make use of this material in some way (teaching, vocational training, research), please cite us:
+"Bliek Tijs, Frans van der Kloet and Marc Galland" (eds): "RNA-seq lesson."  Version 2020.04.
+https://github.com/ScienceParkStudyGroup/rnaseq-lesson
+
+## Credits
+This lesson is heavily based on teaching materials from the [Harvard Chan Bioinformatics Core (HBC) in-depth NGS data analysis course](https://hbctraining.github.io/In-depth-NGS-Data-Analysis-Course/). Materials have been adapted and some exercises created to comply with the [Carpentries Foundation teaching requirements](https://carpentries.github.io/instructor-training/).
 
 
 ----

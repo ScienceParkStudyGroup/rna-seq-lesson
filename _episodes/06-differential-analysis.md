@@ -18,7 +18,7 @@ keypoints:
 
 ---
 
-## Table of Contents
+# Table of Contents
 1. [Introduction](#introduction)
 2. [Creating the DESeqDataSet object](#creating-the-DESeqDataSet-object)
 3. [Different expression analysis](#creating-the-DESeqDataSet-object)
@@ -27,24 +27,64 @@ keypoints:
 6. [Heatmap](#heatmap)
 
 
+- 1. Introduction
+- 2. Differential expression analysis
+  - 2.1 Creating the DESeqDataSet object
+  - 2.2 Running the DE analysis
+  - 2.3 Table results of differential genes
+  - 2.4 False discovery rates
+- 3. Volcano plot
+- 4. Heatmap
+  - 4.1 Scaling
+  - 4.2 Filtering out the non-differentially expressed genes
+    - Grouping genes by profiles
+- Bonus: MA plots
+- References
 
-## Introduction
 
-Differential expression analysis is the process of determining which of the genes are significantly affected by my experimental design. In the example study that we use, Arabidopsis plants were for instance infected or not by a pathogenic bacteria called _Pseudomonas syringae_ DC3000. One comparison of interest could be to determine which of the Arabidopsis leaf genes are transcriptionally affected by the presence of this pathogenic bacteria.
+
+
+# 1. Introduction
+
+Differential expression analysis is the process of determining which of the genes are significantly affected by my experimental design. In the example study that we use, Arabidopsis plants were infected or not by a pathogenic bacteria called _Pseudomonas syringae_ DC3000. One comparison of interest could be to determine which of the Arabidopsis leaf genes are transcriptionally affected by the infection with this pathogenic bacteria.
 
 In this episode, we will see how to perform a simple one-condition experimental comparison with `DESeq2`. We will compare the transcriptome of Arabidopsis in response to infection by the leaf pathogenic bacteria _Pseudomonas syringae_ DC3000 after 7 days (7 dpi). 
 
-This will yield a table containing genes $$log_{2}$$ fold change and their corrected p-values. We will also see how to create a few typical representations classically used to display RNA-seq results. 
+This will yield a table containing genes $$log_{2}$$ fold change and their corrected p-values. We will also see how to create a few typical representations classically used to display RNA-seq results such as volcano plots and heatmaps. 
 
-## Creating the DESeqDataSet object
+# 2. Differential expression analysis
+
+## 2.1 Creating the DESeqDataSet object
 
 Since we do not want to work on all comparisons, we will filter out the samples and conditions that we do not need. Only the mock growth and the _P. syringae_ infected condition will remain.  
 
-You should still have the `counts` and `xp_design` objects in your R environment. If not please check the previous episode section _DESeq2 count normalization_.
+You should still have the `counts` and `xp_design` objects in your R environment. If not, please run the following code. 
+
 
 ~~~
+# read the xp design file if not available in your environment 
+xp_design <- read.delim("experimental_design_modified.txt", 
+                        header = T, 
+                        stringsAsFactors = F, 
+                        colClasses = rep("character",4))
+# change col names
+colnames(xp_design) <- c("sample", "seed", "infected", "dpi")
+
+
+counts <- read.delim("counts.txt", header = T, stringsAsFactors = F)
+genes <- counts[,1]
+counts <- counts[,-1]
+row.names(counts) <- genes
+
+# reorder counts columns according to the experimental design file
+counts <- counts[, xp_design$sample]
+~~~
+
+~~~
+library(DESeq2)
+
 # filter design file (mock versus P. syringae at 7 dpi)
-xp_design_mock_vs_infected = xp_design %>% filter(growth == "MgCl2" & dpi == "7")
+xp_design_mock_vs_infected = xp_design %>% filter(seed == "MgCl2" & dpi == "7")
 
 # Filter count file accordingly (so the rows correspond to the columns of the filtered xp_design file)
 counts_filtered = counts[, colnames(counts) %in% xp_design_mock_vs_infected$sample]
@@ -77,9 +117,7 @@ Levels: mock Pseudomonas_syringae_DC3000
 This shows that the _mock_ level comes first before the _Pseudomonas_syringae_DC3000_ level. If this is not correct, you can change it following [the dedicated section of the DESeq2 vignette](http://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#factorlevels) on factor levels. 
 
 
-## Differential expression analysis
-
-### Running a DE analysis
+## 2.2 Running the DE analysis
 
 Differential gene expression analysis will consist of simply two lines of code:
 1. The first will call the `DESeq` function on a `DESeqDataSet` object that you've just created under the name `dds`. It will be returned under the same `R` object name `dds`.
@@ -131,7 +169,8 @@ all_equal(res, res2)
 {: .language-r}
 
 
-### Table results
+## 2.3 Extracting the table of differential genes 
+
 We can now have a look at the result table that contains all information necessary to explore the results.  
 
 Let's take a peek at the first lines.
@@ -161,6 +200,31 @@ ATMG01410  7.79228297186529 -0.957658947213795 0.619376215569985 -1.546166809670
 ~~~
 {: .output}
 
+<br>
+
+
+> ## Question
+> 1. What is the biological meaning of a $$log2$$ fold change equal to 1 for gene X?
+> 2. What is the biological meaning of a $$log2$$ fold change equal to -1?
+> 3. In R, compute the $$log2$$ fold change ("treated vs untreated") of a gene that has:
+>    - A gene expression equal to 230 in the "untreated" condition.  
+>    - A gene expression equal to 750 in the "treated" condition.
+> 
+> > ## Solution
+> > 1. A $$log2$$ equal to 1 means that gene X has a higher expression (x2, two-fold) in the DC3000 infected condition compared to the mock condition. 
+> > 2. A $$log2$$ equal to -1 means that gene X has a smaller expression ($$\frac{1}{2}$$) in the DC3000 infected condition.   
+> >  
+> > ~~~
+> > untreated = 230
+> > treated = 750
+> > log2(treated/untreated) # equals 1.705257
+> > ~~~
+> > {: .language-r}
+> {: .solution}
+{: .challenge}
+
+<br>
+
 Some explanations about this output:
 > The results table when printed will provide the information about the comparison, e.g. "log2 fold change (MAP): condition treated vs untreated", meaning that the estimates are of log2(treated / untreated), as would be returned by contrast=c("condition","treated","untreated"). 
 
@@ -189,9 +253,9 @@ padj                results                                                 BH a
 {: .output}
 
 
-### False discovery rates
-The selected $$\alpha$$ threshold controls for type I error rate: rejecting the _null_ hypothesis ("there is no difference") while it is true. This $$\alpha$$ value is often set at 
-at $$\alpha$$ = 0.05 (5%), $$\alpha$$ = 0.01 (1%) or $$\alpha$$ = 0.001 (0.1%).
+## 2.4 False discovery rates
+The selected $$\alpha$$ threshold controls for type I error rate: rejecting the _null_ hypothesis (H<sub>0</sub> no difference) and therefore affirming that there is a gene expression difference between conditions while there aren't any. This $$\alpha$$ value is often set at 
+at $$\alpha$$ = 0.01 (1%) or $$\alpha$$ = 0.001 (0.1%) in RNA-seq analyses.
 
 
 When you perform thousands of statistical tests (one for each gene), you will by chance call genes differentially expressed while they are not (false positives). You can control for this by applying certain statistical procedures called _multiple hypothesis test correction_.   
@@ -199,6 +263,8 @@ When you perform thousands of statistical tests (one for each gene), you will by
 
 We can count the number of genes that are differentially regulated at a certain $$\alpha$$ level. 
 ~~~
+library(dplyr)
+
 # threshold of p = 0.01
 res %>% 
   as.data.frame() %>% 
@@ -212,6 +278,8 @@ res %>%
   dim()
 ~~~
 {: .language-r}
+
+You should obtain 4979 differentially expressed genes at 1% and 3249 at 0.1% which are quite important numbers: indeed, it corresponds to respectively \~15% and \~10% of the whole number transcriptome (total number of mRNA is 33,768).    
 
 Histogram p-values
 This [blog post](http://varianceexplained.org/statistics/interpreting-pvalue-histogram/) explains in detail what you can expect from each p-value distribution profile.
@@ -234,19 +302,35 @@ hist(res$pvalue, col="grey", main = "Non-adjusted p-value distribution")
 As you can see, the distribution of p-values was already quite similar suggesting that a good proportion of the tests have a significant p-value (inferior to $$\alpha$$ = 0.01 for instance). This
 suggests that a good proportion of these will be true positives (genes truly differentially regulated). 
 
-## MA plot
-The MA plot originally comes from microarray studies that compared two conditions. From the DESeq2 vignette:
-> In DESeq2, the function `plotMA` shows the log2 fold changes attributable to a given variable over the mean of normalized counts for all the samples in the DESeqDataSet. 
-> Points will be colored red if the adjusted p value is less than 0.1. Points which fall out of the window are plotted as open triangles pointing either up or down.
+## Extracting the table of differential genes
+Ok, here's the moment you've been waiting for. How can I extract a nicely filtered final table of differential genes? Here it is!
 
 ~~~
-plotMA(dds2, alpha = 0.01)
+# otherwise lost during conversion of DESeq2DataSet object to R dataframe
+gene_ids = row.names(res) 
+
+diff = res %>% 
+  as.data.frame() %>% 
+  mutate(genes = gene_ids) %>%
+  filter(padj < 0.01) %>% 
+  arrange(desc(log2FoldChange), 
+          desc(padj))
+
+write_delim(x = diff, path = "differential_genes.tsv")
 ~~~
 {: .language-r}
 
-<img src="../img/MA_plot_raw.png" width="800px" alt="MA plot" >
+<br>
 
-Shrinkage of effect size (LFC estimates) is useful for visualization and ranking of genes. It is more useful visualize the MA-plot for the shrunken log2 fold changes, which remove the noise associated with log2 fold changes from low count genes without requiring arbitrary filtering thresholds. This helps to get more meaningful log2 fold changes for all genes independently of their expression level. 
+
+# 3. Volcano plot
+For each gene, this plot shows the gene fold change on the x-axis against the p-value plotted on the y-axis. 
+
+Here, we make use of a library called _EnhancedVolcano_ which is available through [Bioconductor](http://bioconductor.org/packages/release/bioc/html/EnhancedVolcano.html) and described extensively on its [own GitHub page](https://github.com/kevinblighe/EnhancedVolcano).
+
+
+First, we are going to "shrink" the $$\log2$$ fold changes to remove the noise associated with fold changes coming from genes with low count levels. Shrinkage of effect size (LFC estimates) is useful for visualization and ranking of genes. This helps to get more meaningful log2 fold changes for all genes independently of their expression level.
+
 ~~~
 resLFC <- lfcShrink(dds = dds2, 
                   res = res,
@@ -256,22 +340,7 @@ resLFC <- lfcShrink(dds = dds2,
 {: .language-r}
 
 
-~~~
-plotMA(resLFC, alpha = 0.01)
-~~~
-{: .language-r}
-
-You can see that genes with low counts are now shrinked. 
-
-<img src="../img/MA_plot_shrinked.png" width="800px" alt="MA plot" >
-
-
-## Volcano plot
-For each gene, this plot shows the gene fold change on the x-axis against the p-value plotted on the y-axis. 
-
-Here, we make use of a library called _EnhancedVolcano_ which is available through [Bioconductor](http://bioconductor.org/packages/release/bioc/html/EnhancedVolcano.html) and described extensively on its [own GitHub page](https://github.com/kevinblighe/EnhancedVolcano).
-
-We can build this plot rapidly without much customization. 
+We can build the Volcano plot rapidly without much customization. 
 ~~~
 # load the library if not done yet
 library("EnhancedVolcano")
@@ -285,7 +354,7 @@ EnhancedVolcano(toptable = resLFC,              # We use the shrunken log2 fold 
 ~~~
 {: .language-r}
 
-<img src="../img/volcano_plot_default.png" width="800px" alt="default volcano plot" >
+<img src="../img/volcano_plot_default.png" width="600px" alt="default volcano plot" >
 
 Alternatively, the plot can be heavily customized to become a publication-grade figure.  
 ~~~
@@ -309,16 +378,23 @@ EnhancedVolcano(toptable = resLFC,
 
 ~~~
 {: .language-r}
-<img src="../img/volcano_plot.png" width="800px" alt="customized volcano plot" >
+<img src="../img/volcano_plot.png" width="600px" alt="customized volcano plot" >
 
-## Heatmap
+# 4. Heatmap
 Heatmap is a representation where gene counts are represented on a color scale. It is usually one of the classic figures part of a transcriptomic study. 
 One can also cluster samples and genes to display a more organised heatmap. Enough talking, let's build one step by step. 
 
 We are going to make use of a library called `pheatmap`. 
 
-### Scaling 
-We will first create three simple heatmaps by taking small subsets of the huge `counts_normalised` matrix. We have created this count matrix in the previous lesson episode. If you do not have the `counts_normalised` object in your environment, please check the previous episode.
+## 4.1 Scaling 
+We will first create three simple heatmaps by taking small subsets of the `counts_normalised` matrix. 
+
+Extract the normalized counts from our `dds2` DESeqDataSet object. 
+~~~
+# extract the normalised counts
+counts_normalised = counts(dds2, normalized = TRUE)
+~~~
+
 
 Let's plot a few simple heatmaps without any grouping. 
 ~~~
@@ -368,7 +444,7 @@ After applying the $$log_{2}$$ transformation, gene expression levels become mor
 <img src="../img/heatmap_log2.png" width="600px" alt="heatmap log2 transformed" >
 
 
-### Filtering out the non-differentially expressed genes
+## 4.2 Filtering out the non-differentially expressed genes
 As for now, we have worked on the gene count matrix that contains genes differentially expressed _and_ not differentially expressed. In other words, we have kept genes that are not directly responding to our experimental treatment (here infection by _Pseudomonas syringae_ DC3000).
 
 Clearer heatmaps can be obtained by filtering out genes that are not differentially expressed in our comparison of interest. Let's do just that!
@@ -478,13 +554,44 @@ pheatmap(log2(counts_normalised_only_diff_fold + 1),
 
 <img src="../img/heatmap_genes_and_samples_clustered_fold_change.png" width="600px" alt="heatmap genes and samples clustered on genes with a high fold change">
 
-## Functional enrichment
-Master level!
+
+# Bonus: MA plots
+We don't cover MA plots in this lesson but if you are interested, you can have a look at it here. 
+
+The MA plot originally comes from microarray studies that compared two conditions. From the DESeq2 vignette:
+> In DESeq2, the function `plotMA` shows the log2 fold changes attributable to a given variable over the mean of normalized counts for all the samples in the DESeqDataSet. 
+> Points will be colored red if the adjusted p value is less than 0.1. Points which fall out of the window are plotted as open triangles pointing either up or down.
+
+~~~
+plotMA(dds2, alpha = 0.01)
+~~~
+{: .language-r}
+
+<img src="../img/MA_plot_raw.png" width="800px" alt="MA plot" >
+
+Shrinkage of effect size (LFC estimates) is useful for visualization and ranking of genes. It is more useful visualize the MA-plot for the shrunken log2 fold changes, which remove the noise associated with log2 fold changes from low count genes without requiring arbitrary filtering thresholds. This helps to get more meaningful log2 fold changes for all genes independently of their expression level. 
+~~~
+resLFC <- lfcShrink(dds = dds2, 
+                  res = res,
+                  type = "normal",
+                  coef = 2) # corresponds to "infected_Pseudomonas_syringae_DC3000_vs_mock" comparison
+~~~
+{: .language-r}
+
+
+~~~
+plotMA(resLFC, alpha = 0.01)
+~~~
+{: .language-r}
+
+You can see that genes with low counts are now shrinked. 
+
+<img src="../img/MA_plot_shrinked.png" width="800px" alt="MA plot" >
 
 
 # References
-* Kamil Slowikoski blog post about heatmap: https://slowkow.com/notes/pheatmap-tutorial/
-* Z-score calculation: https://www.statisticshowto.datasciencecentral.com/probability-and-statistics/z-score/
-* Type I and type II error rates in gene expression studies: https://www.ncbi.nlm.nih.gov/pubmed/28637422
-* p-value histograms explained: http://varianceexplained.org/statistics/interpreting-pvalue-histogram/
+* [Kamil Slowikoski blog post about heatmap](https://slowkow.com/notes/pheatmap-tutorial/)
+* [Z-score calculation](https://www.statisticshowto.datasciencecentral.com/probability-and-statistics/z-score/)
+* [Type I and type II error rates in gene expression studies](https://www.ncbi.nlm.nih.gov/pubmed/28637422)
+* [p-value histograms explained](http://varianceexplained.org/statistics/interpreting-pvalue-histogram/)
 

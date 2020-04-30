@@ -13,8 +13,8 @@ objectives:
 - "Learn how to generate a reproducible code notebook with Rmarkdown."
 keypoints:
 - "Next-Generation Sequencing techniques are massively parallel cDNA sequencing."
-- "KP2."
-- "KP3."
+- "Sequencing files are produced in a standard format: the fastq format."
+- "Using FastQC, one can easily check the sequencing quality of a fastq file."
 ---
 
 ## Table of Contents
@@ -22,6 +22,14 @@ keypoints:
 2. [Assessing quality metrics](#assessing-quality-metrics)
 
 ## Introduction
+
+## The fastq format
+
+describe fastq format.
+
+compression. 
+
+base quality.
 
 ## Assessing quality metrics	
 
@@ -122,3 +130,5 @@ Since our data is just a subset of the original data and it contains the over-ex
 As our report only represents a subset of reads (chromosome 1) for `Mov10_oe_1.subset.fq`, which can skew the QC results. We encourage you to look at the [full set of reads](../fastqc/Mov10oe_1-fastqc_report.html) and note how the QC results differ when using the entire dataset.
 
 After exploring the quality of the data, we determine from which gene or transcript the reads originated from using mapping tools. The quality of the data is important when determining where it aligns to on the genome or transcriptome, but the mapping tools we use (salmon and STAR) are able to account for adapter contamination, vector contamination and low-quality bases at the ends of reads. Therefore, after noting any QC issues, we can use our raw reads for the alignment or mapping to the reference genome or transcriptome.
+
+## MultiQC

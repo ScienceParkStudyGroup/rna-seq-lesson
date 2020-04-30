@@ -1,14 +1,12 @@
 ---
-title: "Bioinformatic workflow"
-teaching: 30
-exercises: 30 
+title: "From fastq files to read counts"
+teaching: 45
+exercises: 0 
 questions:
-- "Question one."
+- ""
 objectives:
-- "Objective one."
+- ""
 keypoints:
-- "Keypoint one."
-
+- ""
 ---
-
 ## In construction
