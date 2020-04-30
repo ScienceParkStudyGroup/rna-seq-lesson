@@ -1,8 +1,6 @@
 ---
-title: ""
+title: " Median of ratios manual normalization"
 ---
-
-# Median of ratios manual normalization
 
 A huge thanks to [Jolanta Szkodon](https://github.com/jszkodon) for her custom function to reproduce DESeq2 normalization. 
 
