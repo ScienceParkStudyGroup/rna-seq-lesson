@@ -1,12 +1,10 @@
 ---
-title: Median_of_ratios_manual_normalization
+title
 ---
 
-# Preambule
+# Median of ratios manual normalization
+
 A huge thanks to [Jolanta Szkodon](https://github.com/jszkodon) for her custom function to reproduce DESeq2 normalization. 
-
-
-# Overview 
 
 The median of ratios method is a normalization method used to account for sequencing differences in library size and RNA composition of samples. This makes it a suitable method to use when comparing between samples. It does not account for differences in gene length, making it unsuitable for within sample comparisons.
 
@@ -14,7 +12,25 @@ The median of ratios method is applied in the DESeq2 package, used for different
 
 Sample expression count data was taken from the [GSE49110 dataset](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE49110) and cut to create a manageable dataset for the tutorial. 
 
-In Section 1, steps of the median of ratios method are shown. In Section 2, a function including all steps is shown. In Section 3, the normalized counts are compared with the DESeq2 method to ensure the results are the same. References used are listed at the end. 
+In [Section 1](#section-1-step-by-step-procedure), steps of the median of ratios method are shown.  
+In [Section 2](#section-two-a-function-to-normalize-the-deseq2-way), a function including all steps is shown.   
+In [Section 3](#section-3-sanity-check), the normalized counts are compared with the DESeq2 method to ensure the results are the same. References used are listed at the end. 
+
+# Table of Contents
+
+- [Section 1: step-by-step procedure](#section-1-step-by-step-procedure)
+  - Step 1: Upload data
+  - Step 2: Take the log of all values
+  - Step 3: Take the average of each row
+  - Step 4: Filter out all of the genes with -Inf as their average
+  - Step 5: Subtract the gene pseudo-references from log counts
+  - Step 6: Find the median of the ratios for each sample
+  - Step 7: Convert medians to scaling factors
+  - Step 8: Divide the original counts \(not log version\) by the scaling factors
+- [Section 2: a function to normalize the DESeq2 way](#section-2-a-function-to-normalize-the-deseq2-way)
+- [Section 3: sanity check](#section-3-sanity-check)
+- [References](#references)
+
 
 # Section 1: step-by-step procedure 
 
