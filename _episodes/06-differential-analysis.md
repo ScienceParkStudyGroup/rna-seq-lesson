@@ -19,6 +19,27 @@ keypoints:
 ---
 
 # Table of Contents
+
+<!-- MarkdownTOC autolink="True" levels="1,2,3" -->
+
+- [1. Introduction](#1-introduction)
+- [2. Differential expression analysis](#2-differential-expression-analysis)
+	- [2.1 Creating the DESeqDataSet object](#21-creating-the-deseqdataset-object)
+	- [2.2 Running the DE analysis](#22-running-the-de-analysis)
+	- [2.3 Extracting the table of differential genes](#23-extracting-the-table-of-differential-genes)
+	- [2.4 False discovery rates](#24-false-discovery-rates)
+	- [Extracting the table of differential genes](#extracting-the-table-of-differential-genes)
+- [3. Volcano plot](#3-volcano-plot)
+- [4. Heatmap](#4-heatmap)
+	- [4.1 Scaling](#41-scaling)
+	- [4.2 Filtering out the non-differentially expressed genes](#42-filtering-out-the-non-differentially-expressed-genes)
+		- [Grouping genes by profiles](#grouping-genes-by-profiles)
+- [Bonus: MA plots](#bonus-ma-plots)
+- [References](#references)
+
+<!-- /MarkdownTOC -->
+
+
 1. [Introduction](#introduction)
 2. [Creating the DESeqDataSet object](#creating-the-DESeqDataSet-object)
 3. [Different expression analysis](#creating-the-DESeqDataSet-object)
@@ -59,7 +80,6 @@ This will yield a table containing genes $$log_{2}$$ fold change and their corre
 Since we do not want to work on all comparisons, we will filter out the samples and conditions that we do not need. Only the mock growth and the _P. syringae_ infected condition will remain.  
 
 You should still have the `counts` and `xp_design` objects in your R environment. If not, please run the following code. 
-
 
 ~~~
 # read the xp design file if not available in your environment 
