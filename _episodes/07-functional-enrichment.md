@@ -11,24 +11,35 @@ keypoints:
 
 ---
 
+
 # Table of Contents
+<!-- MarkdownTOC autolink="True" levels="1,2,3" -->
 
 - [1. Introduction](#1-introduction)
 - [2. Annotating your DE genes](#2-annotating-your-de-genes)
-	- 2.1 Load the table of differential genes
-	- 2.2 Querying Ensembl databases
-- 3. Gene set enrichment analysis
-	- 3.1 Using R
-	- 3.2 AgriGO
-- Data integration
-	- Using MapMan
-	- Using iPath
-- 3. Looking fore regulatory elements
-- Other sources of information
-	- BAR
-- Useful links
-- References
+  - [2.1 Load the table of differential genes](#21-load-the-table-of-differential-genes)
+  - [2.2 Ensembl databases](#22-ensembl-databases)
+  - [2.3 Querying Ensembl databases using biomartr](#23-querying-ensembl-databases-using-biomartr)
+- [3. Gene set enrichment analysis and overrepresentation analysis](#3-gene-set-enrichment-analysis-and-overrepresentation-analysis)
+  - [3.1 Over Representation Analysis \(ORA\)](#31-over-representation-analysis-ora)
+  - [3.1 Using R](#31-using-r)
+  - [3.3 Metascape](#33-metascape)
+  - [3.2 AgriGO](#32-agrigo)
+- [4. Data integration with metabolic pathways](#4-data-integration-with-metabolic-pathways)
+  - [Using MapMan](#using-mapman)
+  - [Using iPath](#using-ipath)
+- [5. Looking for regulatory elements](#5-looking-for-regulatory-elements)
+  - [5.1 Extracting the coordinqtes of genes](#51-extracting-the-coordinqtes-of-genes)
+  - [5.2 Adding or substracting X nts](#52-adding-or-substracting-x-nts)
+- [6. Other sources of information](#6-other-sources-of-information)
+  - [6.1 ThaleMiner](#61-thaleminer)
+  - [6.2 Expression atlas](#62-expression-atlas)
+  - [6.3 BAR](#63-bar)
+  - [6.4 CoExprViz](#64-coexprviz)
+- [7. Useful links](#7-useful-links)
+- [References](#references)
 
+<!-- /MarkdownTOC -->
 
 
 
@@ -133,16 +144,42 @@ head(result_BM)
 ~~~
 {: .language-r}
 
-# 3. Gene set enrichment analysis 
-Gene Ontology based
+# 3. Gene set enrichment analysis and overrepresentation analysis
+
+## 3.1 Over Representation Analysis (ORA)
+
+Over Representation Analysis is searching for biological functions or pathways that are enriched in a list obtained through experimental studies compared to the complete list of functions/pathways.  
+
+
+$$p = 1 - {\sum_{i=0}^{k-1} {M \choose i}{N - M \choose n - i} \over {N \choose n}}$$  
+
+In this formula: 
+- **N** is the total number of genes in the background distribution.
+- **M** is the number of genes within that distribution that are annotated (either directly or indirectly) to the gene set of interest.
+- **n** is the size of the list of genes of interest (the size of your "drawing").
+- **k** and k is the number of genes within that list which are annotated to the gene set. The background distribution by default is all the genes that have annotation. P-values should be adjusted for multiple comparison.
+
+Do you remember your math classes from high school? Now's the time to get them to work again!
+
+Binomial coefficient is defined as $${n \choose k}$$ and is equal to $$n! \over {k! (n-k)!}$$
+
+
 
 ## 3.1 Using R
+Cluster profiler: https://bioconductor.org/packages/release/bioc/vignettes/clusterProfiler/inst/doc/clusterProfiler.html
+
+
+
+
+## 3.3 Metascape
 
 ## 3.2 AgriGO
 Agrigo
 
 
-# 4. Data integration
+# 4. Data integration with metabolic pathways
+
+ClusterProfiler: https://yulab-smu.github.io/clusterProfiler-book/chapter6.html
 
 ## Using MapMan 
 prep of the data table
@@ -158,33 +195,41 @@ From [Schwacke et al., 2019](https://doi.org/10.1016/j.molp.2019.01.003):
 ## Using iPath
 KeggKOALA 
 
-# 3. Looking fore regulatory elements
+# 5. Looking for regulatory elements
 
+## 5.1 Extracting the coordinqtes of genes
+
+## 5.2 Adding or substracting X nts
+For instance, 5000 nts 
+If gene is on DNA strand + then substract 5000 nts  
+If gene is on DNA strand - then add 5000 nts
 
 Promoter retrieval using GenomicRanges
 MEME for motif...
 
-# Other sources of information
+# 6. Other sources of information
 
-## ThaleMiner
+## 6.1 ThaleMiner
 https://bar.utoronto.ca/thalemine/begin.do
 
-## Expression atlas
+## 6.2 Expression atlas
 https://www.ebi.ac.uk/gxa/home
 
-## BAR
+## 6.3 BAR
 http://www.bar.utoronto.ca/
 
-## CoExprViz
+## 6.4 CoExprViz
 http://bioinformatics.psb.ugent.be/webtools/coexpr/
 
-# Useful links
+# 7. Useful links
 - [BiomartR](https://docs.ropensci.org/biomartr/)
 - [Arabidopsis.org (TAIR) list of data mining tools](https://www.arabidopsis.org/portals/expression/microarray/microarrayExpressionV2.jsp)
 - [ResearchGate related question](https://www.researchgate.net/post/How_can_I_analyze_a_set_of_DEGs_differentially_expressed_genes_to_obtain_information_from_them)	
 
 
 # References
+* [The Cluster Profiler companion boo, a great place to start](https://yulab-smu.github.io/clusterProfiler-book/chapter2.html)
+* Zhou et al. (2019). Metascape provides a biologist-oriented resource for the analysis of systems-level datasets. Nat Commun 10, 1523 (2019). [link](https://doi.org/10.1038/s41467-019-09234-6)
 * Yates et al. (2020) Ensembl 2020, Nucleic Acids Research, Volume 48, Issue D1, 08 January 2020, Pages D682–D688, [Link](https://doi.org/10.1093/nar/gkz966)
 * Tian et al. (2017) agriGO v2.0: a GO analysis toolkit for the agricultural community. _Nucleic Acids Research_, Volume 45, Issue W1, Pages W122–W129.[Link](https://doi.org/10.1093/nar/gkx382) 
 * MapMan: [MapMan4: A Refined Protein Classification and Annotation Framework Applicable to Multi-Omics Data Analysis. Schwacke et al. _Molecular Plant_, 12(6):879-892](https://doi.org/10.1016/j.molp.2019.01.003)
