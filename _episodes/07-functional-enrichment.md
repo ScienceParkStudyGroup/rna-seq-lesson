@@ -20,24 +20,25 @@ keypoints:
   - [2.1 Load the table of differential genes](#21-load-the-table-of-differential-genes)
   - [2.2 Ensembl databases](#22-ensembl-databases)
   - [2.3 Querying Ensembl databases using biomartr](#23-querying-ensembl-databases-using-biomartr)
-- [3. Gene set enrichment analysis and overrepresentation analysis](#3-gene-set-enrichment-analysis-and-overrepresentation-analysis)
-  - [3.1 Over Representation Analysis \(ORA\)](#31-over-representation-analysis-ora)
-  - [3.1 Using R](#31-using-r)
-  - [3.3 Metascape](#33-metascape)
-  - [3.2 AgriGO](#32-agrigo)
-- [4. Data integration with metabolic pathways](#4-data-integration-with-metabolic-pathways)
+- [3. Gene set enrichment analysis](#3-gene-set-enrichment-analysis)
+- [4. Over Representation Analysis \(ORA\)](#4-over-representation-analysis-ora)
+  - [4.1 ClusterProfiler \(R code\)](#41-clusterprofiler-r-code)
+  - [4.3 Metascape \(webtool\)](#43-metascape-webtool)
+  - [4.2 AgriGO \(webtool\)](#42-agrigo-webtool)
+- [5. Data integration with metabolic pathways](#5-data-integration-with-metabolic-pathways)
   - [Using MapMan](#using-mapman)
   - [Using iPath](#using-ipath)
-- [5. Looking for regulatory elements](#5-looking-for-regulatory-elements)
-  - [5.1 Extracting the coordinqtes of genes](#51-extracting-the-coordinqtes-of-genes)
-  - [5.2 Adding or substracting X nts](#52-adding-or-substracting-x-nts)
-- [6. Other sources of information](#6-other-sources-of-information)
-  - [6.1 ThaleMiner](#61-thaleminer)
-  - [6.2 Expression atlas](#62-expression-atlas)
-  - [6.3 BAR](#63-bar)
-  - [6.4 CoExprViz](#64-coexprviz)
-- [7. Useful links](#7-useful-links)
-- [References](#references)
+- [6. Looking for regulatory elements](#6-looking-for-regulatory-elements)
+  - [6.1 Extracting the coordinqtes of genes](#61-extracting-the-coordinqtes-of-genes)
+  - [6.2 Adding or substracting X nts](#62-adding-or-substracting-x-nts)
+- [7. Other sources of information](#7-other-sources-of-information)
+  - [7.1 ThaleMiner](#71-thaleminer)
+  - [7.2 Expression atlas](#72-expression-atlas)
+  - [7.3 BAR](#73-bar)
+  - [7.4 CoExprViz](#74-coexprviz)
+- [8. Going further](#8-going-further)
+  - [8.1 Useful links](#81-useful-links)
+  - [8.2. References](#82-references)
 
 <!-- /MarkdownTOC -->
 
@@ -144,9 +145,9 @@ head(result_BM)
 ~~~
 {: .language-r}
 
-# 3. Gene set enrichment analysis and overrepresentation analysis
+# 3. Gene set enrichment analysis 
 
-## 3.1 Over Representation Analysis (ORA)
+# 4. Over Representation Analysis (ORA)
 
 Over Representation Analysis is searching for biological functions or pathways that are enriched in a list obtained through experimental studies compared to the complete list of functions/pathways.  
 
@@ -157,27 +158,30 @@ In this formula:
 - **N** is the total number of genes in the background distribution.
 - **M** is the number of genes within that distribution that are annotated (either directly or indirectly) to the gene set of interest.
 - **n** is the size of the list of genes of interest (the size of your "drawing").
-- **k** and k is the number of genes within that list which are annotated to the gene set. The background distribution by default is all the genes that have annotation. P-values should be adjusted for multiple comparison.
+- **k** and k is the number of genes within that list which are annotated to the gene set. 
+
+The background distribution by default is by default all genes that have annotation. You can change 
+P-values should be adjusted for multiple comparison.
 
 Do you remember your math classes from high school? Now's the time to get them to work again!
 
 Binomial coefficient is defined as $${n \choose k}$$ and is equal to $$n! \over {k! (n-k)!}$$
 
+--------- drawing of balls from an urn ------
 
+See this [great chapter](https://yulab-smu.github.io/clusterProfiler-book/chapter2.html) from Prof. Guangchuang Yu (School of Basic Medical Sciences, Southern Medical University, China) for more info.
 
-## 3.1 Using R
+## 4.1 ClusterProfiler (R code)
 Cluster profiler: https://bioconductor.org/packages/release/bioc/vignettes/clusterProfiler/inst/doc/clusterProfiler.html
 
 
+## 4.3 Metascape (webtool)
+
+## 4.2 AgriGO (webtool)
+AgriGO
 
 
-## 3.3 Metascape
-
-## 3.2 AgriGO
-Agrigo
-
-
-# 4. Data integration with metabolic pathways
+# 5. Data integration with metabolic pathways
 
 ClusterProfiler: https://yulab-smu.github.io/clusterProfiler-book/chapter6.html
 
@@ -195,11 +199,11 @@ From [Schwacke et al., 2019](https://doi.org/10.1016/j.molp.2019.01.003):
 ## Using iPath
 KeggKOALA 
 
-# 5. Looking for regulatory elements
+# 6. Looking for regulatory elements
 
-## 5.1 Extracting the coordinqtes of genes
+## 6.1 Extracting the coordinqtes of genes
 
-## 5.2 Adding or substracting X nts
+## 6.2 Adding or substracting X nts
 For instance, 5000 nts 
 If gene is on DNA strand + then substract 5000 nts  
 If gene is on DNA strand - then add 5000 nts
@@ -207,27 +211,28 @@ If gene is on DNA strand - then add 5000 nts
 Promoter retrieval using GenomicRanges
 MEME for motif...
 
-# 6. Other sources of information
+# 7. Other sources of information
 
-## 6.1 ThaleMiner
+## 7.1 ThaleMiner
 https://bar.utoronto.ca/thalemine/begin.do
 
-## 6.2 Expression atlas
+## 7.2 Expression atlas
 https://www.ebi.ac.uk/gxa/home
 
-## 6.3 BAR
+## 7.3 BAR
 http://www.bar.utoronto.ca/
 
-## 6.4 CoExprViz
+## 7.4 CoExprViz
 http://bioinformatics.psb.ugent.be/webtools/coexpr/
 
-# 7. Useful links
+# 8. Going further 
+
+## 8.1 Useful links
 - [BiomartR](https://docs.ropensci.org/biomartr/)
 - [Arabidopsis.org (TAIR) list of data mining tools](https://www.arabidopsis.org/portals/expression/microarray/microarrayExpressionV2.jsp)
 - [ResearchGate related question](https://www.researchgate.net/post/How_can_I_analyze_a_set_of_DEGs_differentially_expressed_genes_to_obtain_information_from_them)	
 
-
-# References
+## 8.2. References
 * [The Cluster Profiler companion boo, a great place to start](https://yulab-smu.github.io/clusterProfiler-book/chapter2.html)
 * Zhou et al. (2019). Metascape provides a biologist-oriented resource for the analysis of systems-level datasets. Nat Commun 10, 1523 (2019). [link](https://doi.org/10.1038/s41467-019-09234-6)
 * Yates et al. (2020) Ensembl 2020, Nucleic Acids Research, Volume 48, Issue D1, 08 January 2020, Pages D682–D688, [Link](https://doi.org/10.1093/nar/gkz966)
