@@ -1,5 +1,5 @@
 ---
-title: "Experimental design"
+title: "Statistics & Experimental design"
 teaching: 90
 exercises: 30
 questions:
@@ -23,14 +23,42 @@ keypoints:
 ---
 
 # Table of Contents
-- [Introduction](#introduction)
-- [Replicates](#replicates)
-- [Confounding](#confounding)
-- [Batch effects](#batch-effects)
-  - [How to know whether you have batches?](#how-to-know-whether-you-have-batches)
-  - [Best practices regarding batches:](#best-practices-regarding-batches)
+<!-- MarkdownTOC autolink="True" levels="1,2" -->
 
-# Introduction
+- [1. Introduction](#1-introduction)
+- [1. Statistical refresher](#1-statistical-refresher)
+  - [1.1 Population and sample](#11-population-and-sample)
+  - [1.2 Central tendency and spread](#12-central-tendency-and-spread)
+  - [1.3 Hypothesis test](#13-hypothesis-test)
+  - [1.5 effect size](#15-effect-size)
+  - [1.6 Power analysis: how many samples do I need?](#16-power-analysis-how-many-samples-do-i-need)
+- [2. Best practices for experimental design](#2-best-practices-for-experimental-design)
+  - [2.1 A case study](#21-a-case-study)
+  - [2.2 Design number 1](#22-design-number-1)
+  - [2.1 Sources of variability](#21-sources-of-variability)
+  - [2.2 Experimental unit](#22-experimental-unit)
+  - [2.3 Example of a greenhouse experimental design](#23-example-of-a-greenhouse-experimental-design)
+  - [2.4 The three principles](#24-the-three-principles)
+- [3. Challenges relevant to RNA-seq](#3-challenges-relevant-to-rna-seq)
+  - [3.1 Sequencing](#31-sequencing)
+  - [3.2 Low power](#32-low-power)
+  - [3.3 Pooling of samples](#33-pooling-of-samples)
+- [4. Exploration of the raw counts](#4-exploration-of-the-raw-counts)
+  - [4.1 Distribution of counts](#41-distribution-of-counts)
+  - [4.2 CV of genes](#42-cv-of-genes)
+- [References](#references)
+  - [Confounding](#confounding)
+  - [Batch effects](#batch-effects)
+- [References](#references-1)
+  - [Credits](#credits)
+
+<!-- /MarkdownTOC -->
+
+
+<img src="../img/02-workflow-overview.png" width="500px">
+
+# 1. Introduction
+
 While most scientists would rapidly dive into RNA-seq sample preparation and searching for a sequencing provider, it is crucial to spend enough time to refresh one's statistical knowledge and embrace good experimental design practices. After all, a typical RNA-seq experiment is also an experiment like any other. We will nethertheless see some specificities of RNA-seq experiments at the end of this episode.
 
 Statistics are often overlooked (at best) or avoided (very often) by wet-lab biologists since it is often thought of being both complex and boring. Yet, this episode will hopefully prove that is can be simply explained and that a few pragmatic considerations will usually save a considerable amount of time and money.  
@@ -41,22 +69,25 @@ First, let's have a quick look at important notions useful to understand the res
 These concepts will be important to understand experimental design applied to RNA-seq. 
 
 
-### 1.1 Population and sample 
+## 1.1 Population and sample 
 
 
 The first question you need to ask yourself is "what is the population that I am considering in my experiment from which I will gather measurements?". If you are working on wild-type tomato plants from the cultivar Moneymaker for instance, then your population of interest would be _all_ plants from the Moneymaker cultivar on which you measure a particular phenotype. 
 
 If you are working on the height of the population from the Netherlands, then your population would be "all people in the Netherlands". A sample is a subset of that population that must be _representative_ of that population. It therefore has to be selected randomly from the whole population. 
 
-Related to this, one has to be able to make the distinction between __descriptive statistics__ and __inferential statistics__. 
+<img src="../img/02-population-sample.png" width="300px">
+
 
 > ## Discussion
 > Let's imagine that we study the height of people in the Netherlands. We take a representative sample of 1000 people. Could you give examples of descriptive statistics on that sample?
 {: .discussion}
 
-On the one hand, descriptive statistics would for instance calculate the average height based on the 1000 people sampled. But it would make no assumption on the general population in the Netherlands.   
-On the other hand, inferential statistics would try to impute the Netherlands population height based on this representative 1000 people sample. 
 
+> ## Distinction between __descriptive statistics__ and __inferential statistics__
+> On the one hand, descriptive statistics would for instance calculate the average height based on the 1000 people sampled. But it would make no assumption on the general population in the Netherlands.   
+On the other hand, inferential statistics would try to impute the Netherlands population height based on this representative 1000 people sample. 
+{: .callout}
 
 ## 1.2 Central tendency and spread
 
@@ -85,7 +116,7 @@ If you look at the boxplot, you will see that points are dispersed along the box
 {: .challenge}
 
 
-### 1.3 Hypothesis test
+## 1.3 Hypothesis test 
 
 These notions of central tendency and spread are vital to the rest of this episode. In your RNA-seq journey, you will work with thousands of genes. But before you do so, it is important to understand how statistical tests and the infamous p-values are computed  by working with one gene. 
 
@@ -134,19 +165,95 @@ head(xp_normal_conditions)
 
 If you plot the HSF2A gene expression distribution, you get a nice schoolbook guaussian curve.
 
-<img src="../img/02-normal-hist.png" alt="Histogram of HSFA2 gene expression value in normal conditions (n = 1000)" height="600px">
+<img src="../img/02-normal-hist.png" alt="Histogram of HSFA2 gene expression value in normal conditions (n = 1000)" height="400px">
+
+Let's now create the data for another gene. 
+~~~
+xp_heat_stress <- tibble(expression = rnorm(n = 1000, mean = 4, sd = 0.5),
+                         condition = "heat stress")
+
+xp = bind_rows(xp_normal_conditions, xp_heat_stress) # get a peek with head(xp) and tail(xp)
+
+p3 <- ggplot(xp, aes(x = expression, fill = condition)) +
+  ggtitle("Distribution of HSF2A expression levels in 1000 samples") +
+  geom_histogram(color = "black") 
+p3
+~~~
+{: .language-r}
+
+<img src="../img/02-normal-stress-hist.png" alt="two conditions plotted" height="400px">
+
+> ## Challenge
+> Can you figure out how to perform a Student t-test to test the null hypothesis __H<sub>0</sub> hypothesis__ (no difference between normal and heat stress means) using the `xp_normal_conditions` and the `xp_heat_stress` dataframes?
+> > ## Solution
+> > 
+> > ~~~
+> > t.test(x = xp_normal_conditions$expression, 
+> >        y = xp_heat_stress$expression, 
+> >        alternative = "two.sided" ,      
+> >        var.equal = FALSE,             # important as the variance do not seem equal
+> >        conf.level = 0.95)             # corresponds to alpha = 0.05 
+> > ~~~
+> > {: .language-r}
+> {: .solution}
+{: .challenge}
+
+The output of the Student t test yields:
+
+~~~
+Welch Two Sample t-test
+
+data:  xp_normal_conditions$expression and xp_heat_stress$expression
+
+t = -124.62, df = 1079.5, p-value < 2.2e-16
+
+alternative hypothesis: true difference in means is not equal to 0.95 percent confidence interval: -2.019466 -1.956859
+
+sample estimates:
+mean of x mean of y 
+ 2.004045  3.992208 
+~~~
+{: .output}
 
 
+If the spread in normal conditions increases to 0.5 the two distributions start to overlap. But given our number of measurements, the t-test is still very significant since we can estimate variability very finely. 
+
+~~~
+# increasing the spread of the normal conditions to sd = 0.5
+xp_normal_conditions_more_spread <- tibble(expression = rnorm(n = 1000, mean = 2, sd = 0.5),
+                                           condition = "normal")
+
+xp2 = bind_rows(xp_normal_conditions_more_spread, xp_heat_stress) # heat stress values are kept unchanged
+
+p4 <- ggplot(xp2, aes(x = expression, fill = condition)) +
+  ggtitle("Distribution of HSF2A expression levels in 1000 samples") +
+  geom_histogram(color = "black", bins = 30) + 
+  theme(text = element_text(size = 20)) + 
+  scale_x_continuous(limits = c(1,6))
+p4
 
 
+t.test(x = xp_normal_conditions_more_spread$expression, 
+       y = xp_heat_stress$expression, 
+       alternative = "two.sided",
+       var.equal = FALSE, 
+       conf.level = 0.95)
+~~~
+{: .language-r}
+
+<img src="../img/02-normal-stress-hist-more-spread.png" alt="two conditions plotted" height="400px">
 
 
+~~~
+t.test(x = xp_normal_conditions_more_spread$expression, 
+       y = xp_heat_stress$expression, 
+       alternative = "two.sided",
+       var.equal = FALSE, 
+       conf.level = 0.95)
+~~~
+{: .language-r}
 
-
-
-Ok but you're not so fantastic, just a fantastic scientist. So you sample 5 Arabidopsis plantlets per condition :seedling:
-
-### 1.3 Type I and type II errors 
+### 1.4 Type I and type II errors 
 
 Type I errors occur when the __H<sub>0</sub> (null) hypothesis__ is rejected wrongly (e.g., the two treatment means are equal) in favor of an alternative hypothesis (e.g., that the two means are different). Type I errors are probably most familiar to researchers and much effort is expended to ensure that Type I errors are minimized. 
 
@@ -164,25 +271,136 @@ These two types of errors are related to one another.
 
 <img src="../img/type_one_type_two_errors.png" alt="table of type I and type II errors" width="70%">
 
-## 1.4 Putting it all together
-These parameters are crucial in your experimental design and will influence one another:
+
+## 1.5 effect size
+__Standardized effect size following Cohen's _d_ formula__
+
+$$d = {X_{1}- X_{2} \over s}$$
+
+Where $$X_{1}$$ is the mean of the first group (e.g. treatment) and $$X_{2}$$ is the mean of the second group. $$s$$ is the standard variation of one of the two population if they are comparable or the pooled standard deviation. 
+
+The pooled standard deviation is the square root of the average of the two standard deviations. 
+
+
+__Student t test formula__
+
+$$t = {X_{1} - X_{2} \over SE}$$
+
+The widely used Student t-test rely on the value of the $$t$$ statistics which is related to this effect size since the Standard Error (SE) is equal to $$SE = {SD \over \sqrt{N}}$$ with $$N$$ the number of measurements and $$SD$$ the standard deviation.   
+
+
+
+Ok but you're not so fantastic, just a fantastic scientist. So you sample 5 Arabidopsis plantlets per condition :seedling:
+
+
+## 1.6 Power analysis: how many samples do I need?
+
+
+
+You will need to know these parameters in your experiment to be able to calculate the number of samples that you need:
 - **Type I error:** controlled by the $$\alpha$$ value. Often set to 0.01 (1%) or 0.001 (0.1%) in RNA-seq experiments. 
 - **Type II error:** controlled by the $$\beta$$ value. 1 - $$\beta$$ will give Should be set to 70 or 80% but the number of biological replicates is hard to reach in practice.   
 - **Effect size:** this is a parameter you will set. For instance, if you want to investigate genes that differ between treatments with a difference of their mean of 2 then the effect siwe  
+- **Sample size**: the quantity you want to calculate. 
+
+We are now going to see how to calculate the number of samples to achieve a power of 70 or 80% given a certain effect size $$d$$, a level of $$\alpha$$ and $$\beta$$. 
+
+Let's say we want:
+- Type I error of 5%. $$\alpha = 0.05$$
+- Type II error of 0.2. $$Power =  1 - \beta = 0.8$$
+- Effect size of 2. $$d = 2$$ 
+ 
+How many samples do we need to achieve this? We are going to make use of the `pwr` package from R ([usage example here](https://cran.r-project.org/web/packages/pwr/vignettes/pwr-vignette.html)).
+~~~
+library("pwr")
+
+pwr.t.test(d = 2,
+           power = .8,
+           sig.level = .05,
+           type = "two.sample",
+           alternative = "two.sided")
+~~~
+{: .language-r} 
+
+~~~
+     Two-sample t test power calculation 
+
+              n = 5.089995
+              d = 2
+      sig.level = 0.05
+          power = 0.8
+    alternative = two.sided
+
+NOTE: n is number in *each* group
+~~~
+{: .output}
+
+To see a more subtle difference where $$d = 1$$ we would need:
+~~~
+pwr.t.test(d = 1,
+           power = .8,
+           sig.level = .05,
+           type = "two.sample",
+           alternative = "two.sided")
+~~~
+{: .language-r}
+
+~~~
+     Two-sample t test power calculation 
+
+              n = 16.71472
+              d = 1
+      sig.level = 0.05
+          power = 0.8
+    alternative = two.sided
+
+NOTE: n is number in *each* group
+~~~
+{: .output}
+
+We would need 16 samples in each group as compared to 5 when $$d = 2$$.
 
 
+To do = plot of sample size as a function of required for a certain power 
 
-
- This probability is conditioned on an effect size, a threshold probability for Type I error (α level), and sample size
+<br>
 
 # 2. Best practices for experimental design
 
+
+## 2.1 A case study
+You are hired as the new experimental design expert in a company / a university / a school science fair and your first task is to design a disease assay experiment. 
+
+You have to measure the effect of a plant pathogen called "_Designus malatesta_" on two plant genotypes: one resistant to the pathogen (labelled "_R_" for resistant) and one susceptible (labelled "_S_"). You measure the quantity of pathogen (CFU.g<sup>-1</sup>) in the plant tissue after a week. 
+
+You dispose of a total of 24 individual plants that are placed on two tables in a greenhouse compartment. Each table can accomodate 12 plants.
+The greenhouse upper right side is pointing north, close to the location of the entrance door. Finally, there is an electrical board to power lamps and other high voltage installation at the lower left side opposite of the door. Here is a scheme of the basic setup.
+
+<img src="../img/02-xp-design-basic.png" height="400px"> 
+
+## 2.2 Design number 1
+In the first design, plants from the _S_ genotypes are placed on table 1 and plants from the _R_ genotype are placed on table 2. 
+
+The upper half on each table is infected with _D. malatesta_ while the lower half is sprayed with water (control). 
+
+<img src="../img/02-xp-design-1.png" height="400px"> 
 
 ## 2.1 Sources of variability
 
 In a typical biological experiment, you will encounter various sources of variation that you are either desirable (because they are part of your experimental factors) or undesirable (unwanted).
 
 For instance, 
+
+## 2.2 Experimental unit
+
+## 2.3 Example of a greenhouse experimental design 
+
+## 2.4 The three principles 
+
+1. Randomization
+2. Replication
+3. Blocking
+
 
 # 3. Challenges relevant to RNA-seq
 
@@ -209,7 +427,7 @@ A series of recent publications have emphasized that low power can lead to a lac
 The number of replicates is one of the critical parameter related to the power of an analysis. But first, let's discuss what you understand by "replicates". 
 
 > ## Discussion
-> What sort of replicates can you name?
+> What sort of replicates can you name in a typical RNA-seq experiment?
 {: .discussion}
 
 Two types of experimental replicates coexist: **technical replicates** or **biological replicates**. 
@@ -234,47 +452,32 @@ For differential expression analysis, the more biological replicates, the better
 
 As the figure above illustrates, **biological replicates are of greater importance than sequencing depth**, which is the total number of reads sequenced per sample. The figure shows the relationship between sequencing depth and number of replicates on the number of differentially expressed genes identified [[1](https://academic.oup.com/bioinformatics/article/30/3/301/228651/RNA-seq-differential-expression-studies-more)]. Note that an **increase in the number of replicates tends to return more DE genes than increasing the sequencing depth**. Therefore, generally more replicates are better than higher sequencing depth, with the caveat that higher depth is required for detection of lowly expressed DE genes and for performing isoform-level differential expression. 
 
-> **Sample pooling:** Try to avoid pooling of individuals/experiments, if possible; however, if absolutely necessary, then each pooled set of samples would count as a **single replicate**. To ensure similar amounts of variation between replicates, you would want to pool the **same number of individuals** for each pooled set of samples. 
->
-> *For example, if you need at least 3 individuals to get enough material for your `control` replicate and at least 5 individuals to get enough material for your `treatment` replicate, you would pool 5 individuals for the `control` and 5 individuals for the `treatment` conditions. You would also make sure that the individuals that are pooled in both conditions are similar in sex, age, etc.*
-
 Replicates are almost always preferred to greater sequencing depth for bulk RNA-Seq. However, **guidelines depend on the experiment performed and the desired analysis**. Below we list some general guidelines for replicates and sequencing depth to help with experimental planning:
 
 - **General gene-level differential expression:**
-
   - ENCODE guidelines suggest 30 million SE reads per sample (stranded).
-  
   - 15 million reads per sample is often sufficient, if there are a good number of replicates (>3). 
-
   - Spend money on more biological replicates, if possible.
-  
-  - Generally recommended to have read length >= 50 bp
+  - Generally recommended to have read length >= 50 bp  
+
 
 - **Gene-level differential expression with detection of lowly-expressed genes:**
-  
   - Similarly benefits from replicates more than sequencing depth.
-
   - Sequence deeper with at least 30-60 million reads depending on level of expression (start with 30 million with a good number of replicates). 
-  
-  - Generally recommended to have read length >= 50 bp
-  
+  - Generally recommended to have read length >= 50 bp  
+
+
 - **Isoform-level differential expression:**
-
   - Of known isoforms, suggested to have a depth of at least 30 million reads per sample and paired-end reads.
-
   - Of novel isoforms should have more depth (> 60 million reads per sample).
-
   - Choose biological replicates over paired/deeper sequencing.
-  
   - Generally recommended to have read length >= 50 bp, but longer is better as the reads will be more likely to cross exon junctions
+  - Perform careful QC of RNA quality. Be careful to use high quality preparation methods and restrict analysis to high quality RIN # samples.    
 
-  - Perform careful QC of RNA quality. Be careful to use high quality preparation methods and restrict analysis to high quality RIN # samples.  
   
-- **Other types of RNA analyses (intron retention, small RNA-Seq, etc.):** 
-  
+- **Other types of RNA analyses (intron retention, small RNA-Seq, etc.):**   
   - Different recommendations depending on the analysis.
-  
-  - Almost always more biological replicates are better!
+  - Almost always more biological replicates are better!  
   
 > **NOTE:** The factor used to estimate the depth of sequencing for genomes is "coverage" - how many times do the number nucleotides sequenced "cover" the genome. This metric is not exact for genomes, but it works okay. It **does not work for transcriptomes** because expression of the genes depend on the condition being studied.
   
@@ -285,17 +488,22 @@ Yes if absolutely necessary. For instance, you are collecting roots from very yo
 
 :warning: One reason not to pool is that you cannot identify potential outliers. Think about one seedling that would be stressed (for some unknown reason) and that might be mixed with several unstressed seedlings. This would potentially affect the level of stress-related genes in your pooled sample. Unfortunately, you would not be able to spot this outlier seedling and isolate it _in silico_. 
 
+> **Sample pooling:** Try to avoid pooling of individuals/experiments, if possible; however, if absolutely necessary, then each pooled set of samples would count as a **single replicate**. To ensure similar amounts of variation between replicates, you would want to pool the **same number of individuals** for each pooled set of samples. 
+>
+> *For example, if you need at least 3 individuals to get enough material for your `control` replicate and at least 5 individuals to get enough material for your `treatment` replicate, you would pool 5 individuals for the `control` and 5 individuals for the `treatment` conditions. You would also make sure that the individuals that are pooled in both conditions are similar in sex, age, etc.*
 
-# Exploration of the raw counts
+
+
+# 4. Exploration of the raw counts 
 
 Raw counts is a quick and dirty way to refer to "RNA-seq count results that have not been normalised (scaled)". This is the raw material you will obtain after the bioinformatic part of this lesson. This dataset will be used for differential expression. 
 
-## Distribution of counts
+## 4.1 Distribution of counts
 Half of the genes have count values lower than ...
 
 The max value is ... while the ...
 
-## CV of genes
+## 4.2 CV of genes
 What are 
 
 
@@ -327,22 +535,18 @@ summary(cv_from_counts$coef_var_counts)
 ~~~
 {: .language-r}
 
-   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
+~~~
+ Min.    1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
  0.1839  0.2565  0.3465  1.1658  1.2622  6.9282    2354 
+~~~
+{: .output}
 
 
-## 
-
-
-## Rarefaction curve
-
-## Some simulations
 
 
 
 
 # References
-
 - [Scotty, a web-tool for power calculation](http://scotty.genetics.utah.edu/help.html)
 
 
@@ -434,7 +638,9 @@ If *any* of the answers is **‘No’**, then you have batches.
 
 # References 
 - [The power analysis section of the RNA-seq blog](https://www.rna-seqblog.com/tag/power-analysis/)
+- [`pwr` R package vignette](https://cran.r-project.org/web/packages/pwr/vignettes/pwr-vignette.html)
 - [The Scotty power analysis webtool](http://scotty.genetics.utah.edu/)
+- [UCLA Stat consulting on power analysis](https://stats.idre.ucla.edu/r/dae/power-analysis-for-two-group-independent-sample-t-test/)
 
 ## Credits
 
