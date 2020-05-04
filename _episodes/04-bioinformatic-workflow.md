@@ -739,9 +739,9 @@ that follows corresponds to alignment information for a single read. Each alignm
 mapping information and a variable number of other fields for aligner specific information. An example entry from a SAM file is
 displayed below with the different fields highlighted.
 
-![sam_bam_1](../images/sam_bam_1.png)
+![sam_bam_1](https://github.com/ScienceParkStudyGroup/2019-03-07-rnaseq-workshop/blob/develop/images/sam_bam_1.png)
 
-![sam_bam2](../images/sam_bam2.png)
+![sam_bam2](https://github.com/ScienceParkStudyGroup/2019-03-07-rnaseq-workshop/blob/develop/images/sam_bam2.png)
 
 
 ### Creating the counts file
