@@ -17,26 +17,35 @@ keypoints:
 - "Sample clustering and PCA should indicate whether the observed experimental variability can be explained by the experimental design."
 ---
 
-## Table of Contents
+# Table of contents
+<!-- MarkdownTOC autolink="True" levels="1,2" -->
+
 - [1. Introduction](#1-introduction)
 - [2. Normalization](#2-normalization)
-	- 2.1 Common normalization methods
-	- 2.2 RPKM/FPKM \(not recommended for between sample comparisons\)
-	- 2.3 DESeq2-normalized counts: Median of ratios method
+	- [2.1 Common normalization methods](#21-common-normalization-methods)
+	- [2.2 RPKM/FPKM \(not recommended for between sample comparisons\)](#22-rpkmfpkm-not-recommended-for-between-sample-comparisons)
+	- [2.3 DESeq2-normalized counts: Median of ratios method](#23-deseq2-normalized-counts-median-of-ratios-method)
 - [3. DESeq2 count normalization](#3-deseq2-count-normalization)
-	- 3.1 Data import
-	- 3.2 Match the experimental design and counts data
-	- 3.3 Create the DESeqDataSet object
-	- 3.4 Generate normalized counts
+	- [3.1 Data import](#31-data-import)
+	- [3.2 Match the experimental design and counts data](#32-match-the-experimental-design-and-counts-data)
+	- [3.3 Create the DESeqDataSet object](#33-create-the-deseqdataset-object)
+	- [3.4 Generate normalized counts](#34-generate-normalized-counts)
 - [4. Sample clustering](#4-sample-clustering)
-	- 4.1 Distance calculation
+	- [4.1 Distance calculation](#41-distance-calculation)
+	- [4.2 Hierarchical clustering](#42-hierarchical-clustering)
 - [5. Principal Component Analysis](#5-principal-component-analysis)
-	- 5.1 Introduction to PCA
-	- 5.2 The Iris data set
-	- 5.3 PCA applied to RNA-seq
+	- [5.1 Introduction to PCA](#51-introduction-to-pca)
+	- [5.2 The Iris data set](#52-the-iris-data-set)
+	- [5.3 PCA applied to RNA-seq](#53-pca-applied-to-rna-seq)
 - [6. Bonus: home-made DESeq normalization function](#6-bonus-home-made-deseq-normalization-function)
-- [7. References](#7-references)
-	- Useful links
+- [References](#references)
+	- [Useful links](#useful-links)
+	- [Photo credits](#photo-credits)
+
+<!-- /MarkdownTOC -->
+
+
+<img src="../img/05-workflow-overview.png" width="500px">
 
 
 # 1. Introduction
@@ -49,7 +58,6 @@ To be able to perform some quality check of our RNA-seq experiment and relate it
 2. Perform some 
 , which is necessary to make accurate comparisons of gene expression between samples.
 
-<img src="../img/workflow_overview_episode05.png" width="600px">
 
 The counts of mapped reads for each gene is proportional to the expression of RNA ("interesting") in addition to many other factors ("uninteresting"). Normalization is the process of scaling raw count values to account for the "uninteresting" factors. In this way the expression levels are more comparable between and/or within samples.
 
@@ -449,8 +457,45 @@ plot(clustering_of_samples)
 <img src="../img/05-dendro.png" width="600px">
 
 
+~~~
+xp_design_for_heatmap <- read.delim("03.RNA-seq/experimental_design_modified.txt",
+                                    header = TRUE,
+                                    sep = "\t",
+                                    colClasses = rep("factor",4))
+                                    
+    
 
+row.names(xp_design_for_heatmap) <- xp_design_for_heatmap$sample
+xp_design_for_heatmap$sample <- NULL
 
+anno_info_colors = list(
+  seed = c(MgCl2 = "#d8b365", 
+           Methylobacterium_extorquens_PA1 = "#f5f5f5", 
+           Sphingomonas_melonis_Fr1 = "#5ab4ac"),
+  infected = c(mock = "gray", 
+               Pseudomonas_syringae_DC3000 = "black"),
+  dpi = c("2" = "dodgerblue", 
+          "7" = "dodgerblue4")
+)
+
+my_custom_breaks <- quantile(
+  correlation_between_samples,
+  seq(0,1,0.1))
+
+pheatmap(mat = correlation_between_samples, 
+         color = rev(brewer.pal(n = length(my_custom_breaks) - 1,"RdYlBu")), 
+         breaks = my_custom_breaks,
+         annotation_row = xp_design_for_heatmap,
+         annotation_col = xp_design_for_heatmap,
+         annotation_colors = anno_info_colors
+         )
+~~~
+{: .language-r}
+
+<img src="../img/05-pheatmap.png" height="600px">
+
+<br>
+<br>
 
 # 5. Principal Component Analysis
 
@@ -618,7 +663,7 @@ The scores are indicative of how the objects in the data set score in the new co
 
 
 
-```R
+~~~
 # reformat the loading data
 loadings <- melt(pca$loadings)
 # rename the columns
@@ -628,7 +673,8 @@ loadings['Variable']=as.factor(rep(colnames(iris)[-5],4))
 # plot the loading values per components
 p <- ggplot(loadings,aes(x=Variable,y=Value)) +  geom_bar(stat='identity') + facet_wrap(~Component)
 p
-```
+~~~
+{: .language-r}
 
 
 
@@ -687,8 +733,8 @@ Please consult the step-by-step R code to normalize the DESeq2 way [here](../med
 ## Useful links
 1. [Gabriel Martos cluster analysis](https://rpubs.com/gabrielmartos/ClusterAnalysis)
 2. [Bradley Boehmke](https://uc-r.github.io/hc_clustering)
-3. Love, M.I., Huber, W., Anders, S. (2014) Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2. Genome Biology, 15:550. 10.1186/s13059-014-0550-8
-4. Statquest: https://www.youtube.com/watch?v=UFB993xufUU
+3. Love et al. (2014) [Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2. _Genome Biology_, 15:550](https://link.springer.com/article/10.1186/s13059-014-0550-8).
+4. [Statquest](https://www.youtube.com/watch?v=UFB993xufUU)
 5. [Harvard Bioinformatic Core Training program](https://hbctraining.github.io/DGE_workshop/lessons/02_DGE_count_normalization.html)
 
 ## Photo credits

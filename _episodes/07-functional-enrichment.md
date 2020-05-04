@@ -408,8 +408,13 @@ dotplot(ora_analysis_kegg_modules,
 
 # 5. Data integration with metabolic pathways
 
+So far, we have only been mostly looking at our transcriptomic results alone. 
+
+ with the notable exception of KEGG. 
+
 
 ## 5.1 iPath
+
 KeggKOALA 
 
 ## 5.2 MapMan 
