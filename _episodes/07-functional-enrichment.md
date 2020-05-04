@@ -13,39 +13,39 @@ keypoints:
 
 ---
 
+
+
 # Table of Contents
-<!-- MarkdownTOC autolink="True" levels="1,2,3" -->
+<!-- MarkdownTOC autolink="True" levels="1,2" -->
 
 - [1. Introduction](#1-introduction)
 - [2. Annotating your DE genes](#2-annotating-your-de-genes)
-  - [2.1 Load the table of differential genes](#21-load-the-table-of-differential-genes)
-  - [2.2 Ensembl databases](#22-ensembl-databases)
-  - [2.3 Querying Ensembl databases using biomartr](#23-querying-ensembl-databases-using-biomartr)
-- [3. Over Representation Analysis \(ORA\)](#3-over-representation-analysis-ora)
-  - [3.1 ClusterProfiler \(R code\)](#31-clusterprofiler-r-code)
-    - [3.1 Enrichment analysis](#31-enrichment-analysis)
-    - [3.2 Plots](#32-plots)
-  - [3.2 AgriGO \(webtool\)](#32-agrigo-webtool)
-  - [3.3 Metascape \(webtool\)](#33-metascape-webtool)
-- [4. Gene set enrichment analysis](#4-gene-set-enrichment-analysis)
+    - [2.1 Load the table of differential genes](#21-load-the-table-of-differential-genes)
+    - [2.2 Ensembl databases](#22-ensembl-databases)
+    - [2.3 Querying Ensembl databases using biomartr](#23-querying-ensembl-databases-using-biomartr)
+- [3. Gene Ontology Over Representation Analysis \(ORA\)](#3-gene-ontology-over-representation-analysis-ora)
+    - [3.1 ClusterProfiler \(R code\)](#31-clusterprofiler-r-code)
+    - [3.2 AgriGO \(webtool\)](#32-agrigo-webtool)
+    - [3.3 Metascape \(webtool\)](#33-metascape-webtool)
+    - [3.4 Gene Set Enrichment Analysis \(GSEA\)](#34-gene-set-enrichment-analysis-gsea)
+- [4. KEGG Over Representation Analysis \(ORA\)](#4-kegg-over-representation-analysis-ora)
+    - [4.1 KEGG ORA](#41-kegg-ora)
+    - [4.2 KEGG Modules ORA](#42-kegg-modules-ora)
 - [5. Data integration with metabolic pathways](#5-data-integration-with-metabolic-pathways)
-  - [5.1 iPath](#51-ipath)
-  - [5.2 MapMan](#52-mapman)
-- [6. Looking for regulatory elements](#6-looking-for-regulatory-elements)
-  - [6.1 Extracting the coordinates of genes](#61-extracting-the-coordinates-of-genes)
-  - [6.2 Adding or substracting X nts](#62-adding-or-substracting-x-nts)
+    - [5.1 iPath](#51-ipath)
+    - [5.2 MapMan](#52-mapman)
 - [7. Other data mining tools](#7-other-data-mining-tools)
-  - [7.1 ThaleMiner](#71-thaleminer)
-  - [7.2 Expression atlas](#72-expression-atlas)
-  - [7.3 BAR](#73-bar)
-  - [7.4 CoExprViz](#74-coexprviz)
+    - [7.1 ThaleMiner](#71-thaleminer)
+    - [7.2 Expression atlas](#72-expression-atlas)
+    - [7.3 BAR](#73-bar)
+    - [7.4 CoExprViz](#74-coexprviz)
 - [8. Going further](#8-going-further)
-  - [8.1 Useful links](#81-useful-links)
-  - [8.2. References](#82-references)
+    - [8.1 Useful links](#81-useful-links)
+    - [8.2. References](#82-references)
 
 <!-- /MarkdownTOC -->
 
-
+<img src="../img/07-workflow-overview.png" width="500px" alt="workflow overview">
 
 # 1. Introduction
 You've finally managed to extract a list of differentially expressed genes from your comparison. Great job! But...now what? :question: :confused:
@@ -153,7 +153,7 @@ head(result_BM)
 <br>
 
 
-# 3. Over Representation Analysis (ORA)
+# 3. Gene Ontology Over Representation Analysis (ORA) 
 
 Over Representation Analysis is searching for biological functions or pathways that are enriched in a list obtained through experimental studies compared to the complete list of functions/pathways.  
 
@@ -231,7 +231,6 @@ ora_analysis_bp <- enrichGO(gene = diff_arabidopsis_genes_annotated$entrezgene_i
                             OrgDb = org.At.tair.db,
                             keyType = "ENTREZID",
                             ont = "BP",              # either "BP", "CC" or "MF",
-                            pvalueCutoff = 0.05,
                             pAdjustMethod = "BH",
                             qvalueCutoff = 0.05,
                             readable = TRUE, 
@@ -248,7 +247,6 @@ ora_analysis_all_go <- enrichGO(gene = diff_arabidopsis_genes_annotated$entrezge
                                 OrgDb = org.At.tair.db,
                                 keyType = "ENTREZID",
                                 ont = "ALL",             
-                                pvalueCutoff = 0.05,
                                 pAdjustMethod = "BH",
                                 qvalueCutoff = 0.05,
                                 readable = TRUE, 
@@ -290,6 +288,24 @@ dotplot(ora_analysis_all_go)
 
 <img src="../img/07-dotplot.png" width="800px">
 
+You can also create an enrichment map that connects GO terms with edges between overlapping gene sets. 
+This makes it easier to identify functional modules. 
+
+~~~
+emapplot(ora_analysis_bp, color = "qvalue", size = "Count")
+~~~
+{: .language-r}
+
+<img src="../img/07-emaplot.png" width="800px">
+
+On this plot, we can see that one major module related to cell death, the immune response etc. is to be seen along with two minor modules 
+related to metabolism (upper left) and one related to jasmonic acid and wounding (bottom).
+
+
+> ## Important note
+> Remember to perform the analysis for all GO categories: Biological Process (`ont = "BP"`), Cellular Component (`ont = "CC"`) and Molecular Function (`ont = "MF"`).     
+{: .callout}
+
 ## 3.2 AgriGO (webtool)
 AgriGO
 
@@ -306,18 +322,92 @@ Visit the [Metascape website here](https://metascape.org/gp/index.html#/main/ste
 > {: .language-r}
 {: .callout}
 
+## 3.4 Gene Set Enrichment Analysis (GSEA)
 
-# 4. Gene set enrichment analysis 
-Refer to [the following section](https://yulab-smu.github.io/clusterProfiler-book/chapter2.html) in Prof. Guangchuang Yu book for a clear explanation of GSEA.
+The Gene Set Enrichment Analysis (GSEA) is another way to investigate functional enrichment of genes and pathways using the Gene Ontology classification. 
+Please refer to [the following section](https://yulab-smu.github.io/clusterProfiler-book/chapter2.html) in Prof. Guangchuang Yu book for a clear explanation of GSEA and how to implement it with `clusterProfiler`.
 
+
+# 4. KEGG Over Representation Analysis (ORA) 
+KEGG stands for the "Kyoto Encyclopedia of Genes and Genomes". From the [KEGG website home page](https://www.genome.jp/kegg/):
+> KEGG is a database resource for understanding high-level functions and utilities of the biological system, such as the cell, the organism and the ecosystem, from molecular-level information, especially large-scale molecular datasets generated by genome sequencing and other high-throughput experimental technologies.
+
+Instead of using the Gene Ontology gene classification, one might be interested to use KEGG classification to view the
+transcriptomic response of an organism. KEGG is not restricted to metabolic functions but has a great deal of metabolic maps that can help you. 
+
+
+To see if your organism is referenced in the KEGG database, you can search this page: https://www.genome.jp/kegg/catalog/org_list.html
+In our case, _Arabidopsis thaliana_ is referenced as "ath" in the KEGG database. 
+ 
+You can also do this programmatically using R. 
 ~~~
-R code for GSEA
+search_kegg_organism('ath', by='kegg_code')
+search_kegg_organism('Arabidopsis thaliana', by='scientific_name')
 ~~~
 {: .language-r}
 
+## 4.1 KEGG ORA
+
+~~~
+ora_analysis_kegg <- enrichKEGG(gene = diff_arabidopsis_genes_annotated$entrezgene_id,
+                                universe = all_arabidopsis_genes_annotated$entrezgene_id,
+                                organism = "ath",
+                                keyType = "ncbi-geneid",
+                                minGSSize = 10,
+                                maxGSSize = 500,
+                                pAdjustMethod = "BH",
+                                qvalueCutoff = 0.05,
+                                use_internal_data = FALSE) # force to query latest KEGG db
+                          
+
+# create a simple dotplot graph
+dotplot(ora_analysis_kegg, 
+    color = "qvalue", 
+    showCategory = 10, 
+    size = "Count")
+~~~
+{: .language-r}
+
+<img src="../img/07-dotplot-kegg.png" width="800px">
+
+## 4.2 KEGG Modules ORA
+
+[The KEGG MODULE datase](https://www.genome.jp/kegg/module.html) is more dedicated to metabolism and can help you to make sense of transcriptomic data using metabolic maps and modules. 
+
+The complete list of available modules is [available here](https://www.genome.jp/kegg-bin/get_htext).
+
+~~~
+ora_analysis_kegg_modules <- enrichMKEGG(gene = diff_arabidopsis_genes_annotated$entrezgene_id,
+                                         universe = all_arabidopsis_genes_annotated$entrezgene_id,
+                                         organism = "ath",
+                                         keyType = "ncbi-geneid",
+                                         minGSSize = 10,           # minimal size of genes annotated by Ontology term for testing.
+                                         maxGSSize = 500,          # maximal size of genes annotated for testing
+                                         pAdjustMethod = "BH",
+                                         qvalueCutoff = 0.05)
+
+
+# create a simple dotplot graph
+dotplot(ora_analysis_kegg_modules, 
+    color = "qvalue", 
+    showCategory = 10, 
+    size = "Count")
+~~~
+{: .language-r}
+
+<img src="../img/07-dotplot-kegg-modules.png" width="800px">
+
+
+> ## Discussion
+> Compare the two KEGG plots. Can you identify differences? Which metabolic functions have been grouped together?
+>{: .discussion}
+
+
+
+
+
 # 5. Data integration with metabolic pathways
 
-ClusterProfiler: https://yulab-smu.github.io/clusterProfiler-book/chapter6.html
 
 ## 5.1 iPath
 KeggKOALA 
@@ -333,31 +423,21 @@ From [Schwacke et al., 2019](https://doi.org/10.1016/j.molp.2019.01.003):
 > within the context of the parent bin. Assignment of proteins to the lowest-level (i.e., leaf) bins was preferred in order to make the annotation as precise as possible, although assignment to abstract higher-level bins was supported.   
 > Proteins were mostly assigned to a single bin, but for some proteins with functions in diverse biological processes it wasnecessary to correspondingly assign to multiple bins.
 
-# 6. Looking for regulatory elements
-
-## 6.1 Extracting the coordinates of genes
-
-## 6.2 Adding or substracting X nts
-For instance, 5000 nts 
-If gene is on DNA strand + then substract 5000 nts  
-If gene is on DNA strand - then add 5000 nts
-
-Promoter retrieval using GenomicRanges
-MEME for motif...
 
 # 7. Other data mining tools
 
 ## 7.1 ThaleMiner
-https://bar.utoronto.ca/thalemine/begin.do
+[https://bar.utoronto.ca/thalemine/begin.do](https://bar.utoronto.ca/thalemine/begin.do)
 
 ## 7.2 Expression atlas
-https://www.ebi.ac.uk/gxa/home
+[https://www.ebi.ac.uk/gxa/home](https://www.ebi.ac.uk/gxa/home)
 
 ## 7.3 BAR
-http://www.bar.utoronto.ca/
+[http://www.bar.utoronto.ca/](http://www.bar.utoronto.ca/)
 
 ## 7.4 CoExprViz
-http://bioinformatics.psb.ugent.be/webtools/coexpr/
+[http://bioinformatics.psb.ugent.be/webtools/coexpr/](http://bioinformatics.psb.ugent.be/webtools/coexpr/)
+
 
 # 8. Going further 
 

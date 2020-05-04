@@ -27,6 +27,7 @@ This lesson will introduce you to the basics of gene expression analysis using R
 - Perform a QC of your experiment through Principal Component Analysis (PCA) and sample clustering. 
 - Execute a differential gene expression analysis using R and the `DESeq2` package.  
 - Be able to create key plots: volcano plot, heatmap and clustering of differentially expressed genes.  
+- Provide a biological interpretation to differentially expressed genes through ORA/GSEA analyses and data integration.
 
 > ## Before you start
 >

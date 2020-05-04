@@ -9,3 +9,5 @@ _site
 .Rhistory
 .RData
 
+files/
+publications/

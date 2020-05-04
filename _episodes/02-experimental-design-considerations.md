@@ -35,7 +35,6 @@ keypoints:
 - [2. Best practices for experimental design](#2-best-practices-for-experimental-design)
   - [2.1 A case study](#21-a-case-study)
   - [2.2 Design number 1](#22-design-number-1)
-  - [2.1 Sources of variability](#21-sources-of-variability)
   - [2.2 Experimental unit](#22-experimental-unit)
   - [2.3 Example of a greenhouse experimental design](#23-example-of-a-greenhouse-experimental-design)
   - [2.4 The three principles](#24-the-three-principles)
@@ -74,7 +73,9 @@ These concepts will be important to understand experimental design applied to RN
 
 The first question you need to ask yourself is "what is the population that I am considering in my experiment from which I will gather measurements?". If you are working on wild-type tomato plants from the cultivar Moneymaker for instance, then your population of interest would be _all_ plants from the Moneymaker cultivar on which you measure a particular phenotype. 
 
-If you are working on the height of the population from the Netherlands, then your population would be "all people in the Netherlands". A sample is a subset of that population that must be _representative_ of that population. It therefore has to be selected randomly from the whole population. 
+Data collection consists of measuring the values of one or several variables for each member of the population. For instance, you could measure the height and weight of people. 
+
+If you are working on the height of the population from the Netherlands, then your population would be "all people in the Netherlands" and your variable would be "height". A sample is a subset of that population that must be _representative_ of that population. It therefore has to be selected randomly from the whole population. 
 
 <img src="../img/02-population-sample.png" width="300px">
 
@@ -368,15 +369,45 @@ To do = plot of sample size as a function of required for a certain power
 # 2. Best practices for experimental design
 
 
+In a typical biological experiment, you will encounter various sources of variation that are either:
+- __desirable__ because they are part of your experimental factors. These are typically the one you first think of when you design your experiment. 
+- __undesirable__ (unwanted) because you are not interested in them. Although you might not list them, they will still affect the outcome of your experiment. 
+
+We are going to identify these through a case study.
+
 ## 2.1 A case study
-You are hired as the new experimental design expert in a company / a university / a school science fair and your first task is to design a disease assay experiment. 
+A scientist is hired as the new experimental design expert in a company and its first task is to design a disease assay experiment. 
 
-You have to measure the effect of a plant pathogen called "_Designus malatesta_" on two plant genotypes: one resistant to the pathogen (labelled "_R_" for resistant) and one susceptible (labelled "_S_"). You measure the quantity of pathogen (CFU.g<sup>-1</sup>) in the plant tissue after a week. 
+The scientist has to measure the effect of a plant pathogen called "_Designus malatesta_" on two plant genotypes: one resistant to the pathogen (labelled "_R_" for resistant) and one susceptible (labelled "_S_"). You measure the quantity of pathogen (CFU.g<sup>-1</sup>) in the plant tissue after a week. 
 
-You dispose of a total of 24 individual plants that are placed on two tables in a greenhouse compartment. Each table can accomodate 12 plants.
+The scientist disposes of a total of 24 individual plants that are placed on two tables in a greenhouse compartment. Each table can accomodate 12 plants.
 The greenhouse upper right side is pointing north, close to the location of the entrance door. Finally, there is an electrical board to power lamps and other high voltage installation at the lower left side opposite of the door. Here is a scheme of the basic setup.
 
 <img src="../img/02-xp-design-basic.png" height="400px"> 
+
+> ## Question
+> How many experimental factors controlled by the scientist can you readily identify?
+> > ## Solution
+> > There are two easily identifiable factors: 
+> >   1. The __genotype factor__ with two levels: _R_ and _S_
+> >   2. The __infection factor__ also with two levels: uninfected (control) and infected.  
+> {: .solution}
+{: .challenge}
+
+Apart from experimental factors set up by the scientist, there are practical matters that may also affect the outcome of your experiment. 
+
+> ## Question
+>  Can you identify another potential source of unwanted variation due to the practical setup of the experiment?
+> > ## Solution
+> > The greenhouse compartment door is on the North-East side so potentially a source of cold air. 
+> > On the contrary, there is an electrical board on the lower South-West side of the compartment, a potential source of warm air.
+> > Therefore, there might be an heterogeneity in the local temperature that plants are experiencing on table 1 and 2. 
+> > Another experimental factor that is undesirable can be called "temperature" and will cause table 1 and table 2 to be different.   
+> {: .solution}
+{: .challenge}
+
+
+We are now going to evaluate several experimental design that the scientist came up with and identify potential issues and remedies with each of them.
 
 ## 2.2 Design number 1
 In the first design, plants from the _S_ genotypes are placed on table 1 and plants from the _R_ genotype are placed on table 2. 
@@ -385,11 +416,17 @@ The upper half on each table is infected with _D. malatesta_ while the lower hal
 
 <img src="../img/02-xp-design-1.png" height="400px"> 
 
-## 2.1 Sources of variability
+> ## Question
+> Can you identify the two major issues with this design?
+> > ## Solution
+> > The first major issue is that it is not possible to 
+> {: .solution}
+{: .challenge}
 
-In a typical biological experiment, you will encounter various sources of variation that you are either desirable (because they are part of your experimental factors) or undesirable (unwanted).
 
-For instance, 
+
+
+For instance, in the example we have worked on
 
 ## 2.2 Experimental unit
 
