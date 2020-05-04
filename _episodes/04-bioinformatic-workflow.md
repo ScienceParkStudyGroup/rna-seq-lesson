@@ -37,7 +37,7 @@ $ cd ~/RNAseq070319/rawReads
 Running fastqc uses the following command
 
 ~~~
-fastqc -o ../fastqc $filename
+fastqc -o ../fastqc ERR1406259.fq.gz
 ~~~
 
 
@@ -46,7 +46,7 @@ Of course we don't want to do y=this for all the samples seperately so we can lo
 With the use of echo you can start off with a "dry run"
 
 ~~~
-$ for filename in *.fastq
+$ for filename in *.fq.gz
   do
     echo fastqc -o ../fastqc $filename
   done
@@ -56,19 +56,15 @@ $ for filename in *.fastq
 The echo command only prints the commands to the screen, and doesn't really run it.
 
 ~~~
-fastqc -o ../fastqc sub06.fastq
-fastqc -o ../fastqc sub07.fastq
-fastqc -o ../fastqc sub08.fastq
-fastqc -o ../fastqc sub21.fastq
-fastqc -o ../fastqc sub23.fastq
-fastqc -o ../fastqc sub24.fastq
+fastqc -o ../fastqc ERR1406259.fq.gz
+fastqc -o ../fastqc ERR1406260.fq.gz
 ~~~
 
 
 If it looks good remove the echo and go for it.
 
 ~~~
-$ for filename in *.fastq
+$ for filename in *.fq.gz
   do
     fastqc -o ../fastqc $filename
   done
@@ -79,17 +75,17 @@ You will see an automatically updating output message telling you the
 progress of the analysis. It shoul look something like this:
 
 ~~~
-Started analysis of sub06.fastq
-Approx 5% complete for sub06.fastq
-Approx 10% complete for sub06.fastq
-Approx 15% complete for sub06.fastq
-Approx 20% complete for sub06.fastq
+Started analysis of ERR1406259.fq.gz
+Approx 5% complete for ERR1406259.fq.gz
+Approx 10% complete for ERR1406259.fq.gz
+Approx 15% complete for ERR1406259.fq.gz
+Approx 20% complete for ERR1406259.fq.gz
 …
-Approx 85% complete for sub24.fastq
-Approx 90% complete for sub24.fastq
-Approx 95% complete for sub24.fastq
-Approx 100% complete for sub24.fastq
-Analysis complete for sub24.fastq
+Approx 85% complete for ERR1406260.fq.gz
+Approx 90% complete for ERR1406260.fq.gz
+Approx 95% complete for ERR1406260.fq.gz
+Approx 100% complete for ERR1406260.fq.gz
+Analysis complete for ERR1406260.fq.gz
 ~~~
 
 
@@ -112,9 +108,7 @@ $ ls
 
 
 ~~~
-sub06_fastqc.html  sub07_fastqc.zip   sub21_fastqc.html  sub23_fastqc.zip
-sub06_fastqc.zip   sub08_fastqc.html  sub21_fastqc.zip   sub24_fastqc.html
-sub07_fastqc.html  sub08_fastqc.zip   sub23_fastqc.html  sub24_fastqc.zip
+ERR1406260.fq.gz.html   ERR1406260.fq.gz.zip   ERR1406260.fq.gz.html   ERR1406260.fq.gz.zip   
 ~~~
 
 
@@ -125,7 +119,7 @@ If we were working on our local computers, we'd be able to display each of these
 HTML files as a webpage:
 
 ~~~
-$ open sub06_fastqc.html
+$ open ERR1406260.fq.gz.html
 ~~~
 
 
@@ -179,12 +173,8 @@ directory we just created `~/Desktop/fastqc_html`.
 You should see a status output like this:
 
 ~~~
-sub06_fastqc.html                      100%  249KB 152.3KB/s   00:01    
-sub06_fastqc.html                      100%  254KB 219.8KB/s   00:01    
-sub06_fastqc.html                      100%  254KB 271.8KB/s   00:00    
-sub06_fastqc.html                      100%  251KB 252.8KB/s   00:00    
-sub06_fastqc.html                      100%  249KB 370.1KB/s   00:00    
-sub06_fastqc.html                      100%  251KB 592.2KB/s   00:00  
+ERR1406259.fq.gz.html                      100%  249KB 152.3KB/s   00:01    
+ERR1406260.fq.gz.html                      100%  254KB 219.8KB/s   00:01      
 ~~~
 
 
