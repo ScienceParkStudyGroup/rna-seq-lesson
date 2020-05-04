@@ -679,7 +679,7 @@ May 04 12:55:59 ..... Finished successfully
 ~~~
 
 
-The final.put file contains all the characteristics of the alignment.
+The final.out file contains all the characteristics of the alignment.
 
 ~~~
 $ less ERR1406259Log.final.out
