@@ -9,13 +9,33 @@ objectives:
 keypoints:
 - ""
 ---
-# Quality control and trimming
 
-<img src="https://github.com/ScienceParkStudyGroup/2019-03-07-rnaseq-workshop/blob/gh-pages/images/RNAseqWorkflow.png" height="400" >
+# Table of contents
+<!-- MarkdownTOC autolink="True" levels="1,2" -->
+
+- [1 Quality control and trimming](#1-quality-control-and-trimming)
+  - [1.1 Running FastQC](#11-running-fastqc)
+  - [1.2 Viewing the FastQC results](#12-viewing-the-fastqc-results)
+  - [1.3 Decoding the other FastQC outputs](#13-decoding-the-other-fastqc-outputs)
+  - [1.4 Working with the FastQC text output](#14-working-with-the-fastqc-text-output)
+  - [1.5 Documenting our work](#15-documenting-our-work)
+- [2. Trimming and filtering](#2-trimming-and-filtering)
+- [3. Alignment to a reference genome](#3-alignment-to-a-reference-genome)
+  - [3.1 Setting up](#31-setting-up)
+  - [3.2 Index the reference genome](#32-index-the-reference-genome)
+  - [3.3 Align reads to reference genome](#33-align-reads-to-reference-genome)
+  - [3.4 The SAM/BAM format](#34-the-sambam-format)
+- [4. Creating the counts file](#4-creating-the-counts-file)
+
+<!-- /MarkdownTOC -->
+  
+
+<img src="../img/04-workflow-overview.png" width="500px" alt="workflow overview">
+
+# 1 Quality control and trimming
 
 
-
-## Running FastQC  
+## 1.1 Running FastQC  
 
 We will now assess the quality of the reads that we downloaded. First, we need to make an output directory for the fastqc results to be stored. This we want to do in the 'RNAseq070319' directory.
 
@@ -24,6 +44,7 @@ $ cd ~/RNAseq070319
 
 $ mkdir fastqc
 ~~~
+{: .bash}
 
 
 Next we need to get to the directory thay actually contains the the fastq files.
@@ -31,7 +52,7 @@ Next we need to get to the directory thay actually contains the the fastq files.
 ~~~
 $ cd ~/RNAseq070319/rawReads
 ~~~
-
+{: .bash}
 
 
 Running fastqc uses the following command
@@ -39,7 +60,7 @@ Running fastqc uses the following command
 ~~~
 fastqc -o ../fastqc $filename
 ~~~
-
+{: .bash}
 
 Of course we don't want to do y=this for all the samples seperately so we can loop through the list of samples and run them all sequentially
 
@@ -51,7 +72,7 @@ $ for filename in *.fastq
     echo fastqc -o ../fastqc $filename
   done
 ~~~
-
+{: .bash}
 
 The echo command only prints the commands to the screen, and doesn't really run it.
 
@@ -63,7 +84,7 @@ fastqc -o ../fastqc sub21.fastq
 fastqc -o ../fastqc sub23.fastq
 fastqc -o ../fastqc sub24.fastq
 ~~~
-
+{: .output}
 
 If it looks good remove the echo and go for it.
 
@@ -73,7 +94,7 @@ $ for filename in *.fastq
     fastqc -o ../fastqc $filename
   done
 ~~~
-
+{: .bash}
 
 You will see an automatically updating output message telling you the
 progress of the analysis. It shoul look something like this:
@@ -91,7 +112,7 @@ Approx 95% complete for sub24.fastq
 Approx 100% complete for sub24.fastq
 Analysis complete for sub24.fastq
 ~~~
-
+{: .output}
 
 In total, it should take about five minutes for FastQC to run on all
 six of our FASTQ files.
@@ -101,6 +122,7 @@ If the command doesn't run or you want more information on fastqc, run the follo
 ~~~
 $ fastqc -h
 ~~~
+{: .bash}
 
 But if all went right, the FastQC program will have created several new files within our
 `~/RNAseq070319/fastqc` directory.
@@ -109,6 +131,7 @@ But if all went right, the FastQC program will have created several new files wi
 $ cd ~/RNAseq070319/fastqc
 $ ls
 ~~~
+{: .bash}
 
 
 ~~~
@@ -116,10 +139,10 @@ sub06_fastqc.html  sub07_fastqc.zip   sub21_fastqc.html  sub23_fastqc.zip
 sub06_fastqc.zip   sub08_fastqc.html  sub21_fastqc.zip   sub24_fastqc.html
 sub07_fastqc.html  sub08_fastqc.zip   sub23_fastqc.html  sub24_fastqc.zip
 ~~~
+{: .output}
 
 
-
-## Viewing the FastQC results
+## 1.2 Viewing the FastQC results
 
 If we were working on our local computers, we'd be able to display each of these
 HTML files as a webpage:
@@ -127,6 +150,7 @@ HTML files as a webpage:
 ~~~
 $ open sub06_fastqc.html
 ~~~
+{: .bash}
 
 
 However, if you try this on our genseq instance, you'll get an error:
@@ -134,7 +158,7 @@ However, if you try this on our genseq instance, you'll get an error:
 ~~~
 Couldn't get a file descriptor referring to the console
 ~~~
-
+{: .output}
 
 This is because the genseq instance we're using doesn't have any web
 browsers installed on it, so the remote computer doesn't know how to
@@ -153,14 +177,14 @@ top of your screen or the Cmd+t keyboard shortcut) and type:
 ~~~
 $ mkdir -p ~/Desktop/fastqc_html
 ~~~
-
+{: .bash}
 
 Now we can transfer our HTML files to our local computer using `scp`.
 
 ~~~
 $ scp tbliek@genseq-cn02.science.uva.nl:~/RNAseq070319/fastqc/*.html ~/Desktop/fastqc_html
 ~~~
-
+{: .bash}
 
 As a reminder, the first part
 of the command `tbliek@genseq-cn02.science.uva.nl` is
@@ -186,7 +210,7 @@ sub06_fastqc.html                      100%  251KB 252.8KB/s   00:00
 sub06_fastqc.html                      100%  249KB 370.1KB/s   00:00    
 sub06_fastqc.html                      100%  251KB 592.2KB/s   00:00  
 ~~~
-
+{: .output}
 
 Now we can go to our new directory and open the HTML files.
 
@@ -194,14 +218,14 @@ Now we can go to our new directory and open the HTML files.
 $ cd ~/Desktop/fastqc_html/
 $ open *.html
 ~~~
+{: .bash}
 
 
-Your computer will open each of the HTML files in your default web
-browser. Depending on your settings, this might be as six separate
+Your computer will open each of the HTML files in your default web browser. Depending on your settings, this might be as six separate
 tabs in a single window or six separate browser windows.
 
  
-## Decoding the other FastQC outputs
+## 1.3 Decoding the other FastQC outputs
 We've now looked at quite a few "Per base sequence quality" FastQC graphs, but there are nine other graphs that we haven't talked about! Below we have provided a brief overview of interpretations for each of these plots. It's important to keep in mind
 
 + **Per tile sequence quality**: the machines that perform sequencing are divided into tiles. This plot displays patterns in base quality along these tiles. Consistently low scores are often found around the edges, but hot spots can also occur in the middle if an air bubble was introduced at some point during the run.
@@ -214,7 +238,7 @@ We've now looked at quite a few "Per base sequence quality" FastQC graphs, but t
 + **Overrepresented sequences**: A list of sequences that occur more frequently than would be expected by chance.
 + **Adapter Content**: a graph indicating where adapater sequences occur in the reads.
 
-## Working with the FastQC text output
+## 1.4 Working with the FastQC text output
 
 Now that we've looked at our HTML reports to get a feel for the data,
 let's look more closely at the other output files. Go back to the tab
@@ -226,14 +250,14 @@ our results subdirectory.
 $ cd ~/RNAseq070319/fastqc/
 $ ls
 ~~~
-
+{: .bash}
 
 ~~~
 sub06_fastqc.html  sub07_fastqc.zip   sub21_fastqc.html  sub23_fastqc.zip
 sub06_fastqc.zip   sub08_fastqc.html  sub21_fastqc.zip   sub24_fastqc.html
 sub07_fastqc.html  sub08_fastqc.zip   sub23_fastqc.html  sub24_fastqc.zip
 ~~~
-
+{: .output}
 
 Our `.zip` files are compressed files. They each contain multiple
 different types of output files for a single input FASTQ file. To
@@ -244,7 +268,7 @@ wildcard.
 ~~~
 $ unzip *.zip
 ~~~
-
+{: .bash}
 
 ~~~
 Archive:  SRR2584863_1_fastqc.zip
@@ -254,7 +278,7 @@ caution: filename not matched:  sub21_fastqc.zip
 caution: filename not matched:  sub22_fastqc.zip
 caution: filename not matched:  sub24_fastqc.zip
 ~~~
-
+{: .output}
 
 This didn't work. We unzipped the first file and then got a warning
 message for each of the other `.zip` files. This is because `unzip`
@@ -272,6 +296,7 @@ $ for filename in *.zip
 > unzip $filename
 > done
 ~~~
+{: .bash}
 
 
 In this example, the input is six filenames (one filename for each of our `.zip` files).
@@ -310,7 +335,7 @@ Archive:  sub06_fastqc.zip
   inflating: sub06_fastqc/fastqc_data.txt  
   inflating: sub06_fastqc/fastqc.fo  
 ~~~
-
+{: .output}
 
 The `unzip` program is decompressing the `.zip` files and creating
 a new directory (with subdirectories) for each of our samples, to
@@ -328,6 +353,7 @@ sub07_fastqc       sub21_fastqc       sub24_fastqc
 sub07_fastqc.html  sub21_fastqc.html  sub24_fastqc.html
 sub07_fastqc.zip   sub21_fastqc.zip   sub24_fastqc.zip
 ~~~
+{: .output}
 
 
 The `.html` files and the uncompressed `.zip` files are still present,
@@ -337,7 +363,7 @@ see for sure that it's a directory if we use the `-F` flag for `ls`.
 ~~~
 $ ls -F
 ~~~
-
+{: .bash}
 
 ~~~
 sub06_fastqc/      sub08_fastqc/      sub22_fastqc/
@@ -347,26 +373,26 @@ sub07_fastqc/      sub21_fastqc/      sub24_fastqc/
 sub07_fastqc.html  sub21_fastqc.html  sub24_fastqc.html
 sub07_fastqc.zip   sub21_fastqc.zip   sub24_fastqc.zip
 ~~~
-
+{: .output}
 
 Let's see what files are present within one of these output directories.
 
 ~~~
 $ ls -F sub06_fastqc/
 ~~~
-
+{: .bash}
 
 ~~~
 fastqc_data.txt  fastqc.fo  fastqc_report.html	Icons/	Images/  summary.txt
 ~~~
-
+{: .output}
 
 Use `less` to preview the `summary.txt` file for this sample.
 
 ~~~
 $ less sub06_fastqc/summary.txt
 ~~~
-
+{: .bash}
 
 ~~~
 PASS    Basic Statistics        sub06.fastq
@@ -381,12 +407,12 @@ PASS    Sequence Duplication Levels     sub06.fastq
 PASS    Overrepresented sequences       sub06.fastq
 WARN    Adapter Content sub06.fastq
 ~~~
-
+{: .output}
 
 The summary file gives us a list of tests that FastQC ran, and tells
 us whether this sample passed, failed, or is borderline (`WARN`). Remember to quit from `less` you enter `q`.
 
-## Documenting Our Work
+## 1.5 Documenting our work
 
 We can make a record of the results we obtained for all our samples
 by concatenating all of our `summary.txt` files into a single file
@@ -396,9 +422,9 @@ it to `~/dc_workshop/docs`.
 ~~~
 $ cat */summary.txt > ~/dc_workshop/docs/fastqc_summaries.txt
 ~~~
+{: .bash}
 
-
-# Trimming and filtering
+# 2. Trimming and filtering
 
 Before we will do the alignment we need to remove sequences of low quality and sequences that are to short (below 25 bases).
 Also in this case we will trim down long sequences to 100 bases, quality of the Ion-torrent reads drops the further it gets.
@@ -411,7 +437,7 @@ $ cd ~/RNAseq070319/
 $ mkdir trimmed
 $ cd ~/RNAseq070319/rawReads/
 ~~~
-
+{: .bash}
 
 
 
@@ -436,7 +462,7 @@ To run this on a single sample it looks something like this
 ~~~
 trimmomatic SE -phred33 -threads 2 sub06.fastq ../trimmed/sub06_qc.fq ILLUMINACLIP:../adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25 CROP:100
 ~~~
-
+{: .bash}
 
 
 Of cource we don't want to do this for all the reads seperately so lets create a loop through all the fastq files.
@@ -454,6 +480,7 @@ do
  echo
 done
 ~~~
+{: .bash}
 
 
 This be be producing the following list
@@ -477,7 +504,7 @@ outputfile sub23_qc.fq
 inputfile sub24.fastq
 outputfile sub24_qc.fq
 ~~~
-
+{: .output}
 
 Next we can start writing the trimmomatic loop.
 Again starting with a dry run with echo.
@@ -489,6 +516,7 @@ do
   echo trimmomatic SE -phred33 -threads 2 $fastq ../trimmed/$outputFile ILLUMINACLIP:../adapters.fasta:2:30:10 LEADING:3 TRAILING:3     SLIDINGWINDOW:4:15 MINLEN:25 CROP:100
 done
 ~~~
+{: .bash}
 
 
 should be producing something like this
@@ -501,9 +529,10 @@ trimmomatic SE -phred33 -threads 2 sub21.fastq ../trimmed/sub21_qc.fq ILLUMINACL
 trimmomatic SE -phred33 -threads 2 sub23.fastq ../trimmed/sub23_qc.fq ILLUMINACLIP:../general/adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25 CROP:100
 trimmomatic SE -phred33 -threads 2 sub24.fastq ../trimmed/sub24_qc.fq ILLUMINACLIP:../general/adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25 CROP:100
 ~~~
+{: .output}
 
 
-If it al seems ok rerun with out 'echo'
+If it al seems ok rerun with out `echo`
 
 ~~~
 $ for infile in *.fastq
@@ -512,6 +541,7 @@ do
     trimmomatic SE -phred33 -threads 2 $infile ../trimmed/"$outfile ILLUMINACLIP:../general/adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25 CROP:100
 done
 ~~~
+{: .bash}
 
 
 The following should appear:
@@ -523,13 +553,13 @@ TrimmomaticSE: Started with arguments:
 Input Reads: 1000000 Surviving: 887553 (88.76%) Dropped: 112447 (11.24%)
 TrimmomaticSE: Completed successfully
 ~~~
-
+{: output}
 
 It's possible to scroll up to check if the percentage of surviving & dropped is within the same range in all of the samples.
 
 
 
-# Alignment to a reference genome
+# 3. Alignment to a reference genome
 
 <img src="../images/RNAseqWorkflow.png" height="400" >
 
@@ -543,11 +573,9 @@ The alignment process consists of two steps:
 2. Aligning the reads to the reference genome
 
 
-# Setting up
+## 3.1 Setting up
 
-
-
-### Index the reference genome
+## 3.2 Index the reference genome
 Our first step is to index the reference genome for use by STAR. Indexing allows the aligner to quickly find potential alignment sites for query sequences in a genome, which saves time during alignment. Indexing the reference only has to be run once. The only reason you would want to create a new index is if you are working with a different reference genome or you are using a different tool for alignment (index files are not exchangeable between tools).
 
 Take note that depending on the genome size these index files produced by STAR can be pretty big. Make sure there's enough disk space available.
@@ -558,9 +586,8 @@ $ cd ~/RNAseq070319/general
 $ mkdir genomeIndex
 
 $ STAR --runMode genomeGenerate --genomeDir genomeIndex --genomeFastaFiles AtChromosome1.fa --runThreadN 8
-
 ~~~
-
+{: .bash}
 
 While the index is created, you will see output something like this:
 
@@ -577,7 +604,7 @@ Apr 29 16:56:48 ... writing SAindex to disk
 Apr 29 16:57:00 ..... Finished successfully
 
 ~~~
-
+{: .output}
 
 
 The indexing should have produced 8 star index files. Use the following command to see if they're really there. 
@@ -585,7 +612,7 @@ The indexing should have produced 8 star index files. Use the following command 
 ~~~
 $ ls -l genomeIndex/
 ~~~
-
+{: .bash}
 
 result should be:
 ~~~
@@ -597,13 +624,12 @@ result should be:
 -rw-r--r-- 1 tbliek genseq-local        290 Apr 29 16:55 genomeParameters.txt
 -rw-r--r-- 1 tbliek genseq-local  249672325 Apr 29 16:56 SA
 -rw-r--r-- 1 tbliek genseq-local 1565873616 Apr 29 16:56 SAindex
-
 ~~~
+{: .output}
 
 
 
-
-### Align reads to reference genome
+## 3.3 Align reads to reference genome
 
 In some tools like hisat2 creating the sequence alignment files (bam-files) is done in two steps. first the aligning it self. After that the alignment file will be filtered for instance to only contain the reads that actualy map to the genome. This is done with [sam flags](https://broadinstitute.github.io/picard/explain-flags.html) in samtools view (with the '-F 4' all the unmapped reads will be removed). STAR on the other hand has a build in filter and also a sort function. So the output is ready to use for downstream tools.  
 
@@ -616,7 +642,7 @@ $ cd ~/RNAseq070319/
 
 $ mkdir mapped
 ~~~
-
+{: .bash}
 
 Running STAR to align ( or map ) the reads and optionaly filter and sort them.
 
@@ -647,11 +673,9 @@ Here are some examples of common used arguments.
 
 For now we will be using STAR with the following arguments
 ~~~
-
 $  STAR --genomeDir genomeindex --runThreadN 2 --readFilesIn ERR1406259.fq.gz --readFilesCommand zcat --outFileNamePrefix ERR1406259 --outSAMtype BAM SortedByCoordinate --outSAMunmapped None --outFilterMismatchNmax 3 --outFilterMultimapNmax 1
-
 ~~~
-
+{: .bash}
 
 
 Next we want to make a loop to do all the files
@@ -659,14 +683,13 @@ Next we want to make a loop to do all the files
 It's good again to first start with a 'dry' run with the use of echo
 
 ~~~
-
 $ for infile in trimmed/*.fq
  do
    outfile="$(basename $infile .fq)”
    echo "STAR --genomeDir genomeIndex --runThreadN 2 --readFilesIn trimmed/$infile --readFilesCommand zcat --outFileNamePrefix mapped/$outfile --outSAMtype BAM SortedByCoordinate --outSAMunmapped None --outFilterMismatchNmax 3 --alignEndsType EndToEnd --outFilterMultimapNmax 1"
  done
 ~~~
-
+{: .bash}
 
 If the commands look good, rerun but this time without the echo.
 
@@ -677,7 +700,7 @@ $for infile in *.fq
    STAR --genomeDir genomeIndex --runThreadN 2 --readFilesIn trimmed/$infile --readFilesCommand zcat --outFileNamePrefix mapped/$outfile --outSAMtype BAM SortedByCoordinate --outSAMunmapped None --outFilterMismatchNmax 3 --alignEndsType EndToEnd --outFilterMultimapNmax 1
  done
 ~~~
-
+{: .bash}
 
 When running the STAR command, you will see output something like this:
 
@@ -687,13 +710,14 @@ May 04 12:52:47 ..... Started mapping
 May 04 12:55:06 ..... Started sorting BAM
 May 04 12:55:59 ..... Finished successfully
 ~~~
-
+{: .output}
 
 The final.put file contains all the characteristics of the alignment.
 
 ~~~
 $ less ERR1406259Log.final.out
 ~~~
+{: .bash}
 
 resulting in table containing all the alignment numbers.
 
@@ -731,11 +755,10 @@ resulting in table containing all the alignment numbers.
                      % of reads unmapped: other |       0.00%
 ERR1406259Log.final.out (END) 
 ~~~
+{: .output}
 
 
-
-
-#### SAM/BAM format
+## 3.4 The SAM/BAM format
 The [SAM file](https://github.com/adamfreedman/knowyourdata-genomics/blob/gh-pages/lessons/01-know_your_data.md#aligned-reads-sam),
 is a tab-delimited text file that contains information for each individual read and its alignment to the genome. While we do not
 have time to go in detail of the features of the SAM format, the paper by
@@ -749,14 +772,14 @@ that follows corresponds to alignment information for a single read. Each alignm
 mapping information and a variable number of other fields for aligner specific information. An example entry from a SAM file is
 displayed below with the different fields highlighted.
 
-![sam_bam_1](../images/sam_bam_1.png)
+<img src="../img/sam_bam_1.png">
 
-![sam_bam2](../images/sam_bam2.png)
+![sam_bam2](../img/sam_bam2.png)
 
 
-### Creating the counts file
+# 4. Creating the counts file
 
-For downstream application for each of the samples the number of reads that maps within a gene has to be determent.
+For downstream application for each of the samples the number of reads that maps within a gene has to be determined.
 Featurecounts from the subread package can do this.
 
 
@@ -767,6 +790,5 @@ $ featureCounts -O -t mRNA -g ID -a ../general/annotation.all_transcripts.exon_f
 ~~~
 
 
-
-The file produced by featureCounts is a tab-delimited file.
+The file produced by `featureCounts` is a tab-delimited file.
 

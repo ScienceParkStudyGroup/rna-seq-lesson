@@ -17,21 +17,24 @@ keypoints:
 - "Using FastQC, one can easily check the sequencing quality of a fastq file."
 ---
 
-## Table of Contents
-1. [Introduction](#introduction)
-2. [Assessing quality metrics](#assessing-quality-metrics)
+# Table of Contents
 
-## Introduction
+<!-- MarkdownTOC autolink="True" levels="1,2" -->
 
-## The fastq format
+- [1. Introduction](#1-introduction)
+   - [1.1 The fastq format](#11-the-fastq-format)
+   - [1.2 Assessing quality metrics](#12-assessing-quality-metrics)
+   - [MultiQC](#multiqc)
 
-describe fastq format.
+<!-- /MarkdownTOC -->
 
-compression. 
+# 1. Introduction
 
-base quality.
+## 1.1 The fastq format
 
-## Assessing quality metrics	
+Check the Wikipedia page for now: https://en.wikipedia.org/wiki/FASTQ_format
+
+## 1.2 Assessing quality metrics	
 
 Now that we have run FASTQC and downloaded the report, we can take a look at the metrics and assess the quality of our sequencing data!
 
