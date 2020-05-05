@@ -191,7 +191,7 @@ $ mkdir -p ~/Desktop/fastqc_html
 Now we can transfer our HTML files to our local computer using `scp`.
 
 ~~~
-$ scp tbliek@genseq-cn02.science.uva.nl:~/RNAseq070319/fastqc/*.html ~/Desktop/fastqc_html
+$ scp -r lichunl@genseq-cn02.science.uva.nl:~/brunfelsia/mastersCourse2020/fastqc/*_fastqc ~/Desktop/fastqc_html
 ~~~
 {: .bash}
 
@@ -208,6 +208,8 @@ the HTML files.
 The third part of the command gives the absolute path of the location
 you want to put the files. This is on your local computer and is the
 directory we just created `~/Desktop/fastqc_html`.
+
+The -r option is used to tell scp to recursively copy the source directory and its contents.
 
 You should see a status output like this:
 
