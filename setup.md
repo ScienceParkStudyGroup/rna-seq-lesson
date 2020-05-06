@@ -2,11 +2,88 @@
 title: 
 ---
 
+
 # Setup
 
-## Softwares
+<!-- MarkdownTOC autolink="True" levels="1,2" -->
 
-> ## What you need to install.
+- [Option 1: using a Docker image](#option-1-using-a-docker-image)
+	- [Bioinformatics \(episodes 03 and 04\)](#bioinformatics-episodes-03-and-04)
+	- [RNA-seq data count data analysis \(episodes 05, 06 and 07\)](#rna-seq-data-count-data-analysis-episodes-05-06-and-07)
+- [Option 2: manual installation](#option-2-manual-installation)
+	- [Softwares and packages](#softwares-and-packages)
+	- [Data files](#data-files)
+- [Original study](#original-study)
+	- [Gene counts](#gene-counts)
+	- [Experimental design table](#experimental-design-table)
+
+<!-- /MarkdownTOC -->
+
+# Option 1: using a Docker image
+
+The preferred option to install all softwares and packages is to use a tailor-made Docker image. See [this nice introduction to Docker here](https://aws.amazon.com/docker/).   
+
+There are two Docker images necessary to complete this 
+
+## Bioinformatics (episodes 03 and 04)
+The Docker image is called `fastq` and contains softwares and data required for the command-line part of the lesson. 
+
+> ## Before you start
+>
+> Before the training, please make sure you have done the following: 
+>
+> 1. First, install [Docker desktop](https://www.docker.com/products/docker-desktop) for your operating system.  
+> 2. If needed, install Shell Bash: [follow these instructions](http://swcarpentry.github.io/shell-novice/setup.html).
+> 3. Open a new Shell Bash window and navigate to a folder that will be your workspace. For instance, you could create a folder named `rnaseq-tutorial/` on your Desktop and move inside with the Shell using `cd ~/Desktop/rnaseq-tutorial/`. 
+> 4. In a Shell Bash window, type the following command: `docker run -it --name bioinfo -v $PWD:/home/ scienceparkstudygroup/master-gls:fastq-latest`. This will download a Docker image for the bioinformatic part of the course, create and run a container where Bash will be running. You will enter the container directly where you can start working.     
+> 5. To quit, type `exit` and you will exit the container and be on your machine file system again.  
+{: .prereq}
+
+__Docker command-line explanations:__  
+- The `--it` starts an interactive session in which you directly start AND enter the container.       
+- The `--name` gives a name to the container for easy retrieval.  
+- The `-v $PWD:/home/` maps your working directory (e.g. `~/Desktop/rnaseq-tutorial`) to the container `/home/` folder. 
+
+
+## RNA-seq data count data analysis (episodes 05, 06 and 07)
+
+This image is based on a [Bioconductor Docker imag release 3.10](https://hub.docker.com/r/bioconductor/bioconductor_docker/tags) image with additional packages such as `pheatmap` or `tidyverse`.
+
+The latest image can be [found at the Science Park Study Group DockerHub](https://hub.docker.com/repository/docker/scienceparkstudygroup/master-gls) with the tag `rnaseq-latest`.
+
+
+> ## Before you start
+>
+> Before the training, please make sure you have done the following: 
+>
+> 1. First, install [Docker desktop](https://www.docker.com/products/docker-desktop) for your operating system.  
+> 2. If needed, install Shell Bash: [follow these instructions](http://swcarpentry.github.io/shell-novice/setup.html).
+> 3. Open a new Shell Bash window and navigate to a folder that will be your workspace. For instance, you could create a folder named `rnaseq-tutorial/` on your Desktop and move inside with the Shell using `cd ~/Desktop/rnaseq-tutorial/`. 
+> 4. In a Shell Bash window, type the following command: `docker run --rm --name rstudio_instance -v $PWD:/home/rstudio/ -e PASSWORD=mypwd -p 8787:8787 scienceparkstudygroup/master-gls:rnaseq-latest`. This will download a Docker image for the course, create and run a container where RStudio will be running.   
+> 4. Navigate to [http://localhost:8787](http://localhost:8787) in your web browser. You should have an RStudio session running. Type `rstudio` as the user name and `mypwd` as your password. 
+> 5. To quit, close the web browser window where RStudio is running and exit the Shell too. 
+{: .prereq}
+
+
+
+> ## Important note
+>
+> You can save files to your disk when working inside the Docker-powered R session. You need to save them as you would normally. The files (e.g. `my_plot.png`) will be where you were working (the directory from which you launched the Docker container). 
+>
+{: .callout}
+
+
+__Docker command-line explanations:__  
+- The `--rm` removes the container when it has been run. No need to store it into your computer after use.      
+- The `--name` gives a name to the running container for easy retrieval.  
+- The `-p 8787:8787` follow the format `-p host_port:container_port`. Therefore the port 8787 inside the container will be exposed to the outside port on the host machine. That way, the running instance of RStudio can be access through the <IP address>:port format.
+
+# Option 2: manual installation
+This is the second way to install softwares and packages. It _should_ work but there is no guarantee that it _will_ work since R and packages versions on your machine might be different from the software and package versions used in this lesson. Thus, the preferred way is still to use the Docker image (option 1).  
+
+## Softwares and packages
+
+> ## Before you start.
 >
 > Before the training, please make sure you have done the following: 
 >
@@ -22,27 +99,37 @@ title:
 > More instructions are available on the workshop website in the **Setup** section.
 {: .prereq}
 
-## Lesson files 
+
+library(biomartr)
+library(clusterProfiler)
+library(tidyverse)
+suppressPackageStartupMessages(library(org.At.tair.db))
+library("biomaRt")  # only use to remove cache bug
+biomaRt::biomartCacheClear() # to solve a known bug https://github.com/BioinformaticsFMRP/TCGAbiolinks/issues/335
+
+
+
+## Data files 
+
 
 > ## What you need to download.
->
-> Please download the necessary data files for the lesson [from the Zenodo archive](https://doi.org/10.5281/zenodo.3666262).  
+> [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3804520.svg)](https://doi.org/10.5281/zenodo.3804520)
+> Please download the necessary data files for the lesson [from the Zenodo archive](https://doi.org/10.5281/zenodo.3804520).  
 >
 > - **Counts**: A `counts.txt` dataframe of the sample raw counts. It is a tab separated file therefore data are in tabulated separated columns.
-> - **Experimental design**: the `experimental_design_modified.txt` dataframe indicates the correspondence between samples and experimental conditions (e.g. control, treated).   
+> - **Experimental design**: the `experimental_design_modified.txt` dataframe indicates the correspondence between samples and experimental conditions (e.g. control, treated).  
+- **Differentially expressed genes**: `differential_genes.tsv` dataframe contains the result of the DESeq2 analysis.  
 > - Please read the original study description below and have a look at the file preview to understand their format.  
-> - These two files were obtained by running the `v0.1.1` version of a [RNA-Seq bioinformatic pipeline](https://github.com/KoesGroup/Snakemake_hisat-DESeq/blob/master/README.md) on the [mRNA-Seq sequencing files from Vogel et al. (2016)](https://www.ebi.ac.uk/ena/data/view/PRJEB13938).
+> - These `counts.txt` file was obtained by running the `v0.1.1` version of a [RNA-Seq bioinformatic pipeline](https://github.com/KoesGroup/Snakemake_hisat-DESeq/blob/master/README.md) on the [mRNA-Seq sequencing files from Vogel et al. (2016)](https://www.ebi.ac.uk/ena/data/view/PRJEB13938).
 {: .prereq}
 
-### Original study
+# Original study
 This RNA-seq lesson will make use of a dataset from a study on the model plant _Arabidopsis thaliana_ inoculated with commensal leaf bacteria (_Methylobacterium extorquens_ or _Sphingomonas melonis_) and infected or not with a leaf bacterial pathogen called _Pseudomonas syringae_. Leaf samples were collected from Arabidopsis plantlets from plants inoculated or not with commensal bacteria and infected or not with the leaf pathogen either after two days (2 dpi, dpi: days post-inoculation) or seven days (6 dpi). 
 
 All details from the study are available in [Vogel et al. in 2016 and was published in New Phytologist](https://nph.onlinelibrary.wiley.com/doi/full/10.1111/nph.14036).  
 
 
-### File previews
-
-#### Gene counts
+## Gene counts
 The dimension of this table are 33,769 rows x 49 columns.  
   * 33,769 rows: one for gene and sample names and the rest for gene counts.  
   * 49 columns: one for the gene id and the rest for sample accession identifiers (from the EBI European Nucleotide Archive).
@@ -61,7 +148,7 @@ The dimension of this table are 33,769 rows x 49 columns.
 
 ... many more lines ...
 
-#### Experimental design table
+## Experimental design table
 
 dpi: days post-inoculation. 
 
