@@ -24,45 +24,22 @@ keypoints:
 
 - [1. Introduction](#1-introduction)
 - [2. Differential expression analysis](#2-differential-expression-analysis)
-	- [2.1 Creating the DESeqDataSet object](#21-creating-the-deseqdataset-object)
-	- [2.2 Running the DE analysis](#22-running-the-de-analysis)
-	- [2.3 Extracting the table of differential genes](#23-extracting-the-table-of-differential-genes)
-	- [2.4 False discovery rates](#24-false-discovery-rates)
-	- [Extracting the table of differential genes](#extracting-the-table-of-differential-genes)
+  - [2.1 Creating the DESeqDataSet object](#21-creating-the-deseqdataset-object)
+  - [2.2 Running the DE analysis](#22-running-the-de-analysis)
+  - [2.3 Extracting the table of differential genes](#23-extracting-the-table-of-differential-genes)
+  - [2.4 False discovery rates](#24-false-discovery-rates)
+  - [Extracting the table of differential genes](#extracting-the-table-of-differential-genes)
 - [3. Volcano plot](#3-volcano-plot)
 - [4. Heatmap](#4-heatmap)
-	- [4.1 Scaling](#41-scaling)
-	- [4.2 Filtering out the non-differentially expressed genes](#42-filtering-out-the-non-differentially-expressed-genes)
-		- [Grouping genes by profiles](#grouping-genes-by-profiles)
+  - [4.1 Filtering steps](#41-filtering-steps)
+  - [4.2 First version](#42-first-version)
+  - [4.2 Second version with scaling](#42-second-version-with-scaling)
+  - [4.3 Third version with genes and samples grouped by profiles](#43-third-version-with-genes-and-samples-grouped-by-profiles)
+  - [4.4. Fourth version of our heatmap with the 8 samples being investigated](#44-fourth-version-of-our-heatmap-with-the-8-samples-being-investigated)
 - [Bonus: MA plots](#bonus-ma-plots)
 - [References](#references)
 
 <!-- /MarkdownTOC -->
-
-
-1. [Introduction](#introduction)
-2. [Creating the DESeqDataSet object](#creating-the-DESeqDataSet-object)
-3. [Different expression analysis](#creating-the-DESeqDataSet-object)
-4. [MA plot](#ma-plot)
-5. [Volcano plot](#volcano-plot)
-6. [Heatmap](#heatmap)
-
-
-- 1. Introduction
-- 2. Differential expression analysis
-  - 2.1 Creating the DESeqDataSet object
-  - 2.2 Running the DE analysis
-  - 2.3 Table results of differential genes
-  - 2.4 False discovery rates
-- 3. Volcano plot
-- 4. Heatmap
-  - 4.1 Scaling
-  - 4.2 Filtering out the non-differentially expressed genes
-    - Grouping genes by profiles
-- Bonus: MA plots
-- References
-
-
 
 
 # 1. Introduction
@@ -99,6 +76,12 @@ row.names(counts) <- genes
 # reorder counts columns according to the experimental design file
 counts <- counts[, xp_design$sample]
 ~~~
+{:.language-r}
+
+We will now filter both the `counts` and `xp_design` objects to keep a one-factor comparison and investigate the leaf transcriptome
+of Arabidopsis plants whose seeds were MgCl2 treated and whose plants were infected or not with Pseudomonas syringae DC3000 at 7dpi.
+
+The corresponding code is available below.
 
 ~~~
 library(DESeq2)
@@ -106,7 +89,7 @@ library(DESeq2)
 # filter design file (mock versus P. syringae at 7 dpi)
 xp_design_mock_vs_infected = xp_design %>% filter(seed == "MgCl2" & dpi == "7")
 
-# Filter count file accordingly (so the rows correspond to the columns of the filtered xp_design file)
+# Filter count file accordingly (to keep only samples present in the filtered xp_design file)
 counts_filtered = counts[, colnames(counts) %in% xp_design_mock_vs_infected$sample]
 
 ## Creation of the DESeqDataSet
@@ -326,12 +309,9 @@ suggests that a good proportion of these will be true positives (genes truly dif
 Ok, here's the moment you've been waiting for. How can I extract a nicely filtered final table of differential genes? Here it is!
 
 ~~~
-# otherwise lost during conversion of DESeq2DataSet object to R dataframe
-gene_ids = row.names(res) 
-
 diff = res %>% 
   as.data.frame() %>% 
-  mutate(genes = gene_ids) %>%
+  rownames_to_column("genes") %>% 
   filter(padj < 0.01) %>% 
   arrange(desc(log2FoldChange), 
           desc(padj))
@@ -401,178 +381,293 @@ EnhancedVolcano(toptable = resLFC,
 <img src="../img/volcano_plot.png" width="600px" alt="customized volcano plot" >
 
 # 4. Heatmap
-Heatmap is a representation where gene counts are represented on a color scale. It is usually one of the classic figures part of a transcriptomic study. 
-One can also cluster samples and genes to display a more organised heatmap. Enough talking, let's build one step by step. 
+Heatmap is a representation where values are represented on a color scale. It is usually one of the classic figures part of a transcriptomic study. 
+One can also cluster samples and genes to identify groups of genes that show a coordinated behaviour. Let's build a nice looking heatmap to display our differential genes one step at a time.  
 
-We are going to make use of a library called `pheatmap`. 
-
-## 4.1 Scaling 
-We will first create three simple heatmaps by taking small subsets of the `counts_normalised` matrix. 
-
-Extract the normalized counts from our `dds2` DESeqDataSet object. 
+We are going to make use of a library called `pheatmap`. Here is a minimal example (`mtcars` is a dataset that comes included with R).
 ~~~
-# extract the normalised counts
-counts_normalised = counts(dds2, normalized = TRUE)
-~~~
-
-
-Let's plot a few simple heatmaps without any grouping. 
-~~~
-# load the library if not already done
-library(pheatmap)
-
-# 10 genes
-pheatmap(counts_normalised[1:10,], cluster_rows = F, cluster_cols = F)
-
-# 20 genes
-pheatmap(counts_normalised[1:20,], cluster_rows = F, cluster_cols = F)
-
-# 50 genes
-pheatmap(counts_normalised[1:50,], cluster_rows = F, cluster_cols = F)
+df <- scale(mtcars)
+pheatmap(df)
 ~~~
 {: .language-r}
 
-> ## First heatmaps
-> 
-> From these three different heatmaps, you can already notice one important difference between these three heatmaps. 
-> 
-> * What can be a possible issue related to the color scale when increasing number of genes are being displayed?
-> 
->
-> > ## Solution
-> > * Varying amount of genes being displayed can result in uncomparable heatmaps since the color scale automatically adjust to the gene count levels.
-> {: .solution} 
-{: .challenge}
+<img src="../img/06-basic-heatmap.png" alt="basic heatmap" height="400px">
 
-When creating a heatmap, it is vital to control how scaling is performed. A possible solution is to specify `scale = "row"` to the `pheatmap()` function to perform row scaling since gene expression levels will become comparable. 
+> ## Troubleshooting
+> If you have issues where your heatmap plot is not being shown, run `dev.off()` and try to plot again. It should solve your issue. 
+{: .callout}
 
-Alternatively, it is always good practice to control how you scale. One way to quicky scale gene levels so that they become comparable is to apply a $$log$$ transformation. Here we will apply a $$log_{2}$$ transformation. 
+
+## 4.1 Filtering steps
+
+Let's work on the global `counts` object that contains the _unscaled_ counts for our genes. We will first normalize it using a custom function that mimics DESeq2 normalization procedure in one line.
+
+When using the Docker image (see [Setup](../setup.html)), the function is already in the working space ready to be imported. 
+Otherwise, navigate to [the median_of_ratios_manual_normalization page](http://0.0.0.0:4000/median_of_ratios_manual_normalization/index.html#section-two-a-function-to-normalize-the-deseq2-way), copy-paste it into the R console, it is then ready to use.  
 ~~~
-# add an offset of 1 to be able to calculate the log10 (it will be equal to 0 once log transform)
-counts_normalised[counts_normalised == 0] <- 1
-
-# apply log2 transformation
-# make sure you take only the first 50 genes
-pheatmap(log2(counts_normalised[1:50,], cluster_rows = F, cluster_cols = F)
+# import custom function
+source("normalization_function.R")
 ~~~
 {: .language-r}
 
-This is the native heatmap without any transformation. 
-<img src="../img/heatmap_unscaled.png" width="600px" alt="heatmap unscaled" >
-
-After applying the $$log_{2}$$ transformation, gene expression levels become more comparable. 
-<img src="../img/heatmap_log2.png" width="600px" alt="heatmap log2 transformed" >
-
-
-## 4.2 Filtering out the non-differentially expressed genes
-As for now, we have worked on the gene count matrix that contains genes differentially expressed _and_ not differentially expressed. In other words, we have kept genes that are not directly responding to our experimental treatment (here infection by _Pseudomonas syringae_ DC3000).
-
-Clearer heatmaps can be obtained by filtering out genes that are not differentially expressed in our comparison of interest. Let's do just that!
-
-First things first. We create a new object that only contains genes that are differentially expressed. Since we have a lot of genes differentially expressed, we can arbitrarily choose to define differential genes for a p-value threshold of p = 0.001.
-~~~
-genes_differential = 
-  res %>%
-  as.data.frame() %>%
-  mutate(gene = row.names(res)) %>% 
-  filter(padj < 0.001) %>% 
-  select(gene)
-~~~
-{: .language-r} 
-
-We now use this gene list to keep only the genes differentially expressed in the original `counts_normalised` object. 
-Here we filter the `counts_normalised` matrix using its row names (the gene ids) that can be found inside the `genes_differential$gene` column. 
+## 4.2 First version
 
 ~~~
-counts_normalised_only_diff = counts_normalised[row.names(counts_normalised) %in% genes_differential$gene, ]
-~~~
-{: .language-r} 
+counts_normalised_only_diff_genes = 
+  mor_normalization(counts) %>%                 # normalize the counts using our custom function
+  rownames_to_column("genes") %>%               
+  pivot_longer(- genes,                         # pivot_longer() is an update version of gather() since tidyr version 1.0
+               names_to = "sample", 
+               values_to = "counts") %>% 
+  filter(genes %in% diff$genes) %>%             
+  pivot_wider(names_from = "sample",            # pivot_wider() is an updated approach to spread()
+              values_from = "counts")  %>%      
+  column_to_rownames("genes")                   # the gene column is converted back to row names to create a matrix usable with pheatmap
 
-> ## Simple checks
-> 
-> Can you think of a simple way to check that your gene selection has worked? 
-> 
+dim(counts_normalised_only_diff_genes)          # check that you have the expected number of rows and columns
+~~~
+{: .language-r}
+
+We indeed find that we have **4979 genes** (rows, p < 0.01) and **48 samples** (columns) which corresponds to the number of differential genes identified previously between Mock and DC3000 infected conditions at 7 dpi and with a MgCl2 seed coating. You can also use `head()` to show the first lines of this table. 
+
+Let's plot our first version of the heatmap. 
+~~~
+pheatmap(counts_normalised_only_diff_genes, 
+         cluster_rows = FALSE, 
+         cluster_cols = FALSE, 
+         scale = "none",
+         show_rownames = FALSE, 
+         show_colnames = TRUE)
+~~~
+{: .language-r}
+
+We have removed the genes names with `show_rownames = FALSE` since they are not readable anymore for such a high number of genes.
+
+
+<img src="../img/06-heatmap-1.png" alt="first heatmap version" height="400px">
+
+
+Well....not very useful right?
+
+> ## Question
+> Do you have an idea of how to improve this heatmap?  
+> Hint: run the code below to show the distribution of values in the `counts_normalised_only_diff_genes` table:
+> ~~~ 
+> counts_normalised_only_diff_genes %>% 
+>     rownames_to_column("genes") %>% 
+>     pivot_longer(- genes,names_to = "sample", values_to = "counts") %>% 
+>     with(., hist(counts, col = "dodgerblue"))
+> ~~~
+> {: .language-r}
 > > ## Solution
-> > A simple check can be performed using the `dim()` or the `nrow()` functions on the `counts_normalised_only_diff` and the original `counts_normalised` objects. 
-> > While the original `counts_normalised` object has 33,768 genes, the filtered `counts_normalised_only_diff` only has 3249 genes. This indicates that our filtering step has worked. 
-> {: .solution} 
+> > The scale on which gene counts are represented is the (main) issue here.   
+> > There are a lot of genes for which the number of counts are very low. If you $$\log2$$ transform the counts, you get a nice distribution again where all gene frequency become visible again. 
+> ~~~ 
+> > counts_normalised_only_diff_genes %>% 
+> >     rownames_to_column("genes") %>% 
+> >     pivot_longer(- genes,names_to = "sample", values_to = "counts") %>% 
+> >       with(., hist(log2(counts), col = "dodgerblue"))
+> > ~~~
+> > {: .language-r}
+> {: .solution}
 {: .challenge}
 
 
+## 4.2 Second version with scaling 
 
-### Grouping genes by profiles
-One interesting feature of the heatmap visualisation is the ability to group genes by their expression profile. Similarly to the 
+When creating a heatmap, it is vital to control how scaling is performed. A possible solution is to specify `scale = "row"` to the `pheatmap()` function to perform row scaling since gene expression levels will become comparable. But I'd recommend to do it "manually" to understand and control the scaling procedure. 
 
-Let's compare how it looks _without_ and _with_ gene clustering.
+We can perform a Z-score calculation for each gene so that $$Z = {x - \mu \over \sigma}$$   where $$x$$ is an individual gene count inside a given sample, $$\mu$$ the row mean of for that gene across all samples and $$\sigma$$ its standard deviation.  
+Check background and R code instructions [here](https://www.datatechnotes.com/2018/02/z-score-with-r.html).
 
+For each gene, the row-wise mean should be close to 0 while the row-wise standard deviation should be close to 1. We are going to use the R `scale()` function to do this and check that our scaling procedure worked out. 
+
+Here is a simple example to understand how `scale()` works.
 ~~~
-# no clustering
-pheatmap(log2(counts_normalised_only_diff + 1), 
-         cluster_rows = F,                       # gene clustering is turned off
-         cluster_cols = F, 
-         show_rownames = F, 
-         show_colnames = F,
-         main = "No clustering") 
-~~~
-{: .language-r}
-We have removed the genes and sample names with `show_rownames = F` and `show_colnames = F` since they are not readable anymore for such a high number of genes and samples.
+set.seed(1)
+x <- runif(7)
 
-<img src="../img/heatmap_non_clustered.png" width="600px" alt="heatmap non clustered">
+# Manually scaling
+(x - mean(x)) / sd(x)
 
-The last heatmap is hard to read. If we turn gene clustering "on" with `cluster_rows = T` then it will already be easier to read.
-~~~
-# cluster genes
-pheatmap(log2(counts_normalised_only_diff + 1), 
-         cluster_rows = T,                       # changed to TRUE
-         cluster_cols = F,
-         show_rownames = F, 
-         show_colnames = F, 
-         main = "Clustering of genes")
+# With scale function
+scale(x)[,1]
 ~~~
 {: .language-r}
 
-<img src="../img/heatmap_genes_clustered.png" width="600px" alt="heatmap genes clustered">
+~~~
+# (x - mean(x)) / sd(x)
+-1.01951259 -0.68940037 -0.06788275  0.97047346 -1.21713898  0.94007371  1.08338753
+ 
+# scale(x)[,1]
+-1.01951259 -0.68940037 -0.06788275  0.97047346 -1.21713898  0.94007371  1.08338753
+~~~
+{: .output}
+
+The two outputs are identical. Let's do it for our dataset. 
 
 ~~~
-# cluster genes and samples
-pheatmap(log2(counts_normalised_only_diff + 1), 
-         cluster_rows = T,                      # changed to TRUE
-         cluster_cols = T,                      # changed to TRUE
-         show_rownames = F, 
-         show_colnames = F, 
-         main = "Clustering of genes and samples")
+counts_scaled = 
+  counts_normalised_only_diff_genes %>% 
+  t(.) %>%                              # transpose to have the genes in columns 
+  scale() %>%                           # scale(x, center = TRUE, scale = TRUE) 
+  t(.)                                  # back in original shape
+
+# sanity check
+# the majority of the values should be around zero
+apply(counts_scaled, MARGIN = 1, mean) %>%                          # calculate the mean per row
+  hist(., main = "", xlab = "Z-score values", col = "dodgerblue2")  
 ~~~
 {: .language-r}
 
-<img src="../img/heatmap_genes_and_samples_clustered.png" width="600px" alt="heatmap genes and samples clustered">
+You can verify that it went well. 
 
-This is much clearer and easier to read. Genes with similar profiles that distinguish different samples can be easily visualised. 
+<img src="../img/06-hist-zscores.png" alt="histogram of Z-score values" height="400px">
 
-
-But there's even a better and clearer heatmap that can be generated. For this, we can keep the differentially expressed genes (p < 0.001) that have a strong $$log_{2}$$ fold change (e.g. > 4)
+Does this scaling improves our heatmap?
 ~~~
-# keeping genes differentially expressed and with a high fold change
-genes_differential_fold = 
-  res %>%
+pheatmap(counts_scaled, 
+         cluster_rows = FALSE, 
+         cluster_cols = FALSE, 
+         show_rownames = FALSE, 
+         scale = "none",            # already done "manually"
+         show_colnames = TRUE)
+~~~
+{: .language-r}
+
+
+After applying the scaling procedure, the gene expression levels become more comparable. Still, it isn't really useful so far. 
+<img src="../img/06-heatmap-2.png" width="400px" alt="second heatmap (scaled)"  >
+
+This is the original heatmap
+<img src="../img/06-heatmap-1.png" alt="first heatmap version" width="400px">
+
+> ## Notice
+> Have you noticed the two different color scales? 
+{: .callout}
+
+
+## 4.3 Third version with genes and samples grouped by profiles
+One interesting feature of the heatmap visualisation is the ability to group genes and samples by their expression profile. 
+Similarly to the hierarchical clustering procedure that we have seen in [episode 05](../05-descriptive-plots/index.html/4-sample-clustering).
+
+Let's compare how it looks with both gene and sample clustering.
+
+~~~
+pheatmap(counts_scaled, 
+         cluster_rows = TRUE,                      
+         cluster_cols = TRUE, 
+         show_rownames = FALSE, 
+         show_colnames = TRUE,
+         main = "Clustering on")
+~~~
+{: .language-r}
+
+<img src="../img/06-heatmap-3.png" alt="third heatmap version (clustered)" height="400px">
+
+This is getting easier to read. Genes with similar profiles that distinguish different samples can be easily visualised. 
+
+> ## Question
+> Do you know how this gene and sample clustering was done? How can you find this out?
+> > ## Solution
+> > Check in the help page related to the `pheatmap` function (type `?pheatmap`) inside R. 
+> > By default, the clustering distance is **euclidean** for both rows (genes) and columns (samples). The clustering_method is **complete**.
+> {: .solution}
+{: .challenge}
+
+You can change this default behavion easily and try other clustering methods (see `?hclust` for supported methods).
+
+> ## Discussion
+> The gene clusters do not seem to be pretty clear cut though. Do you have an idea why? 
+> **Hint:** we still have 48 samples under investigation but we are working on 4979 genes (differential genes between what?)
+{: .discussion}
+
+## 4.4. Fourth version of our heatmap with the 8 samples being investigated
+
+But there's even a better and clearer heatmap that can be generated. 
+Since we have "noise" coming from samples that were not under investigation in our comparison (DC3000 vs Mock at 7dpi from seeds treated with MgCl2), we can remove the other samples. 
+
+
+~~~
+counts_scaled_filtered = 
+  counts_scaled %>% 
   as.data.frame() %>%
-  mutate(gene = row.names(res)) %>% 
-  filter(padj < 0.001) %>% 
-  filter(log2FoldChange > 4) %>% 
-  select(gene) 
+  dplyr::select(xp_design_mock_vs_infected$sample) # keep the 8 samples
 
-counts_normalised_only_diff_fold = counts_normalised[row.names(counts_normalised) %in% genes_differential_fold$gene, ]
-
-# cluster genes and samples
-pheatmap(log2(counts_normalised_only_diff_fold + 1), 
-         cluster_rows = T, 
-         cluster_cols = T,
-         show_rownames = F, 
-         show_colnames = F, 
-         main = "Clustering of genes and samples")
+head(counts_scaled_filtered)
 ~~~
 {: .language-r}
 
-<img src="../img/heatmap_genes_and_samples_clustered_fold_change.png" width="600px" alt="heatmap genes and samples clustered on genes with a high fold change">
+We have 8 columns corresponding to the 8 samples of the `xp_design_mock_vs_infected`
+~~~
+          ERR1406305 ERR1406306 ERR1406307 ERR1406308 ERR1406263 ERR1406264 ERR1406265 ERR1406266
+AT1G03987  1.0180949 -0.9829355 -1.0528013 -0.8749123 -0.1335497  0.3532129  0.8894350  0.9141185
+AT1G01030  0.7162352 -0.3755511 -0.3030387 -0.5679942 -0.2309550  1.9855405  0.1097865 -0.1723323
+AT1G01070  1.2165825  0.8911530 -0.7450666  0.4269940 -0.8461231 -1.2118873 -0.5492743 -0.1102044
+AT1G01090  1.5878272 -0.1729820  0.1100879 -0.4092894 -1.1956279 -1.0801598 -0.7522270 -1.6680298
+AT1G01140  0.8173825 -0.9641882 -1.0527670 -0.5562761 -0.9205368  1.9342977  0.8982700 -0.3926340
+AT1G04013  1.3337848 -0.7437722 -0.0368491  1.6373360  0.1065829  1.0947369 -0.3180643 -0.3775848
+~~~
+{: .output}
+
+
+~~~
+anno_col_info = xp_design_mock_vs_infected %>% column_to_rownames("sample")
+
+anno_info_colors = list(
+  seed = c(MgCl2 = "#d8b365"),
+  infected = c(mock = "lightgrey", 
+               Pseudomonas_syringae_DC3000 = "black"),
+  dpi = c("7" = "dodgerblue4")
+)
+
+pheatmap(counts_scaled_filtered, 
+         cluster_rows = TRUE,                       
+         cluster_cols = TRUE, 
+         show_rownames = FALSE, 
+         show_colnames = TRUE,
+         annotation_col = anno_col_info,
+         annotation_colors = anno_info_colors,
+         main = "Clustering with ward method")
+~~~
+{: .language-r}
+
+<img src="../img/06-heatmap-4.png" alt="final heatmap" height="600px">
+
+
+> ## Challenge (if time allows)
+> Can you can generate a heatmap from differential genes with a fold change higher than 4 (positive) ?
+> > ## Solution
+> >
+> > For this, we can keep the differentially expressed genes that have a strong $$log_{2}$$ fold change (e.g. > 4)
+> >  ~~~
+> > genes_differential_fold = 
+> >  res %>%
+> >  as.data.frame() %>%
+> >  rownames_to_column("gene") %>%  
+> >  filter(log2FoldChange > 4) %>% 
+> >  select(gene) 
+> >
+> > counts_scaled_filtered_high_fold_change = 
+> >  counts_scaled_filtered[row.names(counts_scaled_filtered) %in% genes_differential_fold$gene, ]
+> >
+> > # cluster genes and samples
+> > pheatmap(counts_scaled_filtered_high_fold_change, 
+> >         cluster_rows = TRUE, 
+> >         cluster_cols = TRUE,
+> >         show_rownames = FALSE, 
+> >         show_colnames = TRUE, 
+> >        annotation_col = anno_col_info,
+> >         clustering_method = "average",
+> >         annotation_colors = anno_info_colors,
+> >         main = "Clustering of genes and samples (high fold only)")
+> > ~~~
+> > {: .language-r}
+> {: .solution}
+{: .challenge}
+
+If you managed to do this exercise, here is what you should see. Surprinsingly, one of the "infected" sample is clustered together with the "mock"  samples. If you look closer though, it is rather poorly clustered with the rest of the control samples and more of an intermediate sample between control and infected samples. Perhaps a sample for which the infection process did not work very efficiently?  
+<img src="../img/06-heatmap-5.png" height="600px" alt="heatmap genes and samples clustered on genes with a high fold change">
 
 
 # Bonus: MA plots
@@ -611,7 +706,7 @@ You can see that genes with low counts are now shrinked.
 
 # References
 * [Kamil Slowikoski blog post about heatmap](https://slowkow.com/notes/pheatmap-tutorial/)
-* [Z-score calculation](https://www.statisticshowto.datasciencecentral.com/probability-and-statistics/z-score/)
+* Z-score calculations: [link 1](https://www.statisticshowto.datasciencecentral.com/probability-and-statistics/z-score/) and [link 2](https://www.datatechnotes.com/2018/02/z-score-with-r.html).
 * [Type I and type II error rates in gene expression studies](https://www.ncbi.nlm.nih.gov/pubmed/28637422)
 * [p-value histograms explained](http://varianceexplained.org/statistics/interpreting-pvalue-histogram/)
 

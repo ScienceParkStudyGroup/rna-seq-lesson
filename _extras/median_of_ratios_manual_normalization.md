@@ -16,19 +16,22 @@ In [Section 3](#section-3-sanity-check), the normalized counts are compared with
 
 # Table of Contents
 
+<!-- MarkdownTOC autolink="True" levels="1,2" -->
+
 - [Section 1: step-by-step procedure](#section-1-step-by-step-procedure)
-  - Step 1: Upload data
-  - Step 2: Take the log of all values
-  - Step 3: Take the average of each row
-  - Step 4: Filter out all of the genes with -Inf as their average
-  - Step 5: Subtract the gene pseudo-references from log counts
-  - Step 6: Find the median of the ratios for each sample
-  - Step 7: Convert medians to scaling factors
-  - Step 8: Divide the original counts \(not log version\) by the scaling factors
-- [Section 2: a function to normalize the DESeq2 way](#section-2-a-function-to-normalize-the-deseq2-way)
+  - [Step 1: Upload data](#step-1-upload-data)
+  - [Step 2: Take the log of all values](#step-2-take-the-log-of-all-values)
+  - [Step 3: Take the average of each row](#step-3-take-the-average-of-each-row)
+  - [Step 4: Filter out all of the genes with -Inf as their average](#step-4-filter-out-all-of-the-genes-with--inf-as-their-average)
+  - [Step 5: Subtract the gene pseudo-references from log counts](#step-5-subtract-the-gene-pseudo-references-from-log-counts)
+  - [Step 6: Find the median of the ratios for each sample](#step-6-find-the-median-of-the-ratios-for-each-sample)
+  - [Step 7: Convert medians to scaling factors](#step-7-convert-medians-to-scaling-factors)
+  - [Step 8: Divide the original counts \(not log version\) by the scaling factors](#step-8-divide-the-original-counts-not-log-version-by-the-scaling-factors)
+- [Section two: a function to normalize the DESeq2 way](#section-two-a-function-to-normalize-the-deseq2-way)
 - [Section 3: sanity check](#section-3-sanity-check)
 - [References](#references)
 
+<!-- /MarkdownTOC -->
 
 # Section 1: step-by-step procedure 
 

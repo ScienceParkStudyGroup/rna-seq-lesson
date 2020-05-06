@@ -33,6 +33,7 @@ keypoints:
 - [4. Sample clustering](#4-sample-clustering)
 	- [4.1 Distance calculation](#41-distance-calculation)
 	- [4.2 Hierarchical clustering](#42-hierarchical-clustering)
+	- [4.3 Heatmap of sample-to-sample correlations](#43-heatmap-of-sample-to-sample-correlations)
 - [5. Principal Component Analysis](#5-principal-component-analysis)
 	- [5.1 Introduction to PCA](#51-introduction-to-pca)
 	- [5.2 The Iris data set](#52-the-iris-data-set)
@@ -456,9 +457,12 @@ plot(clustering_of_samples)
 
 <img src="../img/05-dendro.png" width="600px">
 
+## 4.3 Heatmap of sample-to-sample correlations
 
+We can also build a more pretty figure where 
 ~~~
-xp_design_for_heatmap <- read.delim("03.RNA-seq/experimental_design_modified.txt",
+# to build a sample to 
+xp_design_for_heatmap <- read.delim("experimental_design_modified.txt",
                                     header = TRUE,
                                     sep = "\t",
                                     colClasses = rep("factor",4))
