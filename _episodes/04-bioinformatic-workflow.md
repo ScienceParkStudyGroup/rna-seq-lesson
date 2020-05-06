@@ -58,7 +58,7 @@ $ cd ~/RNAseq070319/rawReads
 Running fastqc uses the following command
 
 ~~~
-fastqc -o ../fastqc ERR1406259.fq.gz
+fastqc -o ../fastqc Arabidopsis_sample1.fq.gz
 ~~~
 {: .bash}
 
@@ -77,8 +77,10 @@ $ for filename in *.fq.gz
 The echo command only prints the commands to the screen, and doesn't really run it.
 
 ~~~
-fastqc -o ../fastqc ERR1406259.fq.gz
-fastqc -o ../fastqc ERR1406260.fq.gz
+fastqc -o ../fastqc Arabidopsis_sample1.fq.gz
+fastqc -o ../fastqc Arabidopsis_sample2.fq.gz
+fastqc -o ../fastqc Arabidopsis_sample3.fq.gz
+fastqc -o ../fastqc Arabidopsis_sample4.fq.gz
 ~~~
 {: .output}
 
@@ -96,22 +98,22 @@ You will see an automatically updating output message telling you the
 progress of the analysis. It shoul look something like this:
 
 ~~~
-Started analysis of ERR1406259.fq.gz
-Approx 5% complete for ERR1406259.fq.gz
-Approx 10% complete for ERR1406259.fq.gz
-Approx 15% complete for ERR1406259.fq.gz
-Approx 20% complete for ERR1406259.fq.gz
+Started analysis of Arabidopsis_sample1.fq.gz
+Approx 5% complete for Arabidopsis_sample1.fq.gz
+Approx 10% complete for Arabidopsis_sample1.fq.gz
+Approx 15% complete for Arabidopsis_sample1.fq.gz
+Approx 20% complete for Arabidopsis_sample1.fq.gz
 …
-Approx 85% complete for ERR1406260.fq.gz
-Approx 90% complete for ERR1406260.fq.gz
-Approx 95% complete for ERR1406260.fq.gz
-Approx 100% complete for ERR1406260.fq.gz
-Analysis complete for ERR1406260.fq.gz
+Approx 85% complete for Arabidopsis_sample4.fq.gz
+Approx 90% complete for Arabidopsis_sample4.fq.gz
+Approx 95% complete for Arabidopsis_sample4.fq.gz
+Approx 100% complete for Arabidopsis_sample4.fq.gz
+Analysis complete for Arabidopsis_sample4.fq.gz
 ~~~
 {: .output}
 
 In total, it should take about five minutes for FastQC to run on all
-six of our FASTQ files.
+four of our zipped FASTQ files.
 
 If the command doesn't run or you want more information on fastqc, run the following to get the help page.
 
@@ -124,19 +126,32 @@ But if all went right, the FastQC program will have created several new files wi
 `~/RNAseq070319/fastqc` directory.
 
 ~~~
-$ cd ~/RNAseq070319/fastqc
-$ ls
+$  ls fastqc/
 ~~~
 {: .bash}
 
 
 ~~~
-ERR1406260.fq.gz.html   ERR1406260.fq.gz.zip   ERR1406260.fq.gz.html   ERR1406260.fq.gz.zip   
+Arabidopsis_sample1.fq_fastqc      Arabidopsis_sample2.fq_fastqc      Arabidopsis_sample3.fq_fastqc      Arabidopsis_sample4.fq_fastqc      Arabidopsis_sample1.fq_fastqc.zip  Arabidopsis_sample2.fq_fastqc.zip  Arabidopsis_sample3.fq_fastqc.zip  Arabidopsis_sample4.fq_fastqc.zip 
 ~~~
 {: .output}
 
 
 ## 1.2 Viewing the FastQC results
+
+For each of the samples there is a directory containig several files
+
+~~~
+$  ls fastqc/Arabidopsis_sample1.fq_fastqc
+~~~
+{: .bash}
+
+
+~~~
+fastqc_data.txt  fastqc_report.html  Icons  Images  summary.txt
+~~~
+{: .output}
+
 
 If we were working on our local computers, we'd be able to display each of these
 HTML files as a webpage:
@@ -176,7 +191,7 @@ $ mkdir -p ~/Desktop/fastqc_html
 Now we can transfer our HTML files to our local computer using `scp`.
 
 ~~~
-$ scp tbliek@genseq-cn02.science.uva.nl:~/RNAseq070319/fastqc/*.html ~/Desktop/fastqc_html
+$ scp -r lichunl@genseq-cn02.science.uva.nl:~/brunfelsia/mastersCourse2020/fastqc/*_fastqc ~/Desktop/fastqc_html
 ~~~
 {: .bash}
 
@@ -193,6 +208,8 @@ the HTML files.
 The third part of the command gives the absolute path of the location
 you want to put the files. This is on your local computer and is the
 directory we just created `~/Desktop/fastqc_html`.
+
+The -r option is used to tell scp to recursively copy the source directory and its contents.
 
 You should see a status output like this:
 
