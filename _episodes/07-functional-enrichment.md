@@ -20,30 +20,29 @@ keypoints:
 
 - [1. Introduction](#1-introduction)
 - [2. Annotating your DE genes](#2-annotating-your-de-genes)
-    - [2.1 Load the table of differential genes](#21-load-the-table-of-differential-genes)
-    - [2.2 Ensembl databases](#22-ensembl-databases)
-    - [2.3 Querying Ensembl databases using biomartr](#23-querying-ensembl-databases-using-biomartr)
+  - [2.1 Load the table of differential genes](#21-load-the-table-of-differential-genes)
+  - [2.2 Ensembl databases](#22-ensembl-databases)
+  - [2.3 Querying Ensembl databases using biomartr](#23-querying-ensembl-databases-using-biomartr)
 - [3. Gene Ontology Over Representation Analysis \(ORA\)](#3-gene-ontology-over-representation-analysis-ora)
-    - [3.1 ClusterProfiler \(R code\)](#31-clusterprofiler-r-code)
-    - [3.2 AgriGO \(webtool\)](#32-agrigo-webtool)
-    - [3.3 Metascape \(webtool\)](#33-metascape-webtool)
-    - [3.4 Gene Set Enrichment Analysis \(GSEA\)](#34-gene-set-enrichment-analysis-gsea)
+  - [3.1 ClusterProfiler \(R code\)](#31-clusterprofiler-r-code)
+  - [3.2 AgriGO v2.0 \(webtool\)](#32-agrigo-v20-webtool)
+  - [3.3 Metascape \(webtool\)](#33-metascape-webtool)
+  - [3.4 Gene Set Enrichment Analysis \(GSEA\)](#34-gene-set-enrichment-analysis-gsea)
 - [4. KEGG Over Representation Analysis \(ORA\)](#4-kegg-over-representation-analysis-ora)
-    - [4.1 KEGG ORA](#41-kegg-ora)
-    - [4.2 KEGG Modules ORA](#42-kegg-modules-ora)
+  - [4.1 KEGG ORA](#41-kegg-ora)
+  - [4.2 KEGG Modules ORA](#42-kegg-modules-ora)
 - [5. Data integration with metabolic pathways](#5-data-integration-with-metabolic-pathways)
-    - [5.1 iPath v3](#51-ipath-v3)
-    - [5.2 Metabolic pathways](#52-metabolic-pathways)
-    - [5.2 MapMan](#52-mapman)
-- [7. Other data mining tools](#7-other-data-mining-tools)
-    - [7.1 ThaleMiner](#71-thaleminer)
-    - [7.2 Expression atlas](#72-expression-atlas)
-    - [7.3 BAR](#73-bar)
-    - [7.4 CoExprViz](#74-coexprviz)
-- [8. Troubleshooting](#8-troubleshooting)
-- [9. Going further](#9-going-further)
-    - [8.1 Useful links](#81-useful-links)
-    - [8.2. References](#82-references)
+  - [5.1 iPath v3](#51-ipath-v3)
+  - [5.2 MapMan](#52-mapman)
+- [6. Other data mining tools](#6-other-data-mining-tools)
+  - [6.1 ThaleMiner](#61-thaleminer)
+  - [6.2 Expression atlas](#62-expression-atlas)
+  - [6.3 BAR](#63-bar)
+  - [6.4 CoExprViz](#64-coexprviz)
+- [7. Troubleshooting](#7-troubleshooting)
+- [8. Going further](#8-going-further)
+  - [8.1 Useful links](#81-useful-links)
+  - [8.2. References](#82-references)
 
 <!-- /MarkdownTOC -->
 
@@ -196,15 +195,9 @@ See this [great chapter](https://yulab-smu.github.io/clusterProfiler-book/chapte
 
 To perform the ORA within R, we will use the [clusterProfiler Bioconductor package](https://bioconductor.org/packages/release/bioc/html/clusterProfiler.html) that has an [extensive documentation available here](https://yulab-smu.github.io/clusterProfiler-book/index.html). 
 
-### 3.1 Enrichment analysis
+### 3.1.1 Enrichment analysis
 First, we need to annotate both genes that make up our "universe" and the genes that were identified as differentially expressed.
 ~~~
-# for compatibility with enrichGO universe
-# genes in the universe need to be characters and not integers (Entrez gene id)
-all_arabidopsis_genes_annotated$entrezgene_id = as.character(
-  all_arabidopsis_genes_annotated$entrezgene_id) 
-
-
 # building the universe!
 all_arabidopsis_genes <- read.delim("counts.txt", header = T, stringsAsFactors = F)[,1] # directly selects the gene column
 
@@ -217,6 +210,12 @@ all_arabidopsis_genes_annotated <- biomartr::biomart(genes = all_arabidopsis_gen
                                                      dataset    = "athaliana_eg_gene",           
                                                      attributes = attributes_to_retrieve,        
                                                      filters =  "ensembl_gene_id" )  
+
+# for compatibility with enrichGO universe
+# genes in the universe need to be characters and not integers (Entrez gene id)
+all_arabidopsis_genes_annotated$entrezgene_id = as.character(
+  all_arabidopsis_genes_annotated$entrezgene_id) 
+
 ~~~
 {: .language-r}
 
@@ -235,21 +234,16 @@ diff_arabidopsis_genes_annotated <- biomartr::biomart(genes = diff_genes$genes,
 This gave us the second part which is the classification of genes "drawn" from the whole gene universe. The "drawing" is coming from the set of genes identified as differential (see [episode 06](../06-differential-analysis/index.html)).  
 
 ~~~
-# this Bioconductor package contains the TAIR/Ensembl id to GO correspondence for Arabidopsis thaliana
-suppressPackageStartupMessages(library(org.At.tair.db))
-library(clusterProfiler)
-
 # performing the ORA for Gene Ontology Biological Process class
 ora_analysis_bp <- enrichGO(gene = diff_arabidopsis_genes_annotated$entrezgene_id, 
                             universe = all_arabidopsis_genes_annotated$entrezgene_id, 
-                            OrgDb = org.At.tair.db,
+                            OrgDb = org.At.tair.db,  # contains the TAIR/Ensembl id to GO correspondence for A. thaliana
                             keyType = "ENTREZID",
                             ont = "BP",              # either "BP", "CC" or "MF",
                             pAdjustMethod = "BH",
                             qvalueCutoff = 0.05,
                             readable = TRUE, 
                             pool = FALSE)
-
 ~~~
 {: .language-r}
 
@@ -291,8 +285,8 @@ GO:0072657       BP GO:0072657    protein localization to membrane  200/3829 377
 ~~~
 {: .output}
 
-### 3.2 Plots
-Nice to have all this textual information but an image is worth a thousand word so let's create some visual representations. 
+### 3.2.1 Plots
+Nice to have all this textual information but an image is worth a thousand words so let's create some visual representations. 
 
 A dotplot can be created very easily. 
 ~~~
@@ -320,8 +314,67 @@ related to metabolism (upper left) and one related to jasmonic acid and wounding
 > Remember to perform the analysis for all GO categories: Biological Process (`ont = "BP"`), Cellular Component (`ont = "CC"`) and Molecular Function (`ont = "MF"`).     
 {: .callout}
 
-## 3.2 AgriGO (webtool)
-AgriGO
+## 3.2 AgriGO v2.0 (webtool)
+AgriGO v2.0 is a webtool [accessible here](http://systemsbiology.cau.edu.cn/agriGOv2/index.php) to perform gene ontology analyses. Two papers describe it extensively (see [8.2. References](#82-references)).
+
+From the AgriGO v2.0 home page:  
+> AgriGO v2.0 is a web-based tool and database for gene ontology analyses. It specifically focuses on agricultural species and is user-friendly. AgriGO v2.0 is designed to provide deep support to the agricultural community in the realm of ontology analyses. 
+
+You can find an [extensive manual available here](http://systemsbiology.cau.edu.cn/agriGOv2/manual.php) to guide you through the main steps.
+
+
+> ## Important note
+> There are two versions of AgriGO currently online, versions 1.x and version 2.0. Make sure you go to the [latest 2.0 version url](http://systemsbiology.cau.edu.cn/agriGOv2/index.php).
+{: .callout} 
+
+### 3.2.1 Single Enrichment Analysis
+**We can perform a Single Enrichment Analysis (SEA) which is essentially similar to an ORA.** AgriGO supports species-specific analyses.   
+For _Arabidopsis thaliana_ [navigate here](http://systemsbiology.cau.edu.cn/agriGOv2/specises_analysis.php?SpeciseID=1&latin=Arabidopsis_thaliana).
+
+First, write gene identifiers to a text file from which you can copy-paste the identifiers. Here, we use the complete list of the 4979 genes
+differentially regulated (DC3000 versus Mock) but you can filter it on some criteria (e.g. fold change). This is what I've done to gather less genes and speed up the SEA analysis.
+~~~
+diff_genes %>% 
+  filter(log2FoldChange > 0) %>% 
+  with(.,quantile(log2FoldChange, c(0.5,0.75,0.9)))
+
+diff_genes %>% 
+  filter(log2FoldChange > quantile(log2FoldChange, c(0.75))) %>% # keeping fold changes above the 75th percentile
+  dplyr::select(genes) %>% 
+  write.table(., file = "diff_genes_for_agrigo.tsv", row.names = FALSE, quote = FALSE)
+~~~
+{: .language-r}
+
+Open this list using a text editor and copy-paste it into the "input a gene list" box. 
+
+<img src="../img/07-agrigo-1.png" alt="input gene list for arabidopsis" height="400px">
+
+You will then have to choose a background (your "universe") to perform the SEA/ORA analysis. For _Arabidopsis thaliana_, you can choose the suggested background (TAIR10). 
+
+<img src="../img/07-agrigo-2.png" alt="choice of the background and statistical test" height="400px">
+
+I suggest to use the hypergeometric distribution and the Yekutieli False Discovery Rate correction. The significance threshold and the minimum number of entries can be changed depending on the size of your input gene list. 
+
+If you have a long list, you might write your email address to collect your results later (analysis might take a while). You will arrive on a result page from which you can generate graphs, barplots, tables etc. 
+
+<img src="../img/07-agrigo-3.png" alt="results of SEA analysis" height="50%">
+
+This DAG view gives a comprehensive overview of the GO terms and their relationships. 
+
+### 3.2.2 Parametric Analysis of Gene Set Enrichment
+This analysis takes expression values also into account and could be an richer alternative to SEA. 
+
+~~~
+diff_genes %>% 
+  filter(log2FoldChange > quantile(log2FoldChange, c(0.75))) %>% 
+  dplyr::select(genes, log2FoldChange) %>% 
+  write.table(., file = "diff_genes_for_agrigo_page.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
+~~~
+{: .language-r}
+
+<img src="../img/07-agrigo-4.png" alt="results of PAGE analysis" height="50%">
+
+
 
 ## 3.3 Metascape (webtool)
 Left to the reader. The basic usage is to copy-paste a list of gene identifiers (preferably Entrez id) inside the box.
@@ -355,7 +408,7 @@ transcriptomic response of an organism. KEGG is not restricted to metabolic func
 To see if your organism is referenced in the KEGG database, you can search this page: https://www.genome.jp/kegg/catalog/org_list.html
 In our case, _Arabidopsis thaliana_ is referenced as "ath" in the KEGG database. 
  
-You can also do this programmatically using R. 
+You can also do this programmatically using R and the `clusterProfiler` package. 
 ~~~
 search_kegg_organism('ath', by='kegg_code')
 search_kegg_organism('Arabidopsis thaliana', by='scientific_name')
@@ -448,6 +501,7 @@ diff_arabidopsis_genes_annotated %>%
 ~~~
 {: .language-r}
 
+If you open the `diff_genes_swissprot.tsv` file in a text editor, this is what you should see. 
 ~~~
 id_for_ipath
 UNIPROT:Q9MAN1
@@ -460,7 +514,11 @@ UNIPROT:Q06402
 ~~~
 {: .output}
 
-This is how it looks in the end.
+We can copy-paste this list in the box to the right. 
+
+<img src="../img/07-ipath-3.png" height="400px">
+
+If you then click on the "Submit data" button, you should see the following reactions highlighted.  
 
 <img src="../img/07-ipath-2.png" alt="first metabolic pathway map" height="400px">
 
@@ -469,8 +527,8 @@ Ok, there is a lot of information there and possibly too much. Let's filter out 
 We can calculate the median, 75th percentile and the 90th percentile of our fold changes. 
 ~~~
 diff_genes %>% 
-filter(log2FoldChange > 0) %>% 
-with(.,quantile(log2FoldChange, c(0.5,0.75,0.9))
+  filter(log2FoldChange > 0) %>% 
+  with(.,quantile(log2FoldChange, c(0.5,0.75,0.9))
 ~~~
 {: .language-r}
 
@@ -505,13 +563,12 @@ diff_arabidopsis_genes_annotated_2 %>%
 
 In your `diff_genes_swissprot_2.tsv` file, you should have less entries now which will make the map slightly clearer. 
 
+<img src="../img/07-ipath-4.png" alt="simplified ipath metabolic map" height="400px">
 
-## 5.2 Metabolic pathways
 
-
-## 5.2 MapMan 
-prep of the data table
-visualisation on pathways
+## 5.2 MapMan
+ 
+MapMan is a standalone software that you can install on your laptop to create insightful metabolic visualisation of transcriptomic, proteomic and/or metabolic data. 
 
 From [Schwacke et al., 2019](https://doi.org/10.1016/j.molp.2019.01.003):
 > The MapMan framework was developed specifically for plants with the design goal to facilitate the visualization of omicsdata on plant pathways (Thimm et al., 2004). 
@@ -520,22 +577,34 @@ From [Schwacke et al., 2019](https://doi.org/10.1016/j.molp.2019.01.003):
 > within the context of the parent bin. Assignment of proteins to the lowest-level (i.e., leaf) bins was preferred in order to make the annotation as precise as possible, although assignment to abstract higher-level bins was supported.   
 > Proteins were mostly assigned to a single bin, but for some proteins with functions in diverse biological processes it wasnecessary to correspondingly assign to multiple bins.
 
+### 5.2.1 Requirements
+You will need to create an account first and download the proper MapMan installation for your OS [here](https://mapman.gabipd.org/mapman-download). I'd recommend to download the latest stable version (not the "release candidate").
 
-# 7. Other data mining tools
+You will then have to download the so-called "mapping file" which is an ontology relating genes to functional bins. You can also generate your own classification for your species of interest with the [Mercator webtool](https://www.plabipd.de/portal/mercator4). You'll need to supply a fasta file containing your transcripts or your protein of interest. 
 
-## 7.1 ThaleMiner
+The latest list of available mappings is [here](https://mapman.gabipd.org/mapmanstore?p_p_id=MapManDataDownload_WAR_MapManDataDownloadportlet_INSTANCE_4Yx5&p_p_lifecycle=0&p_p_state=normal&p_p_mode=view&p_p_col_id=column-1&p_p_col_pos=1&p_p_col_count=2). 
+
+
+### 5.2.2 Pathway visualisation
+One of the most used visualisation is the global overview of the metabolism. Up-regulated genes are shown in red and genes down-regulated in blue. 
+
+<img src="../img/07-mapman-1.jpeg" alt="mapman visualisation" height="400px">
+
+# 6. Other data mining tools
+
+## 6.1 ThaleMiner
 [https://bar.utoronto.ca/thalemine/begin.do](https://bar.utoronto.ca/thalemine/begin.do)
 
-## 7.2 Expression atlas
+## 6.2 Expression atlas
 [https://www.ebi.ac.uk/gxa/home](https://www.ebi.ac.uk/gxa/home)
 
-## 7.3 BAR
+## 6.3 BAR
 [http://www.bar.utoronto.ca/](http://www.bar.utoronto.ca/)
 
-## 7.4 CoExprViz
+## 6.4 CoExprViz
 [http://bioinformatics.psb.ugent.be/webtools/coexpr/](http://bioinformatics.psb.ugent.be/webtools/coexpr/)
 
-# 8. Troubleshooting
+# 7. Troubleshooting
 If biomart refuses to query Ensembl again, run this command:
 ~~~
 biomaRt::biomartCacheClear() # to solve a known bug https://github.com/BioinformaticsFMRP/TCGAbiolinks/issues/335
@@ -543,7 +612,7 @@ biomaRt::biomartCacheClear() # to solve a known bug https://github.com/Bioinform
 {: .language-r}
 
 This will clean the cache memory and allow to perform the Ensembl query again.  
-# 9. Going further 
+# 8. Going further 
 
 ## 8.1 Useful links
 - [BiomartR](https://docs.ropensci.org/biomartr/)
@@ -556,8 +625,7 @@ This will clean the cache memory and allow to perform the Ensembl query again.
 * Yates et al. (2020) Ensembl 2020, Nucleic Acids Research, Volume 48, Issue D1, 08 January 2020, Pages D682–D688, [Link](https://doi.org/10.1093/nar/gkz966)
 * Tian et al. (2017) agriGO v2.0: a GO analysis toolkit for the agricultural community. _Nucleic Acids Research_, Volume 45, Issue W1, Pages W122–W129.[Link](https://doi.org/10.1093/nar/gkx382) 
 * MapMan: [MapMan4: A Refined Protein Classification and Annotation Framework Applicable to Multi-Omics Data Analysis. Schwacke et al. _Molecular Plant_, 12(6):879-892](https://doi.org/10.1016/j.molp.2019.01.003)
-* Drost et al. (2017) Biomartr: genomic data retrieval with R. _Bioinformatics_ 33(8): 1216-1217. [doi:10.1093/bioinformatics/btw821](https://academic.oup.com/bioinformatics/article/33/8/1216/2931816.
-
-
+* Drost et al. (2017) Biomartr: genomic data retrieval with R. _Bioinformatics_ 33(8): 1216-1217. [doi:10.1093/bioinformatics/btw821](https://academic.oup.com/bioinformatics/article/33/8/1216/2931816).
+* Darzi et al. (2018) iPath3.0: interactive pathways explorer v3. _Nucleic Acids Research_, Volume 46, Issue W1, 2 July 2018, Pages W510–W513, [link](https://doi.org/10.1093/nar/gky299)
 
 
