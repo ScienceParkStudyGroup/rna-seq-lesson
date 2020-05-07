@@ -7,9 +7,9 @@ title:
 
 <!-- MarkdownTOC autolink="True" levels="1,2" -->
 
-- [Option 1: using a Docker image](#option-1-using-a-docker-image)
-	- [Bioinformatics \(episodes 03 and 04\)](#bioinformatics-episodes-03-and-04)
-	- [RNA-seq data count data analysis \(episodes 05, 06 and 07\)](#rna-seq-data-count-data-analysis-episodes-05-06-and-07)
+- [Option 1 \(preferred\): using a Docker image](#option-1-preferred-using-a-docker-image)
+	- [`fastq-latest` image for bioinformatic steps \(episodes 03 and 04\)](#fastq-latest-image-for-bioinformatic-steps-episodes-03-and-04)
+	- [The `rnaseq-latest` image for RNA-seq count data analysis \(episodes 05, 06 and 07\)](#the-rnaseq-latest-image-for-rna-seq-count-data-analysis-episodes-05-06-and-07)
 - [Option 2: manual installation](#option-2-manual-installation)
 	- [Softwares and packages](#softwares-and-packages)
 	- [Data files](#data-files)
@@ -19,20 +19,25 @@ title:
 
 <!-- /MarkdownTOC -->
 
-# Option 1: using a Docker image
+# Option 1 (preferred): using a Docker image
 
 The preferred option to install all softwares and packages is to use a tailor-made Docker image. See [this nice introduction to Docker here](https://aws.amazon.com/docker/).   
 
-There are two Docker images necessary to complete this 
+There are two Docker images necessary to complete this RNA-seq lesson:
+1. The command-line Docker `fastq-latest` image necessary to perform all bioinformatic analyses on the sequencing files: trimming, alignment and count table generation.
+2. The RStudio Docker `rnaseq-latest` image necessary to perform all count-related analyses: EDA, differential expression and downstream functional analyses.   
 
-## Bioinformatics (episodes 03 and 04)
-The Docker image is called `fastq` and contains softwares and data required for the command-line part of the lesson. 
+## `fastq-latest` image for bioinformatic steps (episodes 03 and 04)
+
+This Docker image will allow you to complete the [episodes 03](https://scienceparkstudygroup.github.io/rna-seq-lesson/03-qc-of-sequencing-results/index.html) and [04](https://scienceparkstudygroup.github.io/rna-seq-lesson/04-bioinformatic-workflow/index.html) that work on _fastq_ sequencing files.
+
+The Docker image is called `fastq-latest` and contains softwares and data required for the command-line part of the lesson. It can be found [found at the Science Park Study Group DockerHub](https://hub.docker.com/repository/docker/scienceparkstudygroup/master-gls) with the tag `rnaseq-latest`.
 
 > ## Before you start
 >
 > Before the training, please make sure you have done the following: 
 >
-> 1. First, install [Docker desktop](https://www.docker.com/products/docker-desktop) for your operating system.  
+> 1. First, install [Docker desktop](https://www.docker.com/products/docker-desktop) for your operating system (Mac OS X or Windows).  
 > 2. If needed, install Shell Bash: [follow these instructions](http://swcarpentry.github.io/shell-novice/setup.html).
 > 3. Open a new Shell Bash window and navigate to a folder that will be your workspace. For instance, you could create a folder named `rnaseq-tutorial/` on your Desktop and move inside with the Shell using `cd ~/Desktop/rnaseq-tutorial/`. 
 > 4. In a Shell Bash window, type the following command: `docker run -it --name bioinfo -v $PWD:/home/ scienceparkstudygroup/master-gls:fastq-latest`. This will download a Docker image for the bioinformatic part of the course, create and run a container where Bash will be running. You will enter the container directly where you can start working.     
@@ -45,7 +50,7 @@ __Docker command-line explanations:__
 - The `-v $PWD:/home/` maps your working directory (e.g. `~/Desktop/rnaseq-tutorial`) to the container `/home/` folder. 
 
 
-## RNA-seq data count data analysis (episodes 05, 06 and 07)
+## The `rnaseq-latest` image for RNA-seq count data analysis (episodes 05, 06 and 07)
 
 This image is based on a [Bioconductor Docker imag release 3.10](https://hub.docker.com/r/bioconductor/bioconductor_docker/tags) image with additional packages such as `pheatmap` or `tidyverse`.
 
