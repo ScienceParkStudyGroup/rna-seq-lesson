@@ -9,7 +9,7 @@ title:
 
 - [Option 1 \(preferred\): using a Docker image](#option-1-preferred-using-a-docker-image)
 	- [`fastq-latest` image for bioinformatic steps \(episodes 03 and 04\)](#fastq-latest-image-for-bioinformatic-steps-episodes-03-and-04)
-	- [The `rnaseq-latest` image for RNA-seq count data analysis \(episodes 05, 06 and 07\)](#the-rnaseq-latest-image-for-rna-seq-count-data-analysis-episodes-05-06-and-07)
+	- [`rnaseq-latest` image for count data analysis \(episodes 05, 06 and 07\)](#rnaseq-latest-image-for-count-data-analysis-episodes-05-06-and-07)
 - [Option 2: manual installation](#option-2-manual-installation)
 	- [Softwares and packages](#softwares-and-packages)
 	- [Data files](#data-files)
@@ -29,7 +29,7 @@ There are two Docker images necessary to complete this RNA-seq lesson:
 
 ## `fastq-latest` image for bioinformatic steps (episodes 03 and 04)
 
-This Docker image will allow you to complete the [episodes 03](https://scienceparkstudygroup.github.io/rna-seq-lesson/03-qc-of-sequencing-results/index.html) and [04](https://scienceparkstudygroup.github.io/rna-seq-lesson/04-bioinformatic-workflow/index.html) that work on _fastq_ sequencing files.
+This Docker image will allow you to complete the [episodes 03](https://scienceparkstudygroup.github.io/rna-seq-lesson/03-qc-of-sequencing-results/index.html) and [04](https://scienceparkstudygroup.github.io/rna-seq-lesson/04-bioinformatic-workflow/index.html) that work on `.fastq` sequencing files.
 
 The Docker image is called `fastq-latest` and contains softwares and data required for the command-line part of the lesson. It can be found [found at the Science Park Study Group DockerHub](https://hub.docker.com/repository/docker/scienceparkstudygroup/master-gls) with the tag `rnaseq-latest`.
 
@@ -50,7 +50,7 @@ __Docker command-line explanations:__
 - The `-v $PWD:/home/` maps your working directory (e.g. `~/Desktop/rnaseq-tutorial`) to the container `/home/` folder. 
 
 
-## The `rnaseq-latest` image for RNA-seq count data analysis (episodes 05, 06 and 07)
+## `rnaseq-latest` image for count data analysis (episodes 05, 06 and 07)
 
 This image is based on a [Bioconductor Docker imag release 3.10](https://hub.docker.com/r/bioconductor/bioconductor_docker/tags) image with additional packages such as `pheatmap` or `tidyverse`.
 
