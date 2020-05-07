@@ -32,14 +32,16 @@ keypoints:
     - [4.1 KEGG ORA](#41-kegg-ora)
     - [4.2 KEGG Modules ORA](#42-kegg-modules-ora)
 - [5. Data integration with metabolic pathways](#5-data-integration-with-metabolic-pathways)
-    - [5.1 iPath](#51-ipath)
+    - [5.1 iPath v3](#51-ipath-v3)
+    - [5.2 Metabolic pathways](#52-metabolic-pathways)
     - [5.2 MapMan](#52-mapman)
 - [7. Other data mining tools](#7-other-data-mining-tools)
     - [7.1 ThaleMiner](#71-thaleminer)
     - [7.2 Expression atlas](#72-expression-atlas)
     - [7.3 BAR](#73-bar)
     - [7.4 CoExprViz](#74-coexprviz)
-- [8. Going further](#8-going-further)
+- [8. Troubleshooting](#8-troubleshooting)
+- [9. Going further](#9-going-further)
     - [8.1 Useful links](#81-useful-links)
     - [8.2. References](#82-references)
 
@@ -66,6 +68,15 @@ Once we obtain a list of genes, we have multiple analysis to perform to go beyon
 We are going to use two fantastic resources: the superb [Ensembl](https://www.ensembl.org) databases and the marvelous [biomartr package](https://docs.ropensci.org/biomartr).
 Together, they will automate a lot of tedious and tiring steps when you want to retrieve gene annotations, sequences, etc.
 
+We are going to load the required library first. 
+~~~
+library(biomartr)
+library(clusterProfiler)
+library(tidyverse)
+suppressPackageStartupMessages(library(org.At.tair.db))
+library("biomaRt")  # only use to remove cache bug
+~~~
+{: .language-r}
 
 ## 2.1 Load the table of differential genes
 
@@ -139,7 +150,7 @@ arabido_attributes
 :scream: There is quite some information in there! We should be able to get what we want!
 
 ~~~
-attributes_to_retrieve = c("tair_symbol", "uniprotswissprot", "kegg_enzyme")
+attributes_to_retrieve = c("tair_symbol", "entrezgene_id")
 
 result_BM <- biomartr::biomart( genes      = diff_genes$genes,                  # genes were retrieved using biomartr::getGenome()
                                 mart       = "plants_mart",                     # marts were selected with biomartr::getMarts()
@@ -188,14 +199,17 @@ To perform the ORA within R, we will use the [clusterProfiler Bioconductor packa
 ### 3.1 Enrichment analysis
 First, we need to annotate both genes that make up our "universe" and the genes that were identified as differentially expressed.
 ~~~
-library(biomartr)
+# for compatibility with enrichGO universe
+# genes in the universe need to be characters and not integers (Entrez gene id)
+all_arabidopsis_genes_annotated$entrezgene_id = as.character(
+  all_arabidopsis_genes_annotated$entrezgene_id) 
+
 
 # building the universe!
-
 all_arabidopsis_genes <- read.delim("counts.txt", header = T, stringsAsFactors = F)[,1] # directly selects the gene column
 
 # we want the correspondence of TAIR/Ensembl symbols with NCBI Entrez gene ids
-attributes_to_retrieve = c("tair_symbol", "entrezgene_id")
+attributes_to_retrieve = c("tair_symbol", "uniprotswissprot","entrezgene_id")
 
 # Query the Ensembl API
 all_arabidopsis_genes_annotated <- biomartr::biomart(genes = all_arabidopsis_genes,
@@ -223,7 +237,7 @@ This gave us the second part which is the classification of genes "drawn" from t
 ~~~
 # this Bioconductor package contains the TAIR/Ensembl id to GO correspondence for Arabidopsis thaliana
 suppressPackageStartupMessages(library(org.At.tair.db))
-library(library(clusterProfiler)
+library(clusterProfiler)
 
 # performing the ORA for Gene Ontology Biological Process class
 ora_analysis_bp <- enrichGO(gene = diff_arabidopsis_genes_annotated$entrezgene_id, 
@@ -318,14 +332,16 @@ Visit the [Metascape website here](https://metascape.org/gp/index.html#/main/ste
 > ~~~
 > pos_diff_genes = diff_genes %>% filter(log2FoldChange > 0) 
 > ~~~
-> Then write the `pos_diff_genes` to a text file and copy-paste the list of genes.
 > {: .language-r}
+> Then write the `pos_diff_genes` to a text file and copy-paste the list of genes.
 {: .callout}
 
 ## 3.4 Gene Set Enrichment Analysis (GSEA)
 
 The Gene Set Enrichment Analysis (GSEA) is another way to investigate functional enrichment of genes and pathways using the Gene Ontology classification. 
 Please refer to [the following section](https://yulab-smu.github.io/clusterProfiler-book/chapter2.html) in Prof. Guangchuang Yu book for a clear explanation of GSEA and how to implement it with `clusterProfiler`.
+
+<br>
 
 
 # 4. KEGG Over Representation Analysis (ORA) 
@@ -400,22 +416,98 @@ dotplot(ora_analysis_kegg_modules,
 
 > ## Discussion
 > Compare the two KEGG plots. Can you identify differences? Which metabolic functions have been grouped together?
->{: .discussion}
+{: .discussion}
 
-
-
-
+<br>
 
 # 5. Data integration with metabolic pathways
 
-So far, we have only been mostly looking at our transcriptomic results alone. 
+So far, we have only been mostly looking at our transcriptomic results alone. Yet, KEGG has started to give us some insight into metabolism. Let's dig further with two tools: **iPath** and  **MapMan**.  
 
- with the notable exception of KEGG. 
+## 5.1 iPath v3
+
+From the [Interactive Pathways Explorer v3 home page](https://pathways.embl.de/):
+> Interactive Pathways Explorer (iPath) is a web-based tool for the visualization, analysis and customization of various pathway maps.  
+iPath provides extensive map customization and data mapping capablities. Colors, width and opacity of any map element can be changed using various types of data (for example KEGG KOs, COGs or EC numbers). 
+
+We will use this webtool to map our genes on metabolic pathways to provide some contextual information. 
+
+<img src="../img/07-ipath-1.png" alt="home page of iPath 3 web interface" height="400px">
+
+We are going to generate a list of Uniprot identifiers usable with iPath3 from our list of differential genes.
+~~~
+diff_arabidopsis_genes_annotated %>% 
+  filter(uniprotswissprot != "") %>%                                       # to remove genes with no matching Uniprot entries
+  unique() %>% 
+  mutate(id_for_ipath = paste("UNIPROT",uniprotswissprot,sep = ":")) %>%   # to create an ID that iPath can use
+  dplyr::select(id_for_ipath) %>%                                          # we keep only the relevant ID for further copy-pasting 
+  write.table(., 
+    file = "diff_genes_swissprot.tsv", 
+    row.names = FALSE, 
+    quote = FALSE)
+~~~
+{: .language-r}
+
+~~~
+id_for_ipath
+UNIPROT:Q9MAN1
+UNIPROT:Q5XEZ0
+UNIPROT:O24457
+UNIPROT:Q9MAM1
+UNIPROT:Q9LNJ9
+UNIPROT:Q06402
+... more lines ....
+~~~
+{: .output}
+
+This is how it looks in the end.
+
+<img src="../img/07-ipath-2.png" alt="first metabolic pathway map" height="400px">
+
+Ok, there is a lot of information there and possibly too much. Let's filter out some genes based on their $$\log_{2}$$ fold change. 
+
+We can calculate the median, 75th percentile and the 90th percentile of our fold changes. 
+~~~
+diff_genes %>% 
+filter(log2FoldChange > 0) %>% 
+with(.,quantile(log2FoldChange, c(0.5,0.75,0.9))
+~~~
+{: .language-r}
+
+~~~
+50%       75%       90% 
+0.8695469 1.6819535 3.2561618 
+~~~
+{: .output}
+Since 75% of the genes with a positive $$\log_{2}$$ fold change have a value lower than 1.68, we are going to keep the genes with a higher fold change. 
+
+~~~
+diff_genes_filtered = 
+  diff_genes %>% 
+  filter(log2FoldChange > quantile(log2FoldChange, 0.75)) 
+
+# we query Ensembl again to retrieve the attributes
+# attributes_to_retrieve = c("tair_symbol", "uniprotswissprot","entrezgene_id")
+diff_arabidopsis_genes_annotated_2 <- biomartr::biomart(genes = diff_genes_filtered$genes,
+                                                      mart       = "plants_mart",                 
+                                                      dataset    = "athaliana_eg_gene",           
+                                                      attributes = attributes_to_retrieve,        
+                                                      filters =     "ensembl_gene_id" )  
+
+diff_arabidopsis_genes_annotated_2 %>% 
+  filter(uniprotswissprot != "") %>% 
+  unique() %>% 
+  mutate(id_for_ipath = paste("UNIPROT",uniprotswissprot,sep = ":")) %>% 
+  dplyr::select(id_for_ipath) %>% 
+  write.table(., file = "diff_genes_swissprot_2.tsv", row.names = FALSE, quote = FALSE)
+~~~
+{: .language-r}
+
+In your `diff_genes_swissprot_2.tsv` file, you should have less entries now which will make the map slightly clearer. 
 
 
-## 5.1 iPath
+## 5.2 Metabolic pathways
 
-KeggKOALA 
 
 ## 5.2 MapMan 
 prep of the data table
@@ -443,8 +535,15 @@ From [Schwacke et al., 2019](https://doi.org/10.1016/j.molp.2019.01.003):
 ## 7.4 CoExprViz
 [http://bioinformatics.psb.ugent.be/webtools/coexpr/](http://bioinformatics.psb.ugent.be/webtools/coexpr/)
 
+# 8. Troubleshooting
+If biomart refuses to query Ensembl again, run this command:
+~~~
+biomaRt::biomartCacheClear() # to solve a known bug https://github.com/BioinformaticsFMRP/TCGAbiolinks/issues/335
+~~~
+{: .language-r}
 
-# 8. Going further 
+This will clean the cache memory and allow to perform the Ensembl query again.  
+# 9. Going further 
 
 ## 8.1 Useful links
 - [BiomartR](https://docs.ropensci.org/biomartr/)
