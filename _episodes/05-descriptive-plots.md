@@ -701,7 +701,6 @@ First, let's load the library that we need.
 ~~~
 library(DESeq2, quietly = TRUE)
 library(ggplot2)
-library(reshape2)
 ~~~
 {: .language-r}
 

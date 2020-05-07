@@ -35,16 +35,13 @@ keypoints:
 - [2. Best practices for experimental design](#2-best-practices-for-experimental-design)
   - [2.1 A case study](#21-a-case-study)
   - [2.2 Design number 1](#22-design-number-1)
-  - [2.2 Experimental unit](#22-experimental-unit)
-  - [2.3 Example of a greenhouse experimental design](#23-example-of-a-greenhouse-experimental-design)
-  - [2.4 The three principles](#24-the-three-principles)
+  - [2.3 Design number 2: complete randomized design](#23-design-number-2-complete-randomized-design)
+  - [2.3 Design number 3: complete randomized block design](#23-design-number-3-complete-randomized-block-design)
+  - [2.4 The three principles of a good experimental design](#24-the-three-principles-of-a-good-experimental-design)
 - [3. Challenges relevant to RNA-seq](#3-challenges-relevant-to-rna-seq)
   - [3.1 Sequencing](#31-sequencing)
   - [3.2 Low power](#32-low-power)
   - [3.3 Pooling of samples](#33-pooling-of-samples)
-- [4. Exploration of the raw counts](#4-exploration-of-the-raw-counts)
-  - [4.1 Distribution of counts](#41-distribution-of-counts)
-  - [4.2 CV of genes](#42-cv-of-genes)
 - [References](#references)
   - [Confounding](#confounding)
   - [Batch effects](#batch-effects)
@@ -139,6 +136,8 @@ This is called the __H<sub>1</sub> hypothesis or alternative hypothesis__.
 Imagine you would be the best scientist ever and you would be capable of sampling 1000 Arabidopsis plantlets in normal conditions. 
 :seedling: :seedling: :seedling: :seedling: :seedling: 
 ~~~
+library(tidyverse)
+
 xp_normal_conditions <- tibble(
   expression = rnorm(             # randomly sample numbers from a normal distribution
     n = 1000,                     # number of drawings
@@ -361,9 +360,6 @@ NOTE: n is number in *each* group
 
 We would need 16 samples in each group as compared to 5 when $$d = 2$$.
 
-
-To do = plot of sample size as a function of required for a certain power 
-
 <br>
 
 # 2. Best practices for experimental design
@@ -417,40 +413,55 @@ The upper half on each table is infected with _D. malatesta_ while the lower hal
 <img src="../img/02-xp-design-1.png" height="400px"> 
 
 > ## Question
-> Can you identify the two major issues with this design?
+> Can you identify one major issue with this design?
 > > ## Solution
-> > The first major issue is that it is not possible to 
+> > The major issue is that it is not possible to distinguish the "table effect" (undesirable) from the "genotype" effect since all _S_ genotypes are on table 1 while all _R_ genotypes are on the table 2. 
+> > The "table effect" can be assimilated to a temperature effect since plants and pathogen on table 1 might experience a warmer temperature than plants and pathogen on table 2. 
 > {: .solution}
 {: .challenge}
 
+## 2.3 Design number 2: complete randomized design
+
+In this new design, we have used a completely randomized design for the plant genotypes. To do so, we have randomized the positions of the plant genotypes on the two tables. It turns out that 8 plants from genotype _S_ are on table 1 while the remaining 4 are on table 2.  
+
+<img src="../img/02-xp-design-2.png" height="400px">
+
+> ## Question
+> Can you identify one major issue with this design?
+> > ## Solution
+> > The major issue with this design is that we might end up with an unbalanced number of genotypes from the _S_ or _R_ class on each table. It would be preferable to have the same number on each genotype.  
+> > The fact that the infection will also happen for plants located on "half tables", a yet unidentified source of variation might not be taken into account. 
+> {: .solution}
+{: .challenge}
+
+## 2.3 Design number 3: complete randomized block design
+
+In this design, each table will accomodate a complete experimental setup. This means that each table will exhibit:
+- Plant genotypes _S_ and _R_ in equal numbers.
+- Infection or mock conditions in equal numbers. 
+Both plant genotypes and treatment will also be randomized on each table. 
 
 
-
-For instance, in the example we have worked on
-
-## 2.2 Experimental unit
-
-## 2.3 Example of a greenhouse experimental design 
-
-## 2.4 The three principles 
+## 2.4 The three principles of a good experimental design 
 
 1. Randomization
 2. Replication
 3. Blocking
 
+Nicde quotes:
+> "Randomize what you cannot control"  
+> "Block what you can control"
 
 # 3. Challenges relevant to RNA-seq
 
 ## 3.1 Sequencing
-barcodes
-multiplexing
-flow cell 
-lanes
+
+RNA-seq libraries are often multiplexed and balanced on different sequencing lanes on an Illumina flowcell. This is an example of blocking design that balance the influence any undesirable effect of the sequencing lane.   
+For additional details, see [Auer and Doerge (2010) Statistical Design and Analysis of RNA Sequencing Data. _Genetics_ 185:405-416](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2881125/).
 
 ## 3.2 Low power
 
 RNA-seq experiments often suffer from a low statistical power. 
-
 
 A low statistical power reflects type II error: 
 - You are missing "true effects" and there are many false negatives: genes that you should have been called differential but are not. - It also affects the _positive predictive value_ (PVV) of your findings which is the probability that a differential gene (p < 0.01) is a real true finding. 
@@ -530,61 +541,9 @@ Yes if absolutely necessary. For instance, you are collecting roots from very yo
 > *For example, if you need at least 3 individuals to get enough material for your `control` replicate and at least 5 individuals to get enough material for your `treatment` replicate, you would pool 5 individuals for the `control` and 5 individuals for the `treatment` conditions. You would also make sure that the individuals that are pooled in both conditions are similar in sex, age, etc.*
 
 
-
-# 4. Exploration of the raw counts 
-
-Raw counts is a quick and dirty way to refer to "RNA-seq count results that have not been normalised (scaled)". This is the raw material you will obtain after the bioinformatic part of this lesson. This dataset will be used for differential expression. 
-
-## 4.1 Distribution of counts
-Half of the genes have count values lower than ...
-
-The max value is ... while the ...
-
-## 4.2 CV of genes
-What are 
-
-
-~~~
-library(tidyverse)
-
-# read the raw counts (df stands for dataframe)
-df <- read.delim("counts.txt", header = T, stringsAsFactors = F)
-
-# calculate the coefficient of variation for each gene
-cv_from_counts <- pivot_longer(counts, 
-                               cols = - Geneid, 
-                               names_to = "sample", 
-                               values_to = "counts") %>% 
-  group_by(Geneid) %>% 
-  summarise(coef_var_counts = sd(counts) / mean(counts))
-
-# create a distribution histogram of the different cv 
-ggplot(cv_from_counts, aes(x = coef_var_counts)) + 
-  geom_histogram()
-~~~
-{: .language-r}
-
-On this plot, you can see that most of the genes have a coefficient of variation 
-
-
-~~~
-summary(cv_from_counts$coef_var_counts)
-~~~
-{: .language-r}
-
-~~~
- Min.    1st Qu.  Median    Mean 3rd Qu.    Max.    NA's 
- 0.1839  0.2565  0.3465  1.1658  1.2622  6.9282    2354 
-~~~
-{: .output}
-
-
-
-
-
-
 # References
 - [Scotty, a web-tool for power calculation](http://scotty.genetics.utah.edu/help.html)
+- [Auer and Doerge (2010) Statistical Design and Analysis of RNA Sequencing Data. _Genetics_ 185:405-416](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2881125/).
 
 
 
