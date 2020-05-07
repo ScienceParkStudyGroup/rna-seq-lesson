@@ -40,8 +40,6 @@ keypoints:
 We will now assess the quality of the reads that we downloaded. First, we need to make an output directory for the fastqc results to be stored. This we want to do in the 'RNAseq070319' directory.
 
 ~~~
-$ cd ~/RNAseq070319
-
 $ mkdir fastqc
 ~~~
 {: .bash}
@@ -50,7 +48,7 @@ $ mkdir fastqc
 Next we need to get to the directory thay actually contains the the fastq files.
 
 ~~~
-$ cd ~/RNAseq070319/rawReads
+$ ls fq-files
 ~~~
 {: .bash}
 
@@ -58,7 +56,7 @@ $ cd ~/RNAseq070319/rawReads
 Running fastqc uses the following command
 
 ~~~
-fastqc -o ../fastqc Arabidopsis_sample1.fq.gz
+fastqc -o fastqc fq-files/Arabidopsis_sample1.fq.gz
 ~~~
 {: .bash}
 
@@ -67,9 +65,9 @@ Of course we don't want to do y=this for all the samples seperately so we can lo
 With the use of echo you can start off with a "dry run"
 
 ~~~
-$ for filename in *.fq.gz
+$ for filename in  fq-files/*.fq.gz
   do
-    echo fastqc -o ../fastqc $filename
+    echo fastqc -o fastqc fq-files/$filename
   done
 ~~~
 {: .bash}
@@ -77,19 +75,19 @@ $ for filename in *.fq.gz
 The echo command only prints the commands to the screen, and doesn't really run it.
 
 ~~~
-fastqc -o ../fastqc Arabidopsis_sample1.fq.gz
-fastqc -o ../fastqc Arabidopsis_sample2.fq.gz
-fastqc -o ../fastqc Arabidopsis_sample3.fq.gz
-fastqc -o ../fastqc Arabidopsis_sample4.fq.gz
+fastqc -o fastqc fq-files/Arabidopsis_sample1.fq.gz
+fastqc -o fastqc fq-files/Arabidopsis_sample2.fq.gz
+fastqc -o fastqc fq-files/Arabidopsis_sample3.fq.gz
+fastqc -o fastqc fq-files/Arabidopsis_sample4.fq.gz
 ~~~
 {: .output}
 
 If it looks good remove the echo and go for it.
 
 ~~~
-$ for filename in *.fq.gz
+$ for filename in fq-files/*.fq.gz
   do
-    fastqc -o ../fastqc $filename
+    fastqc -o fastqc fq-files/$filename
   done
 ~~~
 {: .bash}
