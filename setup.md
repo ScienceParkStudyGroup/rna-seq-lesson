@@ -104,7 +104,6 @@ This is the second way to install softwares and packages. It _should_ work but t
 >    - The `org.At.tair.db` package: [https://www.bioconductor.org/packages/release/data/annotation/html/org.At.tair.db.html](https://www.bioconductor.org/packages/release/data/annotation/html/org.At.tair.db.html).
 >    - The `biomaRt` package: [https://bioconductor.org/packages/release/bioc/html/biomaRt.html](https://bioconductor.org/packages/release/bioc/html/biomaRt.html).
 >    - The `pwr` package: [https://cran.r-project.org/web/packages/pwr/index.html](https://cran.r-project.org/web/packages/pwr/index.html).
->    - The `pwr` package: [https://cran.r-project.org/web/packages/pwr/index.html](https://cran.r-project.org/web/packages/pwr/index.html).
 
 > 2. Read the workshop [Code of Conduct](https://docs.carpentries.org/topic_folders/policies/code-of-conduct.html) to make sure this workshop stays welcoming for everybody.
 > 3. Get comfortable: if you're not in a physical workshop, be set up with two screens if possible. You will be following along in RStudio on your own computer while also following this tutorial on your own.
