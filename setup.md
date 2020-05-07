@@ -99,19 +99,14 @@ This is the second way to install softwares and packages. It _should_ work but t
 >    - The `tidyverse` package: [https://www.tidyverse.org/](https://www.tidyverse.org/).
 >    - The `EnhancedVolcano` package: [http://bioconductor.org/packages/release/bioc/html/EnhancedVolcano.html](http://bioconductor.org/packages/release/bioc/html/EnhancedVolcano.html).
 >    - The `pheatmap` package: [https://cran.r-project.org/web/packages/pheatmap/index.html](https://cran.r-project.org/web/packages/pheatmap/index.html).
+>    - The `biomartr` package: [https://cran.r-project.org/web/packages/biomartr/index.html](https://cran.r-project.org/web/packages/biomartr/index.html).
+>    - The `clusterProfiler` package: [https://bioconductor.org/packages/release/bioc/html/clusterProfiler.html](https://bioconductor.org/packages/release/bioc/html/clusterProfiler.html).
+>    - The `org.At.tair.db` package: [https://www.bioconductor.org/packages/release/data/annotation/html/org.At.tair.db.html](https://www.bioconductor.org/packages/release/data/annotation/html/org.At.tair.db.html).
+>    - The `biomaRt` package: [https://bioconductor.org/packages/release/bioc/html/biomaRt.html](https://bioconductor.org/packages/release/bioc/html/biomaRt.html).
 > 2. Read the workshop [Code of Conduct](https://docs.carpentries.org/topic_folders/policies/code-of-conduct.html) to make sure this workshop stays welcoming for everybody.
 > 3. Get comfortable: if you're not in a physical workshop, be set up with two screens if possible. You will be following along in RStudio on your own computer while also following this tutorial on your own.
 > More instructions are available on the workshop website in the **Setup** section.
 {: .prereq}
-
-
-library(biomartr)
-library(clusterProfiler)
-library(tidyverse)
-suppressPackageStartupMessages(library(org.At.tair.db))
-library("biomaRt")  # only use to remove cache bug
-biomaRt::biomartCacheClear() # to solve a known bug https://github.com/BioinformaticsFMRP/TCGAbiolinks/issues/335
-
 
 
 ## Data files 
