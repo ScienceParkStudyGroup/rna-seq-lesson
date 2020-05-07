@@ -31,7 +31,7 @@ There are two Docker images necessary to complete this RNA-seq lesson:
 
 This Docker image will allow you to complete the [episodes 03](https://scienceparkstudygroup.github.io/rna-seq-lesson/03-qc-of-sequencing-results/index.html) and [04](https://scienceparkstudygroup.github.io/rna-seq-lesson/04-bioinformatic-workflow/index.html) that work on `.fastq` sequencing files.
 
-The Docker image is called `fastq-latest` and contains softwares and data required for the command-line part of the lesson. It can be found [found at the Science Park Study Group DockerHub](https://hub.docker.com/repository/docker/scienceparkstudygroup/master-gls) with the tag `rnaseq-latest`.
+The Docker image is called `fastq-latest` and contains softwares and data required for the command-line part of the lesson. It can be found [found at the Science Park Study Group DockerHub](https://hub.docker.com/repository/docker/scienceparkstudygroup/master-gls) with the tag `fastq-latest`.
 
 > ## Before you start
 >
