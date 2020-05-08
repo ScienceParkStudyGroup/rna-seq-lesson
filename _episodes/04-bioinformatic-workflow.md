@@ -193,14 +193,14 @@ tab in your terminal program (you can use the pull down menu at the
 top of your screen or the Cmd+t keyboard shortcut) and type:
 
 ~~~
-$ mkdir -p ~/Desktop/fastqc_html
+$ mkdir ~/Desktop/fastqc_html
 ~~~
 {: .bash}
 
-Now we can transfer our HTML files to our local computer using `scp`.
+Now we can transfer our HTML files to our local computer using `docker cp`.
 
 ~~~
-$ scp -r lichunl@genseq-cn02.science.uva.nl:~/brunfelsia/mastersCourse2020/fastqc/*_fastqc ~/Desktop/fastqc_html
+$ docker cp bioinfo:/home/fastqc/ ~/Desktop/fastqc
 ~~~
 {: .bash}
 
