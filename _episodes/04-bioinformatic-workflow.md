@@ -1,13 +1,18 @@
 ---
 title: "From fastq files to read counts"
-teaching: 45
+teaching: 60
 exercises: 0 
 questions:
-- ""
+- "How do I perform a quality check of my RNA-seq fastq files with `FastQC`?"
+- "How can I remove RNA-seq reads of low quality? using `trimmomatic`?"
+- "How do I align my reads to a reference genome using `STAR`?"
+- "What is the SAM/BAM format?"
+- "How do I turn RNA-seq read genome alignments into a count table?"
 objectives:
-- ""
+- "Be able to remove RNA-seq reads with adapters and low quality bases."
+= ""
 keypoints:
-- ""
+- "Performing read trimming ensures that no sequencing adapter is left in your final reads."
 ---
 
 # Table of contents
