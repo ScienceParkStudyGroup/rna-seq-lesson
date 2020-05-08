@@ -194,6 +194,7 @@ When working on a remote computer make use of the following command
 ~~~
 $ scp -r dcuser@genseq-cn02.science.uva.nl:/fastqc/ ~/Desktop/fastqc_html
 ~~~
+{: .bash}
 
 As a reminder, the first part
 of the command `dcuser@genseq-cn02.science.uva.nl` is
