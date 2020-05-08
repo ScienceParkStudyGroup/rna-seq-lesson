@@ -78,7 +78,7 @@ With the use of echo you can start off with a "dry run"
 ~~~
 $ for filename in  *.fq.gz
   do
-    echo fastqc -o fastqc $filename
+    echo "fastqc -o fastqc $filename"
   done
 ~~~
 {: .bash}
@@ -121,7 +121,7 @@ Analysis complete for Arabidopsis_sample4.fq.gz
 ~~~
 {: .output}
 
-In total, it should take about five minutes for FastQC to run on all
+In total, it should take about two minutes for FastQC to run on all
 four of our zipped FASTQ files.
 
 If the command doesn't run or you want more information on fastqc, run the following to get the help page.
@@ -148,25 +148,13 @@ Arabidopsis_sample1.fq_fastqc      Arabidopsis_sample2.fq_fastqc      Arabidopsi
 
 ## 1.2 Viewing the FastQC results
 
-For each of the samples there is a directory containig several files
+For each of the samples there are two files. a .html and a .zip 
 
-~~~
-$  ls fastqc/Arabidopsis_sample1.fq_fastqc
-~~~
-{: .bash}
-
-
-~~~
-fastqc_data.txt  fastqc_report.html  Icons  Images  summary.txt
-~~~
-{: .output}
-
-
-If we were working on our local computers, we'd be able to display each of these
+If we were working on our local computer, outside of the container, we'd be able to display each of these
 HTML files as a webpage:
 
 ~~~
-$ open ERR1406260.fq.gz.html
+$ open Arabidopsis_sample1_fastqc.html
 ~~~
 {: .bash}
 
@@ -174,38 +162,39 @@ $ open ERR1406260.fq.gz.html
 However, if you try this on our genseq instance, you'll get an error:
 
 ~~~
-Couldn't get a file descriptor referring to the console
+bash: open: command not found
 ~~~
 {: .output}
 
-This is because the genseq instance we're using doesn't have any web
+This is because the container were working in doesn't have any web
 browsers installed on it, so the remote computer doesn't know how to
 open the file. We want to look at the webpage summary reports, so
 let's transfer them to our local computers (i.e. your laptop).
 
-To transfer a file from a remote server to our own machines, we will
-use `scp`.
 
-First we
-will make a new directory on our computer to store the HTML files
-we're transfering. Let's put it on our desktop for now. Open a new
-tab in your terminal program (you can use the pull down menu at the
-top of your screen or the Cmd+t keyboard shortcut) and type:
+If you're also working on a remote computer you will first have to copy 
+the files outside of the container using `docker cp` and next from the 
+remote computer to your local computer with the help of `scp`.
 
-~~~
-$ mkdir ~/Desktop/fastqc_html
-~~~
-{: .bash}
 
-Now we can transfer our HTML files to our local computer using `docker cp`.
+First we need to exit the container and next we can transfer our HTML 
+files to our local computer using `docker cp`.
 
 ~~~
 $ docker cp bioinfo:/home/fastqc/ ~/Desktop/fastqc
 ~~~
 {: .bash}
 
+This will transfer all files in the folder home/fastqc/ to your Desktop.
+
+When working on a remote computer make use of the following command
+
+~~~
+$ scp -r dcuser@genseq-cn02.science.uva.nl:/fastqc/*.html ~/Desktop/fastqc_html
+~~~
+
 As a reminder, the first part
-of the command `tbliek@genseq-cn02.science.uva.nl` is
+of the command `dcuser@genseq-cn02.science.uva.nl` is
 the address for your remote computer. Make sure you replace everything
 after `dcuser@` with your instance number (the one you used to log in).
 
