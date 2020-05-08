@@ -42,9 +42,15 @@ keypoints:
 
 ## 1.1 Running FastQC  
 
-We will now assess the quality of the reads that we downloaded. First, we need to make an output directory for the fastqc results to be stored. This we want to do in the 'RNAseq070319' directory.
+We will now assess the quality of the reads that we downloaded. First, we need to make an output directory for the fastqc results to be stored. This we want to do in the 'home' directory that contains all the needed files.
 
 ~~~
+$ docker run --rm -it scienceparkstudygroup/master-gls:fastq-latest
+
+$ conda activate fastq
+
+$ cd home
+
 $ mkdir fastqc
 ~~~
 {: .bash}
