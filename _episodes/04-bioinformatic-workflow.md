@@ -141,7 +141,9 @@ $  ls fastqc/
 
 
 ~~~
-Arabidopsis_sample1.fq_fastqc      Arabidopsis_sample2.fq_fastqc      Arabidopsis_sample3.fq_fastqc      Arabidopsis_sample4.fq_fastqc      Arabidopsis_sample1.fq_fastqc.zip  Arabidopsis_sample2.fq_fastqc.zip  Arabidopsis_sample3.fq_fastqc.zip  Arabidopsis_sample4.fq_fastqc.zip 
+Arabidopsis_sample1_fastqc.html  Arabidopsis_sample2_fastqc.zip   Arabidopsis_sample4_fastqc.html
+Arabidopsis_sample1_fastqc.zip	 Arabidopsis_sample3_fastqc.html  Arabidopsis_sample4_fastqc.zip
+Arabidopsis_sample2_fastqc.html  Arabidopsis_sample3_fastqc.zip
 ~~~
 {: .output}
 
@@ -190,7 +192,7 @@ This will transfer all files in the folder home/fastqc/ to your Desktop.
 When working on a remote computer make use of the following command
 
 ~~~
-$ scp -r dcuser@genseq-cn02.science.uva.nl:/fastqc/*.html ~/Desktop/fastqc_html
+$ scp -r dcuser@genseq-cn02.science.uva.nl:/fastqc/ ~/Desktop/fastqc_html
 ~~~
 
 As a reminder, the first part
@@ -271,17 +273,31 @@ to decompress these files. Let's try doing them all at once using a
 wildcard.
 
 ~~~
-$ unzip *.zip
+$ unzip fastqc/Arabidopsis_sample1_fastqc.zip
 ~~~
 {: .bash}
 
 ~~~
-Archive:  SRR2584863_1_fastqc.zip
-caution: filename not matched:  sub07_fastqc.zip
-caution: filename not matched:  sub08_fastqc.zip
-caution: filename not matched:  sub21_fastqc.zip
-caution: filename not matched:  sub22_fastqc.zip
-caution: filename not matched:  sub24_fastqc.zip
+Archive:  fastqc/Arabidopsis_sample1_fastqc.zip  
+  creating: Arabidopsis_sample1_fastqc/
+   creating: Arabidopsis_sample1_fastqc/Icons/
+   creating: Arabidopsis_sample1_fastqc/Images/
+  inflating: Arabidopsis_sample1_fastqc/Icons/fastqc_icon.png  
+  inflating: Arabidopsis_sample1_fastqc/Icons/warning.png  
+  inflating: Arabidopsis_sample1_fastqc/Icons/error.png  
+  inflating: Arabidopsis_sample1_fastqc/Icons/tick.png  
+  inflating: Arabidopsis_sample1_fastqc/summary.txt  
+  inflating: Arabidopsis_sample1_fastqc/Images/per_base_quality.png  
+  inflating: Arabidopsis_sample1_fastqc/Images/per_sequence_quality.png  
+  inflating: Arabidopsis_sample1_fastqc/Images/per_base_sequence_content.png  
+  inflating: Arabidopsis_sample1_fastqc/Images/per_sequence_gc_content.png  
+  inflating: Arabidopsis_sample1_fastqc/Images/per_base_n_content.png  
+  inflating: Arabidopsis_sample1_fastqc/Images/sequence_length_distribution.png  
+  inflating: Arabidopsis_sample1_fastqc/Images/duplication_levels.png  
+  inflating: Arabidopsis_sample1_fastqc/Images/adapter_content.png  
+  inflating: Arabidopsis_sample1_fastqc/fastqc_report.html  
+  inflating: Arabidopsis_sample1_fastqc/fastqc_data.txt  
+  inflating: Arabidopsis_sample1_fastqc/fastqc.fo  
 ~~~
 {: .output}
 
@@ -304,7 +320,7 @@ $ for filename in *.zip
 {: .bash}
 
 
-In this example, the input is six filenames (one filename for each of our `.zip` files).
+In this example, the input is four filenames (one filename for each of our `.zip` files).
 Each time the loop iterates, it will assign a file name to the variable `filename`
 and run the `unzip` command.
 The first time through the loop,
@@ -318,27 +334,17 @@ It then repeats this process for the four other `.zip` files in our directory.
 When we run our `for` loop, you will see output that starts like this:
 
 ~~~
-Archive:  sub06_fastqc.zip
-   creating: sub06_fastqc/
-   creating: sub06_fastqc/Icons/
-   creating: sub06_fastqc/Images/
-  inflating: sub06_fastqc/Icons/fastqc_icon.png  
-  inflating: sub06_fastqc/Icons/warning.png  
-  inflating: sub06_fastqc/Icons/error.png  
-  inflating: sub06_fastqc/Icons/tick.png  
-  inflating: sub06_fastqc/summary.txt  
-  inflating: sub06_fastqc/Images/per_base_quality.png  
-  inflating: sub06_fastqc/Images/per_tile_quality.png  
-  inflating: sub06_fastqc/Images/per_sequence_quality.png  
-  inflating: sub06_fastqc/Images/per_base_sequence_content.png  
-  inflating: sub06_fastqc/Images/per_sequence_gc_content.png  
-  inflating: sub06_fastqc/Images/per_base_n_content.png  
-  inflating: sub06_fastqc/Images/sequence_length_distribution.png  
-  inflating: sub06_fastqc/Images/duplication_levels.png  
-  inflating: sub06_fastqc/Images/adapter_content.png  
-  inflating: sub06_fastqc/fastqc_report.html  
-  inflating: sub06_fastqc/fastqc_data.txt  
-  inflating: sub06_fastqc/fastqc.fo  
+Archive:  fastqc/Arabidopsis_sample2_fastqc.zip
+   creating: Arabidopsis_sample2_fastqc/
+   creating: Arabidopsis_sample2_fastqc/Icons/
+   creating: Arabidopsis_sample2_fastqc/Images/
+  inflating: Arabidopsis_sample2_fastqc/Icons/fastqc_icon.png  
+  ...
+  inflating: Arabidopsis_sample4_fastqc/Images/duplication_levels.png  
+  inflating: Arabidopsis_sample4_fastqc/Images/adapter_content.png  
+  inflating: Arabidopsis_sample4_fastqc/fastqc_report.html  
+  inflating: Arabidopsis_sample4_fastqc/fastqc_data.txt  
+  inflating: Arabidopsis_sample4_fastqc/fastqc.fo  
 ~~~
 {: .output}
 
@@ -351,12 +357,10 @@ are a lot of files here. The one we're going to focus on is the
 If you list the files in our directory now you will see:
 
 ~~~
-sub06_fastqc       sub08_fastqc       sub22_fastqc
-sub06_fastqc.html  sub08_fastqc.html  sub22_fastqc.html
-sub06_fastqc.zip   sub08_fastqc.zip   sub22_fastqc.zip
-sub07_fastqc       sub21_fastqc       sub24_fastqc
-sub07_fastqc.html  sub21_fastqc.html  sub24_fastqc.html
-sub07_fastqc.zip   sub21_fastqc.zip   sub24_fastqc.zip
+Arabidopsis_sample1_fastqc	 Arabidopsis_sample2_fastqc.html  Arabidopsis_sample3_fastqc.zip
+Arabidopsis_sample1_fastqc.html  Arabidopsis_sample2_fastqc.zip   Arabidopsis_sample4_fastqc
+Arabidopsis_sample1_fastqc.zip	 Arabidopsis_sample3_fastqc	  Arabidopsis_sample4_fastqc.html
+Arabidopsis_sample2_fastqc	 Arabidopsis_sample3_fastqc.html  Arabidopsis_sample4_fastqc.zip
 ~~~
 {: .output}
 
@@ -371,24 +375,22 @@ $ ls -F
 {: .bash}
 
 ~~~
-sub06_fastqc/      sub08_fastqc/      sub22_fastqc/
-sub06_fastqc.html  sub08_fastqc.html  sub22_fastqc.html
-sub06_fastqc.zip   sub08_fastqc.zip   sub22_fastqc.zip
-sub07_fastqc/      sub21_fastqc/      sub24_fastqc/
-sub07_fastqc.html  sub21_fastqc.html  sub24_fastqc.html
-sub07_fastqc.zip   sub21_fastqc.zip   sub24_fastqc.zip
+Arabidopsis_sample1_fastqc/	 Arabidopsis_sample2_fastqc.html  Arabidopsis_sample3_fastqc.zip
+Arabidopsis_sample1_fastqc.html  Arabidopsis_sample2_fastqc.zip   Arabidopsis_sample4_fastqc/
+Arabidopsis_sample1_fastqc.zip	 Arabidopsis_sample3_fastqc/	  Arabidopsis_sample4_fastqc.html
+Arabidopsis_sample2_fastqc/	 Arabidopsis_sample3_fastqc.html  Arabidopsis_sample4_fastqc.zip
 ~~~
 {: .output}
 
 Let's see what files are present within one of these output directories.
 
 ~~~
-$ ls -F sub06_fastqc/
+$ ls -F Arabidopsis_sample1_fastqc/
 ~~~
 {: .bash}
 
 ~~~
-fastqc_data.txt  fastqc.fo  fastqc_report.html	Icons/	Images/  summary.txt
+Icons/	Images/  fastqc.fo  fastqc_data.txt  fastqc_report.html  summary.txt
 ~~~
 {: .output}
 
@@ -400,17 +402,16 @@ $ less sub06_fastqc/summary.txt
 {: .bash}
 
 ~~~
-PASS    Basic Statistics        sub06.fastq
-PASS    Per base sequence quality       sub06.fastq
-PASS    Per tile sequence quality       sub06.fastq
-PASS    Per sequence quality scores     sub06.fastq
-WARN    Per base sequence content       sub06.fastq
-WARN    Per sequence GC content sub06.fastq
-PASS    Per base N content      sub06.fastq
-PASS    Sequence Length Distribution    sub06.fastq
-PASS    Sequence Duplication Levels     sub06.fastq
-PASS    Overrepresented sequences       sub06.fastq
-WARN    Adapter Content sub06.fastq
+PASS    Basic Statistics        Arabidopsis_sample1.fq.gz
+PASS    Per base sequence quality       Arabidopsis_sample1.fq.gz
+PASS    Per sequence quality scores     Arabidopsis_sample1.fq.gz
+FAIL    Per base sequence content       Arabidopsis_sample1.fq.gz
+PASS    Per sequence GC content Arabidopsis_sample1.fq.gz
+PASS    Per base N content      Arabidopsis_sample1.fq.gz
+PASS    Sequence Length Distribution    Arabidopsis_sample1.fq.gz
+WARN    Sequence Duplication Levels     Arabidopsis_sample1.fq.gz
+WARN    Overrepresented sequences       Arabidopsis_sample1.fq.gz
+PASS    Adapter Content Arabidopsis_sample1.fq.gz
 ~~~
 {: .output}
 
@@ -425,7 +426,7 @@ using the `cat` command. We'll call this `full_report.txt` and move
 it to `~/dc_workshop/docs`.
 
 ~~~
-$ cat */summary.txt > ~/dc_workshop/docs/fastqc_summaries.txt
+$ cat */summary.txt > fastqc_summaries.txt
 ~~~
 {: .bash}
 
