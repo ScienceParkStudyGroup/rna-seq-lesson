@@ -41,6 +41,7 @@ keypoints:
 
 <!-- /MarkdownTOC -->
 
+<img src="../img/06-workflow-overview.png" width="500px">
 
 # 1. Introduction
 

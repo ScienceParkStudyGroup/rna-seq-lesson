@@ -14,7 +14,7 @@
    version="1.1"
    inkscape:version="1.0rc1 (09960d6, 2020-04-09)"
    sodipodi:docname="07-workflow_overview_episode_07.svg"
-   inkscape:export-filename="/Users/mgalland/Documents/workspace/rnaseq-lesson/img/02-workflow-overview.png"
+   inkscape:export-filename="/Users/mgalland/Documents/workspace/rnaseq-lesson/img/07-workflow-overview.png"
    inkscape:export-xdpi="299.96201"
    inkscape:export-ydpi="299.96201">
   <defs
@@ -78,17 +78,17 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.28530903"
-     inkscape:cx="464.92472"
-     inkscape:cy="774.23315"
+     inkscape:zoom="0.4034879"
+     inkscape:cx="526.88445"
+     inkscape:cy="888.23904"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
      height="240mm"
      showguides="false"
      inkscape:window-width="1276"
-     inkscape:window-height="943"
-     inkscape:window-x="0"
+     inkscape:window-height="855"
+     inkscape:window-x="1361"
      inkscape:window-y="23"
      inkscape:window-maximized="0"
      inkscape:document-rotation="0" />
@@ -157,7 +157,7 @@
     <g
        id="g10817"
        transform="translate(55.644492,-227.5)"
-       style="opacity:0.4">
+       style="opacity:1">
       <rect
          ry="39.465389"
          y="531.61108"
@@ -181,7 +181,7 @@
     <g
        id="g9790"
        transform="translate(-534.57143,-206.07143)"
-       style="opacity:0.4">
+       style="opacity:1">
       <rect
          style="opacity:0.647;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.787348;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
          id="rect5781"
@@ -203,7 +203,7 @@
            style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:30px;line-height:125%;font-family:palatino;-inkscape-font-specification:'palatino, Normal';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#ffffff">Quality control</tspan></text>
     </g>
     <rect
-       style="opacity:0.4;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.799767;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="opacity:1;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.799767;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect5787"
        width="293.32883"
        height="78.728363"
@@ -212,7 +212,7 @@
        ry="39.364182" />
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:Palatino;-inkscape-font-specification:'Palatino, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;opacity:0.4;"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:Palatino;-inkscape-font-specification:'Palatino, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;opacity:1;"
        x="838.29095"
        y="332.53738"
        id="text5789"><tspan
@@ -229,7 +229,7 @@
     <g
        id="g10869"
        transform="translate(-1.4285714,-223.21429)"
-       style="opacity:0.4">
+       style="opacity:1">
       <rect
          style="opacity:0.647;fill:#ff7f2a;fill-opacity:1;stroke:#000000;stroke-width:1.2419;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
          id="rect5793"
@@ -256,7 +256,7 @@
            sodipodi:role="line">HISAT2, STAR, annotation file</tspan></text>
     </g>
     <rect
-       style="opacity:0.4;fill:#44aa00;fill-opacity:1;stroke:#000000;stroke-width:0.998341;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       style="opacity:1;fill:#44aa00;fill-opacity:1;stroke:#000000;stroke-width:0.998341;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect5816"
        width="335.98737"
        height="107.1012"
@@ -267,7 +267,7 @@
        id="text5818"
        y="959.36334"
        x="517.04669"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:Palatino;-inkscape-font-specification:'Palatino, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;opacity:0.4;"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:Palatino;-inkscape-font-specification:'Palatino, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;opacity:1;"
        xml:space="preserve"><tspan
          id="tspan5824"
          style="font-style:italic;font-size:30px;line-height:1.25;text-align:center;text-anchor:middle;"
@@ -299,7 +299,7 @@
     <g
        transform="matrix(0,1.2923983,-2.6092632,0,437.13807,283.04691)"
        id="g10822"
-       style="fill:#3e4837;stroke:#000000;stroke-opacity:1;opacity:0.4">
+       style="fill:#3e4837;stroke:#000000;stroke-opacity:1;opacity:1">
       <g
          transform="matrix(0.12963962,0,0,0.064212,23.511801,7.5842083)"
          id="g10824">
@@ -314,7 +314,7 @@
     <g
        transform="matrix(0,-1.2923983,2.6092632,0,585.57945,403.43031)"
        id="g10834"
-       style="fill:#3e4837;stroke:#000000;stroke-opacity:1;opacity:0.4">
+       style="fill:#3e4837;stroke:#000000;stroke-opacity:1;opacity:1">
       <g
          transform="matrix(0.12963962,0,0,0.064212,23.511801,7.5842083)"
          id="g10836">
@@ -327,7 +327,7 @@
       </g>
     </g>
     <g
-       style="fill:#3e4837;stroke:#000000;stroke-opacity:1;opacity:0.4"
+       style="fill:#3e4837;stroke:#000000;stroke-opacity:1;opacity:1"
        id="g10851"
        transform="matrix(1.2923983,0,0,2.6092632,450.21468,567.745)">
       <g
@@ -344,7 +344,7 @@
     <g
        transform="matrix(1.2923983,0,0,2.6092632,450.21468,808.69739)"
        id="g10857"
-       style="fill:#3e4837;stroke:#000000;stroke-opacity:1;opacity:0.4">
+       style="fill:#3e4837;stroke:#000000;stroke-opacity:1;opacity:1">
       <g
          transform="matrix(0.12963962,0,0,0.064212,23.511801,7.5842083)"
          id="g10859">
@@ -359,7 +359,7 @@
     <g
        transform="matrix(0.79786819,1.0167102,-2.052668,1.6108409,767.34454,357.6134)"
        id="g10880"
-       style="fill:#3e4837;stroke:#000000;stroke-opacity:1;opacity:0.4">
+       style="fill:#3e4837;stroke:#000000;stroke-opacity:1;opacity:1">
       <g
          transform="matrix(0.12963962,0,0,0.064212,23.511801,7.5842083)"
          id="g10882">
@@ -374,7 +374,7 @@
     <g
        transform="translate(-7.1428571,9.642853)"
        id="g10886"
-       style="opacity:0.4">
+       style="opacity:1">
       <rect
          ry="66.285965"
          y="658.85284"
@@ -404,7 +404,7 @@
     </g>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:Palatino;-inkscape-font-specification:'Palatino, Normal';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;opacity:0.4;"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:Palatino;-inkscape-font-specification:'Palatino, Normal';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;opacity:1;"
        x="782.12256"
        y="550.57642"
        id="text10927"><tspan
@@ -415,7 +415,7 @@
          style="font-weight:bold;font-size:30px;line-height:1.25;fill:#000080;">BAM files</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:Palatino;-inkscape-font-specification:'Palatino, Normal';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;opacity:0.4;"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:Palatino;-inkscape-font-specification:'Palatino, Normal';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;opacity:1;"
        x="740.10352"
        y="784.86212"
        id="text10931"><tspan
@@ -426,7 +426,7 @@
          style="font-weight:bold;font-size:30px;line-height:1.25;fill:#000080;">Matrix of counts</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:0%;font-family:Palatino;-inkscape-font-specification:'Palatino Bold';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000080;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;opacity:0.4;"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:0%;font-family:Palatino;-inkscape-font-specification:'Palatino Bold';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;opacity:1;fill:#000080;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;"
        x="684"
        y="1020.5764"
        id="text10935"><tspan
@@ -439,7 +439,12 @@
          sodipodi:role="line"
          x="684"
          y="1058.0764"
-         id="tspan4252">Volcano plot, MA plot. </tspan></text>
+         id="tspan4252">Volcano plot, </tspan><tspan
+         id="tspan1171"
+         style="font-size:30px;line-height:1.25;"
+         sodipodi:role="line"
+         x="684"
+         y="1095.5764">Heatmap</tspan></text>
     <text
        id="text10939"
        y="257.71924"
@@ -455,7 +460,7 @@
        id="text4214"
        y="867.90839"
        x="553.24719"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:Palatino;-inkscape-font-specification:'Palatino, Normal';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;opacity:0.4;"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:Palatino;-inkscape-font-specification:'Palatino, Normal';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;opacity:1;"
        xml:space="preserve"><tspan
          style="font-weight:bold;font-size:30px;line-height:1.25;fill:#000080;"
          y="867.90839"
@@ -463,7 +468,7 @@
          id="tspan4216"
          sodipodi:role="line">Normalization</tspan></text>
     <g
-       style="fill:#3e4837;stroke:#000000;stroke-opacity:1;opacity:0.4"
+       style="fill:#3e4837;stroke:#000000;stroke-opacity:1;opacity:1"
        id="g4224"
        transform="matrix(0.79786819,1.0167102,-2.052668,1.6108409,246.92131,708.25316)">
       <g
@@ -484,10 +489,10 @@
        height="107.1012"
        width="335.98737"
        id="rect4232"
-       style="opacity:0.4;fill:#44aa00;fill-opacity:1;stroke:#000000;stroke-width:0.998341;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+       style="opacity:1;fill:#44aa00;fill-opacity:1;stroke:#000000;stroke-width:0.998341;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:Palatino;-inkscape-font-specification:'Palatino, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;opacity:0.4;"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:Palatino;-inkscape-font-specification:'Palatino, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;opacity:1;"
        x="179.32524"
        y="870.78064"
        id="text4234"><tspan
@@ -506,14 +511,24 @@
     <text
        id="text4248"
        y="975.67584"
-       x="21.475393"
-       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:0%;font-family:Palatino;-inkscape-font-specification:'Palatino Bold';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000080;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;opacity:0.4;"
+       x="8.3503933"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:0%;font-family:Palatino;-inkscape-font-specification:'Palatino Bold';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;opacity:1;fill:#000080;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        xml:space="preserve"><tspan
-         style="font-size:30px;line-height:1.25;"
+         style="font-size:30px;line-height:1.25"
          y="975.67584"
-         x="21.475393"
+         x="8.3503933"
          id="tspan4250"
-         sodipodi:role="line">plots</tspan></text>
+         sodipodi:role="line">PCA plot</tspan><tspan
+         id="tspan1175"
+         style="font-size:30px;line-height:1.25"
+         y="1013.1758"
+         x="8.3503933"
+         sodipodi:role="line">Sample clustering</tspan><tspan
+         id="tspan1177"
+         style="font-size:30px;line-height:1.25"
+         y="1050.6758"
+         x="8.3503933"
+         sodipodi:role="line">Heatmap</tspan></text>
     <rect
        ry="76.662552"
        y="1141.0502"
@@ -521,10 +536,10 @@
        height="153.32509"
        width="414.65405"
        id="rect2240"
-       style="opacity:0.4;fill:#44aa00;fill-opacity:1;stroke:#000000;stroke-width:1.327;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+       style="opacity:1;fill:#44aa00;fill-opacity:1;stroke:#000000;stroke-width:1.327;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:Palatino;-inkscape-font-specification:'Palatino, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;opacity:0.4;"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:Palatino;-inkscape-font-specification:'Palatino, Normal';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;opacity:1;"
        x="517.04669"
        y="1182.488"
        id="text2248"><tspan
@@ -544,7 +559,7 @@
          style="font-style:italic;font-size:30px;line-height:1.25;text-align:center;text-anchor:middle;"
          id="tspan2246">clusterProfile, MapMan</tspan></text>
     <g
-       style="fill:#3e4837;stroke:#000000;stroke-opacity:1;opacity:0.4"
+       style="fill:#3e4837;stroke:#000000;stroke-opacity:1;opacity:1"
        id="g2254"
        transform="matrix(1.2923983,0,0,2.6092632,450.21468,1031.8222)">
       <g
@@ -562,7 +577,7 @@
        id="text2260"
        y="1301.8262"
        x="684"
-       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:0%;font-family:Palatino;-inkscape-font-specification:'Palatino Bold';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000080;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;opacity:0.4;"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:0%;font-family:Palatino;-inkscape-font-specification:'Palatino Bold';text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000080;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;opacity:1;"
        xml:space="preserve"><tspan
          id="tspan2258"
          y="1301.8262"
