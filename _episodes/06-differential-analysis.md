@@ -549,7 +549,7 @@ This is the original heatmap
 
 ## 4.3 Third version with genes and samples grouped by profiles
 One interesting feature of the heatmap visualisation is the ability to group genes and samples by their expression profile. 
-Similarly to the hierarchical clustering procedure that we have seen in [episode 05](../05-descriptive-plots/index.html/4-sample-clustering).
+Similarly to the hierarchical clustering procedure that we have seen in [episode 05](../05-descriptive-plots/index.html#4-sample-clustering).
 
 Let's compare how it looks with both gene and sample clustering.
 

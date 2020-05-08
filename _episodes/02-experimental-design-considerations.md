@@ -38,16 +38,13 @@ keypoints:
   - [2.2 Design number 1](#22-design-number-1)
   - [2.3 Design number 2: complete randomized design](#23-design-number-2-complete-randomized-design)
   - [2.3 Design number 3: complete randomized block design](#23-design-number-3-complete-randomized-block-design)
-  - [2.4 The three principles of a good experimental design](#24-the-three-principles-of-a-good-experimental-design)
-- [3. Challenges relevant to RNA-seq](#3-challenges-relevant-to-rna-seq)
-  - [3.1 Sequencing](#31-sequencing)
-  - [3.2 Low power](#32-low-power)
-  - [3.3 Pooling of samples](#33-pooling-of-samples)
+  - [2.4 Other examples of suboptimal design](#24-other-examples-of-suboptimal-design)
+  - [2.5 The three principles of a good experimental design](#25-the-three-principles-of-a-good-experimental-design)
+- [3. Other points relevant to RNA-seq](#3-other-points-relevant-to-rna-seq)
+  - [3.1 Sequencing depth](#31-sequencing-depth)
+  - [3.2 Pooling of samples](#32-pooling-of-samples)
 - [References](#references)
-  - [Confounding](#confounding)
-  - [Batch effects](#batch-effects)
-- [References](#references-1)
-  - [Credits](#credits)
+  - [Photo credits](#photo-credits)
 
 <!-- /MarkdownTOC -->
 
@@ -388,13 +385,16 @@ In the days of microarrays, technical replicates were considered a necessity; ho
 
 In contrast, **biological replicates are absolutely essential** for differential expression analysis. For mice or rats, this might be easy to determine what constitutes a different biological sample, but it's a bit **more difficult to determine for cell lines**. [This article](http://paasp.net/accurate-design-of-in-vitro-experiments-why-does-it-matter/) gives some great recommendations for cell line replicates.
 
-For differential expression analysis, the more biological replicates, the better the estimates of biological variation and the more precise our estimates of the mean expression levels. This leads to more accurate modeling of our data and identification of more differentially expressed genes.
+For differential expression analysis, the more biological replicates, the better the estimates of biological variation and the more precise our estimates of the mean expression levels. This leads to more accurate modeling of our data and identification of more differentially expressed genes. This is also reflected for statistical power. More reads marginally affect your ability to differential genes while increasing the number of biological replicates has a strong effect.
 
-<img src="../img/de_replicates_img2.png" width="500">
 
-*Image credit: [Liu, Y., et al., Bioinformatics (2014) **30**(3): 301–304](https://doi.org/10.1093/bioinformatics/btt688)*
+| Number of differentially expressed genes | Statistical power |
+|-----------------------------------|---------------|----------------------------------------------------------------|
+| <img src="../img/02-de-replicates-2.png" width="500px"> | <img src="../img/02-de-replicates-3.png" width="500px">  |
 
-As the figure above illustrates, **biological replicates are of greater importance than sequencing depth**, which is the total number of reads sequenced per sample. The figure shows the relationship between sequencing depth and number of replicates on the number of differentially expressed genes identified [[1](https://academic.oup.com/bioinformatics/article/30/3/301/228651/RNA-seq-differential-expression-studies-more)]. Note that an **increase in the number of replicates tends to return more DE genes than increasing the sequencing depth**. Therefore, generally more replicates are better than higher sequencing depth, with the caveat that higher depth is required for detection of lowly expressed DE genes and for performing isoform-level differential expression. 
+*Image credits: [Liu, Y., et al., Bioinformatics (2014) **30**(3): 301–304](https://doi.org/10.1093/bioinformatics/btt688)*
+
+As the two figures above illustrates, **biological replicates are of greater importance than sequencing depth**, which is the total number of reads sequenced per sample. The figure shows the relationship between sequencing depth and number of replicates on the number of differentially expressed genes identified [[1](https://academic.oup.com/bioinformatics/article/30/3/301/228651/RNA-seq-differential-expression-studies-more)]. Note that an **increase in the number of replicates tends to return more DE genes than increasing the sequencing depth**. Therefore, generally more replicates are better than higher sequencing depth, with the caveat that higher depth is required for detection of lowly expressed DE genes and for performing isoform-level differential expression. 
 
 Replicates are almost always preferred to greater sequencing depth for bulk RNA-Seq. However, **guidelines depend on the experiment performed and the desired analysis**. Below we list some general guidelines for replicates and sequencing depth to help with experimental planning:
 
@@ -404,12 +404,10 @@ Replicates are almost always preferred to greater sequencing depth for bulk RNA-
   - Spend money on more biological replicates, if possible.
   - Generally recommended to have read length >= 50 bp  
 
-
 - **Gene-level differential expression with detection of lowly-expressed genes:**
   - Similarly benefits from replicates more than sequencing depth.
   - Sequence deeper with at least 30-60 million reads depending on level of expression (start with 30 million with a good number of replicates). 
   - Generally recommended to have read length >= 50 bp  
-
 
 - **Isoform-level differential expression:**
   - Of known isoforms, suggested to have a depth of at least 30 million reads per sample and paired-end reads.
@@ -418,13 +416,11 @@ Replicates are almost always preferred to greater sequencing depth for bulk RNA-
   - Generally recommended to have read length >= 50 bp, but longer is better as the reads will be more likely to cross exon junctions
   - Perform careful QC of RNA quality. Be careful to use high quality preparation methods and restrict analysis to high quality RIN # samples.    
 
-  
 - **Other types of RNA analyses (intron retention, small RNA-Seq, etc.):**   
   - Different recommendations depending on the analysis.
   - Almost always more biological replicates are better!  
   
-> **NOTE:** The factor used to estimate the depth of sequencing for genomes is "coverage" - how many times do the number nucleotides sequenced "cover" the genome. This metric is not exact for genomes, but it works okay. It **does not work for transcriptomes** because expression of the genes depend on the condition being studied.
-
+<br>
 
 # 2. Best practices for experimental design
 
@@ -437,7 +433,7 @@ We are going to identify these through a case study.
 ## 2.1 A case study
 A scientist is hired as the new experimental design expert in a company and its first task is to design a disease assay experiment. 
 
-The scientist has to measure the effect of a plant pathogen called "_Designus malatesta_" on two plant genotypes: one resistant to the pathogen (labelled "_R_" for resistant) and one susceptible (labelled "_S_"). You measure the quantity of pathogen (CFU.g<sup>-1</sup>) in the plant tissue after a week. 
+The scientist has to measure the effect of a plant pathogen called "_Designus malatesta_" on two plant genotypes: one resistant to the pathogen (labelled "_R_" for resistant) and one susceptible (labelled "_S_"). You measure the quantity of the pathogen (CFU.g<sup>-1</sup>) in the plant tissue after a week. 
 
 The scientist disposes of a total of 24 individual plants that are placed on two tables in a greenhouse compartment. Each table can accomodate 12 plants.
 The greenhouse upper right side is pointing north, close to the location of the entrance door. Finally, there is an electrical board to power lamps and other high voltage installation at the lower left side opposite of the door. Here is a scheme of the basic setup.
@@ -487,7 +483,7 @@ The upper half on each table is infected with _D. malatesta_ while the lower hal
 
 In this new design, we have used a completely randomized design for the plant genotypes. To do so, we have randomized the positions of the plant genotypes on the two tables. It turns out that 8 plants from genotype _S_ are on table 1 while the remaining 4 are on table 2.  
 
-<img src="../img/02-xp-design-2.png" height="400px">
+<img src="../img/02-xp-design-2.png" height="400px" alt="completely randomized design">
 
 > ## Question
 > Can you identify one major issue with this design?
@@ -501,79 +497,44 @@ In this new design, we have used a completely randomized design for the plant ge
 
 In this design, each table will accomodate a complete experimental setup. This means that each table will exhibit:
 - Plant genotypes _S_ and _R_ in equal numbers.
-- Infection or mock conditions in equal numbers. 
-Both plant genotypes and treatment will also be randomized on each table. 
+- Infection or mock (water) conditions in equal numbers. 
+Both plant genotypes and treatment positions will also be randomized on each table. 
 
+<img src="../img/02-xp-design-3.png" height="400px" alt="randomized block design">
 
-## 2.4 The three principles of a good experimental design 
+So why is this a better design? It is a better design since, for each measurement, you would record the genotype of your plant, the infection treatment and the table on which your plant was located. In this way, you can _separate_ and estimate the _undesirable_ effect of the temperature (table) on your measurement.  
 
-1. Randomization
-2. Replication
-3. Blocking
+### 2.3.1 Scary formulas
+ 
+**Design number 2 (complete randomized block design)**  
+Fitting a multiple linear regression for the design number 2, your end-formula would look like this:
 
-Nicde quotes:
-> "Randomize what you cannot control"  
-> "Block what you can control"
+$$Y = \beta_{0} + \beta_{1}.X_{1} + \beta_{2}.X_{2} + \beta_{3}.X_{3} + \epsilon_{1}$$
 
-# 3. Challenges relevant to RNA-seq
+With:
+- $$Y$$ is your "response variable" or end-measurement. Here it is the quantity of the pathogen (CFU.g<sup>-1</sup>) in the plant tissue) after a week.
+- $$\beta_{0}$$ the intercept of your model (value of Y when $$X_{1} = 0$$ and $$X_{2} = 0$$). Here it should correspond to plants of the _S_ genotype that are mock inoculated. Then Y should be equal to 0 and so our $$\beta_{0}$$ should be equal to zero. 
+- $$\beta_{1}$$ the coefficient for the genotype effect (one coefficient for _R_ and one for _S_) 
+- $$\beta_{2}$$ the coefficient for the treatment effect (one coefficient for _mock_ and one for _inoculated with D. malatesta_).
+- $$\beta_{3}$$ is an interaction term between the genotype and the infection factors.   
+- $$\epsilon_{1}$$ is the residual error that your model fail to explain. 
 
-## 3.1 Sequencing
+**Design number 3 (complete randomized block design)**  
 
-RNA-seq libraries are often multiplexed and balanced on different sequencing lanes on an Illumina flowcell. This is an example of blocking design that balance the influence any undesirable effect of the sequencing lane.   
-For additional details, see [Auer and Doerge (2010) Statistical Design and Analysis of RNA Sequencing Data. _Genetics_ 185:405-416](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2881125/).
+$$Y = \beta_{0} + \beta_{1}.X_{1} + \beta_{2}.X_{2} + \beta_{3}.X_{3} + \beta_{4}.X_{4} + \epsilon_{2}$$  
 
-## 3.2 Low power
+The different coefficients have the same meaning as for design 2. In addition:    
+- **$$\beta_{4}$$ is the coefficient for the table (possible temperature) effect.** 
+- $$\epsilon_{2}$$ is the residual error. 
 
-RNA-seq experiments often suffer from a low statistical power. 
+And with $$\epsilon_{1}$$ > $$\epsilon_{2}$$ 
 
-A low statistical power reflects type II error: 
-- You are missing "true effects" and there are many false negatives: genes that you should have been called differential but are not. - It also affects the _positive predictive value_ (PVV) of your findings which is the probability that a differential gene (p < 0.01) is a real true finding. 
-Power is therefore linked to the ability to claim "true findings". 
+### 2.3.2 Conclusion
+If you record and control both _desirable_ and _undesirable_ source of variation, you are then able to include them into your statistical model and account for them. This in turns allow you to "sort the wheat from the chaff" and separate _undesirable_ (e.g. temperature) sources of variation from _desirable_ sources (e.g. treatments, genotypes, etc.)  
 
+## 2.4 Other examples of suboptimal design
 
-A series of recent publications have emphasized that low power can lead to a lack of reproducibility of the research findings. For instance, in their publication entitled ["Power failure: why small sample size undermines the reliability of neuroscience"](https://www.nature.com/articles/nrn3475), Button and coauthors state that:
-> Research that produces novel results, statistically significant results (that is, typically p < 0.05) and seemingly 'clean' results is more likely to be published. As a consequence, researchers have strong incentives to engage in research practices that make their findings publishable quickly, even if those practices reduce the likelihood that the findings reflect a true (that is, non-null) effect. Such practices include using **flexible study designs** and flexible statistical analyses and **running small studies with low statistical power**.
-  
-
-## 3.3 Pooling of samples
-
-Yes if absolutely necessary. For instance, you are collecting roots from very young seedlings and you won't have enough material to isolate RNA. 
-
-:warning: One reason not to pool is that you cannot identify potential outliers. Think about one seedling that would be stressed (for some unknown reason) and that might be mixed with several unstressed seedlings. This would potentially affect the level of stress-related genes in your pooled sample. Unfortunately, you would not be able to spot this outlier seedling and isolate it _in silico_. 
-
-> **Sample pooling:** Try to avoid pooling of individuals/experiments, if possible; however, if absolutely necessary, then each pooled set of samples would count as a **single replicate**. To ensure similar amounts of variation between replicates, you would want to pool the **same number of individuals** for each pooled set of samples. 
->
-> *For example, if you need at least 3 individuals to get enough material for your `control` replicate and at least 5 individuals to get enough material for your `treatment` replicate, you would pool 5 individuals for the `control` and 5 individuals for the `treatment` conditions. You would also make sure that the individuals that are pooled in both conditions are similar in sex, age, etc.*
-
-
-# References
-- [Scotty, a web-tool for power calculation](http://scotty.genetics.utah.edu/help.html)
-- [Auer and Doerge (2010) Statistical Design and Analysis of RNA Sequencing Data. _Genetics_ 185:405-416](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2881125/).
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## Confounding
+### 2.4.1 Sex confounded with treatment
   
 A confounded RNA-Seq experiment is one where you **cannot distinguish the separate effects of two different sources of variation** in the data. 
 
@@ -589,7 +550,7 @@ For example, we know that sex has large effects on gene expression, and if all o
 
   <img src="../img/non_confounded_design.png" width="400">
 
-## Batch effects
+### 2.4.2 RNA isolation batch effects
 
 Batch effects are a significant issue for RNA-Seq analyses, since you can see significant differences in expression due solely to the batch effect. 
 
@@ -637,14 +598,48 @@ If *any* of the answers is **‘No’**, then you have batches.
     
  > **NOTE:** *The sample preparation of cell line "biological" replicates "should be performed as independently as possible" (as batches), "meaning that cell culture media should be prepared freshly for each experiment, different frozen cell stocks and growth factor batches, etc. should be used [[2](http://paasp.net/accurate-design-of-in-vitro-experiments-why-does-it-matter/)]." However, preparation across all conditions should be performed at the same time.*
 
+
+## 2.5 The three principles of a good experimental design 
+
+1. Randomization
+2. Replication
+3. Blocking
+
+Nicde quotes:
+> "Randomize what you cannot control"  
+> "Block what you can control"
+
+<br>
+
+# 3. Other points relevant to RNA-seq
+
+## 3.1 Sequencing depth
+Often, one will ask "how many reads per sample do I need?". As we have seen earlier in this episode, the most important aspect is to maximise the number of biological replicates ([see the related section "Power analysis for RNA-seq](#17-power-analysis-for-rna-seq).
+
+In a study on the impact of sequencing depth on the number of genes detected, [Lei et al. (2014)](https://doi.org/10.1016/j.gene.2014.12.013) have shown the increasing sequencing depth (number of reads) does not greatly improve 
+the number of detected genes. This has to do that highly expressed genes are easily detected and quantified with the first million of reads (rapid increase of the detection curve) and that subsequent increase in read number will go to low expressed genes. For instancem half of the transcriptome can be detected with as few as 5 million reads. Therefore, for most species and Arabidopsis in particular, a number around 15M single reads should be enough.  
+
+<img src="../img/02-genes-detected-nb-reads.png" height="600px" alt="Number of genes detected as a function of the number of reads">  
+
+## 3.2 Pooling of samples
+
+Yes if absolutely necessary. For instance, you are collecting roots from very young seedlings and you won't have enough material to isolate RNA. 
+
+:warning: One reason not to pool is that you cannot identify potential outliers. Think about one seedling that would be stressed (for some unknown reason) and that might be mixed with several unstressed seedlings. This would potentially affect the level of stress-related genes in your pooled sample. Unfortunately, you would not be able to spot this outlier seedling and isolate it _in silico_. 
+
+> **Sample pooling:** Try to avoid pooling of individuals/experiments, if possible; however, if absolutely necessary, then each pooled set of samples would count as a **single replicate**. To ensure similar amounts of variation between replicates, you would want to pool the **same number of individuals** for each pooled set of samples. 
+>
+> *For example, if you need at least 3 individuals to get enough material for your `control` replicate and at least 5 individuals to get enough material for your `treatment` replicate, you would pool 5 individuals for the `control` and 5 individuals for the `treatment` conditions. You would also make sure that the individuals that are pooled in both conditions are similar in sex, age, etc.*
+
+
 # References 
 - [The power analysis section of the RNA-seq blog](https://www.rna-seqblog.com/tag/power-analysis/)
 - [`pwr` R package vignette](https://cran.r-project.org/web/packages/pwr/vignettes/pwr-vignette.html)
 - [The Scotty power analysis webtool](http://scotty.genetics.utah.edu/)
 - [UCLA Stat consulting on power analysis](https://stats.idre.ucla.edu/r/dae/power-analysis-for-two-group-independent-sample-t-test/)
+-  [Lei et al. (2015) Diminishing returns in next-generation sequencing (NGS) transcriptome data. _Gene_ 557(1):82-87](https://doi.org/10.1016/j.gene.2014.12.013)
 
-## Credits
-
+## Photo credits
 
 <a style="background-color:black;color:white;text-decoration:none;padding:4px 6px;font-family:-apple-system, BlinkMacSystemFont, &quot;San Francisco&quot;, &quot;Helvetica Neue&quot;, Helvetica, Ubuntu, Roboto, Noto, &quot;Segoe UI&quot;, Arial, sans-serif;font-size:12px;font-weight:bold;line-height:1.2;display:inline-block;border-radius:3px" href="https://unsplash.com/@ayahya09?utm_medium=referral&amp;utm_campaign=photographer-credit&amp;utm_content=creditBadge" target="_blank" rel="noopener noreferrer" title="Download free do whatever you want high-resolution photos from Ali Yahya"><span style="display:inline-block;padding:2px 3px"><svg xmlns="http://www.w3.org/2000/svg" style="height:12px;width:auto;position:relative;vertical-align:middle;top:-2px;fill:white" viewBox="0 0 32 32"><title>unsplash-logo</title><path d="M10 9V0h12v9H10zm12 5h10v18H0V14h10v9h12v-9z"></path></svg></span><span style="display:inline-block;padding:2px 3px">Ali Yahya</span></a>
 
