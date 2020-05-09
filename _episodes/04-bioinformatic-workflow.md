@@ -699,7 +699,7 @@ Here are some examples of common used arguments.
 | `--runThreads` | number of threads |
 | `--genomeDir` | /path/to/genomeDir |
 | `--readFilesIn` | /path/to/read1 [/path/to/read2] |
-| `--readFilesCommand zcat` | when make use of gzipped fastq files |
+| `--readFilesCommand zcat` | when making use of gzipped fastq files |
 | `--outFileNamePrefix` | /path/to/output file name |
 | `--outSAMtype` | BAM/SAM or None  [optional: SortedByCoordinate] |
 | `--outReadsUnmapped` | [default: None] Fastx ; output in separate fasta/fastq file |
