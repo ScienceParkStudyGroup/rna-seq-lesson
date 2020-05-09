@@ -44,7 +44,7 @@ keypoints:
 We will now assess the quality of the reads that we downloaded. First, we need to make an output directory for the fastqc results to be stored. This we want to do in the 'home' directory that contains all the needed files.
 
 ~~~
-$ docker run --rm -it scienceparkstudygroup/master-gls:fastq-latest
+$ docker run -it scienceparkstudygroup/master-gls:fastq-latest
 
 $ conda activate fastq
 
@@ -70,7 +70,7 @@ fastqc -o fastqc Arabidopsis_sample1.fq.gz
 ~~~
 {: .bash}
 
-Of course we don't want to do y=this for all the samples seperately so we can loop through the list of samples and run them all sequentially
+Of course we don't want to do this for all the samples seperately so we can loop through the list of samples and run them all sequentially
 
 With the use of echo you can start off with a "dry run"
 
@@ -157,6 +157,7 @@ If we were working on our local computers, we'd be able to display each of these
 HTML files as a webpage:
 
 ~~~
+$ cd fastqc/
 $ open Arabidopsis_sample1_fastqc.html
 ~~~
 {: .bash}
@@ -165,7 +166,7 @@ $ open Arabidopsis_sample1_fastqc.html
 However, if you try this in the docker container we're working in, you'll get an error:
 
 ~~~
-Couldn't get a file descriptor referring to the console
+bash: open: command not found
 ~~~
 {: .output}
 
@@ -181,25 +182,33 @@ remote computer to your local computer with the help of `scp`.
 First we need to exit the container and next we can transfer our HTML 
 files to our local computer using `docker cp`.
 
-First we
-will make a new directory on our computer to store the HTML files
-we're transfering. Let's put it on our desktop for now. Open a new
-tab in your terminal program (you can use the pull down menu at the
-top of your screen or the Cmd+t keyboard shortcut) and type:
-
 ~~~
 $ mkdir -p ~/Desktop/fastqc_html
 ~~~
 {: .bash}
 
+
+~~~
+$ docker cp bioinfo:/home/fastqc/ ~/Desktop/fastqc_html
+~~~
+{: .bash}
+
 This will transfer all files in the folder home/fastqc/ to your Desktop.
+
+bioinfo refers to the name of the container.
+The second part starts with a `:` and then gives the absolute path of the files you want to transfer.
+The third part of the command gives the absolute path of the location
+you want to put the files. This is on your local computer and is the
+directory we just created `~/Desktop/fastqc_html`.
+
 
 When working on a remote computer make use of the following command
 
 ~~~
-$ docker cp bioinfo:/home/fastqc/ ~/Desktop/fastqc
+$ scp -r tbliek@genseq-cn02.science.uva.nl:~/rna_seq_lesson/fastqc/ ~/Desktop/fastqc_html
 ~~~
 {: .bash}
+
 
 As a reminder, the first part
 of the command `tbliek@genseq-cn02.science.uva.nl` is
@@ -266,9 +275,9 @@ $ ls
 {: .bash}
 
 ~~~
-sub06_fastqc.html  sub07_fastqc.zip   sub21_fastqc.html  sub23_fastqc.zip
-sub06_fastqc.zip   sub08_fastqc.html  sub21_fastqc.zip   sub24_fastqc.html
-sub07_fastqc.html  sub08_fastqc.zip   sub23_fastqc.html  sub24_fastqc.zip
+Arabidopsis_sample1_fastqc.html  Arabidopsis_sample2_fastqc.zip   Arabidopsis_sample4_fastqc.html
+Arabidopsis_sample1_fastqc.zip	 Arabidopsis_sample3_fastqc.html  Arabidopsis_sample4_fastqc.zip
+Arabidopsis_sample2_fastqc.html  Arabidopsis_sample3_fastqc.zip
 ~~~
 {: .output}
 
@@ -284,12 +293,10 @@ $ unzip *.zip
 {: .bash}
 
 ~~~
-Archive:  SRR2584863_1_fastqc.zip
-caution: filename not matched:  sub07_fastqc.zip
-caution: filename not matched:  sub08_fastqc.zip
-caution: filename not matched:  sub21_fastqc.zip
-caution: filename not matched:  sub22_fastqc.zip
-caution: filename not matched:  sub24_fastqc.zip
+Archive:  Arabidopsis_sample1_fastqc.zip
+caution: filename not matched:  Arabidopsis_sample2_fastqc.zip
+caution: filename not matched:  Arabidopsis_sample3_fastqc.zip
+caution: filename not matched:  Arabidopsis_sample4_fastqc.zip
 ~~~
 {: .output}
 
@@ -306,47 +313,37 @@ discuss what we're doing with each line of our loop.
 ~~~
 $ for filename in *.zip
 > do
-> unzip $filename
+>  unzip $filename
 > done
 ~~~
 {: .bash}
 
 
-In this example, the input is six filenames (one filename for each of our `.zip` files).
+In this example, the input is four filenames (one filename for each of our `.zip` files).
 Each time the loop iterates, it will assign a file name to the variable `filename`
 and run the `unzip` command.
 The first time through the loop,
-`$filename` is `sub06_fastqc.zip`.
-The interpreter runs the command `unzip` on `sub06_fastqc.zip`.
+`$filename` is `Arabidopsis_sample1_fastqc.zip`.
+The interpreter runs the command `unzip` on `Arabidopsis_sample1_fastqc.zip`.
 For the second iteration, `$filename` becomes
-`Ssub07_fastqc.zip`. This time, the shell runs `unzip` on `sun07_fastqc.zip`.
+`Arabidopsis_sample2_fastqc.zip`. This time, the shell runs `unzip` on `Arabidopsis_sample2_fastqc.zip`.
 It then repeats this process for the four other `.zip` files in our directory.
 
 
 When we run our `for` loop, you will see output that starts like this:
 
 ~~~
-Archive:  sub06_fastqc.zip
-   creating: sub06_fastqc/
-   creating: sub06_fastqc/Icons/
-   creating: sub06_fastqc/Images/
-  inflating: sub06_fastqc/Icons/fastqc_icon.png  
-  inflating: sub06_fastqc/Icons/warning.png  
-  inflating: sub06_fastqc/Icons/error.png  
-  inflating: sub06_fastqc/Icons/tick.png  
-  inflating: sub06_fastqc/summary.txt  
-  inflating: sub06_fastqc/Images/per_base_quality.png  
-  inflating: sub06_fastqc/Images/per_tile_quality.png  
-  inflating: sub06_fastqc/Images/per_sequence_quality.png  
-  inflating: sub06_fastqc/Images/per_base_sequence_content.png  
-  inflating: sub06_fastqc/Images/per_sequence_gc_content.png  
-  inflating: sub06_fastqc/Images/per_base_n_content.png  
-  inflating: sub06_fastqc/Images/sequence_length_distribution.png  
-  inflating: sub06_fastqc/Images/duplication_levels.png  
-  inflating: sub06_fastqc/Images/adapter_content.png  
-  inflating: sub06_fastqc/fastqc_report.html  
-  inflating: sub06_fastqc/fastqc_data.txt  
-  inflating: sub06_fastqc/fastqc.fo  
+Archive:  fastqc/Arabidopsis_sample2_fastqc.zip
+   creating: Arabidopsis_sample2_fastqc/
+   creating: Arabidopsis_sample2_fastqc/Icons/
+   creating: Arabidopsis_sample2_fastqc/Images/
+  inflating: Arabidopsis_sample2_fastqc/Icons/fastqc_icon.png  
+  ...
+  inflating: Arabidopsis_sample4_fastqc/Images/duplication_levels.png  
+  inflating: Arabidopsis_sample4_fastqc/Images/adapter_content.png  
+  inflating: Arabidopsis_sample4_fastqc/fastqc_report.html  
+  inflating: Arabidopsis_sample4_fastqc/fastqc_data.txt  
+  inflating: Arabidopsis_sample4_fastqc/fastqc.fo 
 ~~~
 {: .output}
 
@@ -359,12 +356,10 @@ are a lot of files here. The one we're going to focus on is the
 If you list the files in our directory now you will see:
 
 ~~~
-sub06_fastqc       sub08_fastqc       sub22_fastqc
-sub06_fastqc.html  sub08_fastqc.html  sub22_fastqc.html
-sub06_fastqc.zip   sub08_fastqc.zip   sub22_fastqc.zip
-sub07_fastqc       sub21_fastqc       sub24_fastqc
-sub07_fastqc.html  sub21_fastqc.html  sub24_fastqc.html
-sub07_fastqc.zip   sub21_fastqc.zip   sub24_fastqc.zip
+Arabidopsis_sample1_fastqc     	 Arabidopsis_sample2_fastqc.html  Arabidopsis_sample3_fastqc.zip
+Arabidopsis_sample1_fastqc.html  Arabidopsis_sample2_fastqc.zip   Arabidopsis_sample4_fastqc
+Arabidopsis_sample1_fastqc.zip	 Arabidopsis_sample3_fastqc	  Arabidopsis_sample4_fastqc.html
+Arabidopsis_sample2_fastqc	 Arabidopsis_sample3_fastqc.html  Arabidopsis_sample4_fastqc.zip
 ~~~
 {: .output}
 
@@ -379,19 +374,17 @@ $ ls -F
 {: .bash}
 
 ~~~
-sub06_fastqc/      sub08_fastqc/      sub22_fastqc/
-sub06_fastqc.html  sub08_fastqc.html  sub22_fastqc.html
-sub06_fastqc.zip   sub08_fastqc.zip   sub22_fastqc.zip
-sub07_fastqc/      sub21_fastqc/      sub24_fastqc/
-sub07_fastqc.html  sub21_fastqc.html  sub24_fastqc.html
-sub07_fastqc.zip   sub21_fastqc.zip   sub24_fastqc.zip
+Arabidopsis_sample1_fastqc/	 Arabidopsis_sample2_fastqc.html  Arabidopsis_sample3_fastqc.zip   
+Arabidopsis_sample1_fastqc.html  Arabidopsis_sample2_fastqc.zip   Arabidopsis_sample4_fastqc/
+Arabidopsis_sample1_fastqc.zip	 Arabidopsis_sample3_fastqc/	  Arabidopsis_sample4_fastqc.html
+Arabidopsis_sample2_fastqc/	 Arabidopsis_sample3_fastqc.html  Arabidopsis_sample4_fastqc.zip
 ~~~
 {: .output}
 
 Let's see what files are present within one of these output directories.
 
 ~~~
-$ ls -F sub06_fastqc/
+$ ls -F Arabidopsis_sample1_fastqc/
 ~~~
 {: .bash}
 
@@ -403,22 +396,21 @@ fastqc_data.txt  fastqc.fo  fastqc_report.html	Icons/	Images/  summary.txt
 Use `less` to preview the `summary.txt` file for this sample.
 
 ~~~
-$ less sub06_fastqc/summary.txt
+$ less Arabidopsis_sample1_fastqc/summary.txt
 ~~~
 {: .bash}
 
 ~~~
-PASS    Basic Statistics        sub06.fastq
-PASS    Per base sequence quality       sub06.fastq
-PASS    Per tile sequence quality       sub06.fastq
-PASS    Per sequence quality scores     sub06.fastq
-WARN    Per base sequence content       sub06.fastq
-WARN    Per sequence GC content sub06.fastq
-PASS    Per base N content      sub06.fastq
-PASS    Sequence Length Distribution    sub06.fastq
-PASS    Sequence Duplication Levels     sub06.fastq
-PASS    Overrepresented sequences       sub06.fastq
-WARN    Adapter Content sub06.fastq
+PASS    Basic Statistics        Arabidopsis_sample1.fq.gz
+PASS    Per base sequence quality       Arabidopsis_sample1.fq.gz
+PASS    Per sequence quality scores     Arabidopsis_sample1.fq.gz
+FAIL    Per base sequence content       Arabidopsis_sample1.fq.gz
+PASS    Per sequence GC content Arabidopsis_sample1.fq.gz
+PASS    Per base N content      Arabidopsis_sample1.fq.gz
+PASS    Sequence Length Distribution    Arabidopsis_sample1.fq.gz
+WARN    Sequence Duplication Levels     Arabidopsis_sample1.fq.gz
+WARN    Overrepresented sequences       Arabidopsis_sample1.fq.gz
+PASS    Adapter Content Arabidopsis_sample1.fq.gz
 ~~~
 {: .output}
 
@@ -446,9 +438,8 @@ When making use of illumina reads this is not as much of a problem and 3'-trimmi
 To start off make a directory trimmed for the output and then back to the rawReads directory.
 
 ~~~
-$ cd ~/RNAseq070319/
+$ cd /home/
 $ mkdir trimmed
-$ cd ~/RNAseq070319/rawReads/
 ~~~
 {: .bash}
 
@@ -473,7 +464,7 @@ In the programm the following arguments can be used.
 
 To run this on a single sample it looks something like this
 ~~~
-trimmomatic SE -phred33 -threads 2 sub06.fastq ../trimmed/sub06_qc.fq ILLUMINACLIP:../adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25 CROP:100
+trimmomatic SE -phred33 -threads 2 Arabidopsis_sample1.fq.gz trimmed/Arabidopsis_sample1_qc.fq ILLUMINACLIP:adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25 CROP:100
 ~~~
 {: .bash}
 
