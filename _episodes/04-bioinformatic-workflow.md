@@ -510,7 +510,7 @@ Again starting with a dry run with echo.
 ~~~
 $ for infile in *.fq.gz
 do
-  outputFile="$(basename $infile .fastq)"_qc.fq
+  outfile="$(basename $infile .fastq)"_qc.fq
   echo "trimmomatic SE -phred33 -threads 2 $infile trimmed/$outfile ILLUMINACLIP:adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25"
 done
 ~~~
@@ -528,7 +528,7 @@ trimmomatic SE -phred33 -threads 2 Arabidopsis_sample4.fq.gz trimmed/Arabidopsis
 {: .output}
 
 
-If it al looks ok, rerun with out `echo`
+If it all looks ok, rerun with out `echo`
 
 ~~~
 $ for infile in *.fastq
@@ -568,13 +568,52 @@ We perform read alignment or mapping to determine where in the genome our reads 
 choose from and, while there is no gold standard, there are some tools that are better suited for particular NGS analyses. In this tutorial we will be using [STAR](https://physiology.med.cornell.edu/faculty/skrabanek/lab/angsd/lecture_notes/STARmanual.pdf) but also 
 a tool like [hisat2](http://ccb.jhu.edu/software/hisat2/index.shtml) does the job.
 
-The alignment process consists of two steps:
+
+
+### STAR Alignment Strategy
+
+STAR is shown to have high accuracy and outperforms other aligners by more than a factor of 50 in mapping speed, but it is memory intensive. The algorithm achieves this highly efficient mapping by performing a two-step process:
+
+Seed searching
+Clustering, stitching, and scoring
+Seed searching
+
+For every read that STAR aligns, STAR will search for the longest sequence that exactly matches one or more locations on the reference genome. These longest matching sequences are called the Maximal Mappable Prefixes (MMPs):
+
+<img src="../img/alignment_STAR_step1.png" height="350" >
+
+
+The different parts of the read that are mapped separately are called ‘seeds’. So the first MMP that is mapped to the genome is called seed1.
+
+STAR will then search again for only the unmapped portion of the read to find the next longest sequence that exactly matches the reference genome, or the next MMP, which will be seed2.
+
+<img src="../img/alignment_STAR_step2.png" height="275" >
+
+This sequential searching of only the unmapped portions of reads underlies the efficiency of the STAR algorithm. STAR uses an uncompressed suffix array (SA) to efficiently search for the MMPs, this allows for quick searching against even the largest reference genomes. Other slower aligners use algorithms that often search for the entire read sequence before splitting reads and performing iterative rounds of mapping.
+
+If STAR does not find an exact matching sequence for each part of the read due to mismatches or indels, the previous MMPs will be extended.
+
+<img src="../img/alignment_STAR_step3.png" height="650" >
+
+**If extension does not give a good alignment**, then the poor quality or adapter sequence (or other contaminating sequence) will be soft clipped.
+
+<img src="../img/alignment_STAR_step4.png" height="300" >
+
+**Clustering, stitching, and scoring**
+
+The separate seeds are stitched together to create a complete read by first clustering the seeds together based on proximity to a set of ‘anchor’ seeds, or seeds that are not multi-mapping.
+
+Then the seeds are stitched together based on the best alignment for the read (scoring based on mismatches, indels, gaps, etc.).
+
+<img src="../img/alignment_STAR_step5.png" height="400" >
+
+### The alignment process consists of two steps:
 
 1. Indexing the reference genome
 2. Aligning the reads to the reference genome
 
 
-## 3.1 Setting up
+### 3.1 Setting up
 
 ## 3.2 Index the reference genome
 Our first step is to index the reference genome for use by STAR. Indexing allows the aligner to quickly find potential alignment sites for query sequences in a genome, which saves time during alignment. Indexing the reference only has to be run once. The only reason you would want to create a new index is if you are working with a different reference genome or you are using a different tool for alignment (index files are not exchangeable between tools).
@@ -674,7 +713,7 @@ Here are some examples of common used arguments.
 
 For now we will be using STAR with the following arguments
 ~~~
-$  STAR --genomeDir genomeindex --runThreadN 2 --readFilesIn ERR1406259.fq.gz --readFilesCommand zcat --outFileNamePrefix ERR1406259 --outSAMtype BAM SortedByCoordinate --outSAMunmapped None --outFilterMismatchNmax 3 --outFilterMultimapNmax 1
+$  STAR --genomeDir genomeindex --runThreadN 2 --readFilesIn Arabidopsis_sample1_qc.fq --outFileNamePrefix ERR1406259Arabidopsis_sample1_qc.bam --outSAMtype BAM SortedByCoordinate --outSAMunmapped None --outFilterMismatchNmax 3 --outFilterMultimapNmax 1
 ~~~
 {: .bash}
 
@@ -687,7 +726,7 @@ It's good again to first start with a 'dry' run with the use of echo
 $ for infile in trimmed/*.fq
  do
    outfile="$(basename $infile .fq)”
-   echo "STAR --genomeDir genomeIndex --runThreadN 2 --readFilesIn trimmed/$infile --readFilesCommand zcat --outFileNamePrefix mapped/$outfile --outSAMtype BAM SortedByCoordinate --outSAMunmapped None --outFilterMismatchNmax 3 --alignEndsType EndToEnd --outFilterMultimapNmax 1"
+   echo "STAR --genomeDir genomeIndex --runThreadN 2 --readFilesIn trimmed/$infile --outFileNamePrefix mapped/$outfile --outSAMtype BAM SortedByCoordinate --outSAMunmapped None --outFilterMismatchNmax 3 --alignEndsType EndToEnd --outFilterMultimapNmax 1"
  done
 ~~~
 {: .bash}
@@ -716,11 +755,11 @@ May 04 12:55:59 ..... Finished successfully
 The final.out file contains all the characteristics of the alignment.
 
 ~~~
-$ less ERR1406259Log.final.out
+$ less mapped/Arabidopsis_sample1_qc.final.out
 ~~~
 {: .bash}
 
-resulting in table containing all the alignment numbers.
+resulting in table containing all the alignment values.
 
 ~~~
                                  Started job on |       May 04 12:51:55
@@ -754,7 +793,7 @@ resulting in table containing all the alignment numbers.
        % of reads unmapped: too many mismatches |       0.00%
                  % of reads unmapped: too short |       0.02%
                      % of reads unmapped: other |       0.00%
-ERR1406259Log.final.out (END) 
+Arabidopsis_sample1_qcLog.final.out (END) 
 ~~~
 {: .output}
 
