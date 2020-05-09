@@ -229,8 +229,8 @@ The -r option is used to tell scp to recursively copy the source directory and i
 You should see a status output like this:
 
 ~~~
-ERR1406259.fq.gz.html                      100%  249KB 152.3KB/s   00:01    
-ERR1406260.fq.gz.html                      100%  254KB 219.8KB/s   00:01      
+Arabidopsis_sample1_fastqc.html                      100%  249KB 152.3KB/s   00:01    
+Arabidopsis_sample1_fastqc.html                       100%  254KB 219.8KB/s   00:01      
 ~~~
 {: .output}
 
@@ -269,7 +269,7 @@ in your terminal program that is connected to your AWS instance
 our results subdirectory.   
 
 ~~~
-$ cd ~/RNAseq070319/fastqc/
+$ cd home/fastqc/
 $ ls
 ~~~
 {: .bash}
@@ -425,7 +425,7 @@ using the `cat` command. We'll call this `full_report.txt` and move
 it to `~/dc_workshop/docs`.
 
 ~~~
-$ cat */summary.txt > ~/dc_workshop/docs/fastqc_summaries.txt
+$ cat */summary.txt > fastqc_summaries.txt
 ~~~
 {: .bash}
 
@@ -476,7 +476,7 @@ this can be done with the help of 'basename'
 
 
 ~~~
-$ for infile in *.fastq
+$ for infile in *.fq.gz
 do
  echo inputfile $infile
  outfile="$(basename $infile .fastq)"_qc.fq
@@ -490,23 +490,17 @@ done
 This be be producing the following list
 
 ~~~
-inputfile sub06.fastq
-outputfile sub06_qc.fq
+inputfile Arabidopsis_sample1.fq.gz
+outputfile Arabidopsis_sample1_qc.fq
 
-inputfile sub07.fastq
-outputfile sub07_qc.fq
+inputfile Arabidopsis_sample2.fq.gz
+outputfile Arabidopsis_sample2_qc.fq
 
-inputfile sub08.fastq
-outputfile sub08_qc.fq
+inputfile Arabidopsis_sample3.fq.gz
+outputfile Arabidopsis_sample3_qc.fq
 
-inputfile sub21.fastq
-outputfile sub21_qc.fq
-
-inputfile sub23.fastq
-outputfile sub23_qc.fq
-
-inputfile sub24.fastq
-outputfile sub24_qc.fq
+inputfile Arabidopsis_sample4.fq.gz
+outputfile Arabidopsis_sample4_qc.fq
 ~~~
 {: .output}
 
@@ -514,10 +508,10 @@ Next we can start writing the trimmomatic loop.
 Again starting with a dry run with echo.
 
 ~~~
-$ for fastq in *.fastq
+$ for infile in *.fq.gz
 do
-  outputFile="$(basename $fastq .fastq)"_qc.fq
-  echo trimmomatic SE -phred33 -threads 2 $fastq ../trimmed/$outputFile ILLUMINACLIP:../adapters.fasta:2:30:10 LEADING:3 TRAILING:3     SLIDINGWINDOW:4:15 MINLEN:25 CROP:100
+  outputFile="$(basename $infile .fastq)"_qc.fq
+  echo "trimmomatic SE -phred33 -threads 2 $infile trimmed/$outfile ILLUMINACLIP:adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25"
 done
 ~~~
 {: .bash}
@@ -526,17 +520,15 @@ done
 should be producing something like this
 
 ~~~
-trimmomatic SE -phred33 -threads 2 sub06.fastq ../trimmed/sub06_qc.fq ILLUMINACLIP:../general/adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25 CROP:100
-trimmomatic SE -phred33 -threads 2 sub07.fastq ../trimmed/sub07_qc.fq ILLUMINACLIP:../general/adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25 CROP:100
-trimmomatic SE -phred33 -threads 2 sub08.fastq ../trimmed/sub08_qc.fq ILLUMINACLIP:../general/adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25 CROP:100
-trimmomatic SE -phred33 -threads 2 sub21.fastq ../trimmed/sub21_qc.fq ILLUMINACLIP:../general/adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25 CROP:100
-trimmomatic SE -phred33 -threads 2 sub23.fastq ../trimmed/sub23_qc.fq ILLUMINACLIP:../general/adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25 CROP:100
-trimmomatic SE -phred33 -threads 2 sub24.fastq ../trimmed/sub24_qc.fq ILLUMINACLIP:../general/adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25 CROP:100
+trimmomatic SE -phred33 -threads 2 Arabidopsis_sample1.fq.gz trimmed/Arabidopsis_sample1.fq.gz_qc.fq ILLUMINACLIP:adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25
+trimmomatic SE -phred33 -threads 2 Arabidopsis_sample2.fq.gz trimmed/Arabidopsis_sample2.fq.gz_qc.fq ILLUMINACLIP:adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25
+trimmomatic SE -phred33 -threads 2 Arabidopsis_sample3.fq.gz trimmed/Arabidopsis_sample3.fq.gz_qc.fq ILLUMINACLIP:adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25
+trimmomatic SE -phred33 -threads 2 Arabidopsis_sample4.fq.gz trimmed/Arabidopsis_sample4.fq.gz_qc.fq ILLUMINACLIP:adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25
 ~~~
 {: .output}
 
 
-If it al seems ok rerun with out `echo`
+If it al looks ok, rerun with out `echo`
 
 ~~~
 $ for infile in *.fastq
@@ -544,6 +536,7 @@ do
     outfile="$(basename $infile .fastq)"_qc.fq
     trimmomatic SE -phred33 -threads 2 $infile ../trimmed/"$outfile ILLUMINACLIP:../general/adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25 CROP:100
 done
+
 ~~~
 {: .bash}
 
@@ -552,12 +545,16 @@ The following should appear:
 
 ~~~
 TrimmomaticSE: Started with arguments:
- -phred33 -threads 2 sub06.fastq ../trimmed/sub06_qc.fq ILLUMINACLIP:../general/adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25 CROP:100
+ -phred33 -threads 2 Arabidopsis_sample1.fq.gz trimmed/Arabidopsis_sample1.fq.gz_qc.fq ILLUMINACLIP:adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25
+Using Long Clipping Sequence: 'GATCGGAAGAGCACACGTCTGAACTCCAGTCACTGACCAATCTCGTATGCCGTCTTCTGCTTG'
+Using Long Clipping Sequence: 'CAAGCAGAAGACGGCATACGAGCTCTTCCGATCT'
 …
-Input Reads: 1000000 Surviving: 887553 (88.76%) Dropped: 112447 (11.24%)
+Skipping duplicate Clipping Sequence: 'ACACTCTTTCCCTACACGACGCTCTTCCGATCT'
+ILLUMINACLIP: Using 0 prefix pairs, 31 forward/reverse sequences, 0 forward only sequences, 0 reverse only sequences
+Input Reads: 250000 Surviving: 248320 (99.33%) Dropped: 1680 (0.67%)
 TrimmomaticSE: Completed successfully
 ~~~
-{: output}
+{: .output}
 
 It's possible to scroll up to check if the percentage of surviving & dropped is within the same range in all of the samples.
 
@@ -585,11 +582,11 @@ Our first step is to index the reference genome for use by STAR. Indexing allows
 Take note that depending on the genome size these index files produced by STAR can be pretty big. Make sure there's enough disk space available.
 
 ~~~
-$ cd ~/RNAseq070319/general
+$ cd /home/
 
 $ mkdir genomeIndex
 
-$ STAR --runMode genomeGenerate --genomeDir genomeIndex --genomeFastaFiles AtChromosome1.fa --runThreadN 8
+$ STAR --runMode genomeGenerate --genomeDir genomeIndex --genomeFastaFiles AtChromosome1.fa --runThreadN 2
 ~~~
 {: .bash}
 
@@ -642,7 +639,7 @@ In some tools like hisat2 creating the sequence alignment files (bam-files) is d
 First of course we will need to create a directory to output the alignment files
 
 ~~~
-$ cd ~/RNAseq070319/
+$ cd /home/
 
 $ mkdir mapped
 ~~~
@@ -650,8 +647,8 @@ $ mkdir mapped
 
 Running STAR to align ( or map ) the reads and optionaly filter and sort them.
 
-In contrast to most atools, STAR does not have a help function.
-running STAR -h or STAR --help will result in an error. For information on what arguments to use you can or need to 
+In contrast to most tools, STAR does not have a help function.
+running STAR -h or STAR --help will result in an error. For information on what arguments to use you can 
 use have a look at the 
 [STAR manual.](https://physiology.med.cornell.edu/faculty/skrabanek/lab/angsd/lecture_notes/STARmanual.pdf).
 
