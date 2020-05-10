@@ -825,13 +825,20 @@ displayed below with the different fields highlighted.
 For downstream application for each of the samples the number of reads that maps within a gene has to be determined.
 Featurecounts from the subread package can do this.
 
+FeatureCounts can count the number of reads that map within a feature. In case of the arabidopsis annotation there are three different features to choose from. Depending on the downstream applications the choice is gene, transcript or exon. In this study we are just looking for differientially expressed genes.
 
 ~~~
 $ cd /home/
 
+$ gunzip ath_annotation.gff3.gz
+
 $ featureCounts -O -t gene -g ID -a ath_annotation.gff3 -o counts.txt mapped/*.bam
 ~~~
 
+-a <string>         Name of an annotation file. GTF/GFF format by default.
+-o <string>         Name of the output file including read counts.
+-O                  Assign reads to all their overlapping meta-features.
+-t <string>         Specify feature type in GTF annotation
+-g <string>         Specify attribute type in GTF annotation. Determines the name of the features.
 
-The file produced by `featureCounts` is a tab-delimited file.
-
+The output file produced by `featureCounts` is a tab-delimited file, can be opened in a program like excel.
