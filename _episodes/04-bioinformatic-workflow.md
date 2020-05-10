@@ -44,7 +44,7 @@ keypoints:
 We will now assess the quality of the reads that we downloaded. First, we need to make an output directory for the fastqc results to be stored. This we want to do in the 'home' directory that contains all the needed files.
 
 ~~~
-$ docker run -it scienceparkstudygroup/master-gls:fastq-latest
+$ docker run -it --name bioinfo scienceparkstudygroup/master-gls:fastq-latest
 
 $ conda activate fastq
 
@@ -288,6 +288,7 @@ to decompress these files. Let's try doing them all at once using a
 wildcard.
 
 ~~~
+$ conda install -c conda-forge unzip
 $ unzip *.zip
 ~~~
 {: .bash}
@@ -445,7 +446,7 @@ $ mkdir trimmed
 
 
 
-The trimming and quality filtering will be done with trimmomatic.
+The trimming and quality filtering will be done with **trimmomatic**.
 In the programm the following arguments can be used.
 
 | step   | meaning |
@@ -464,7 +465,7 @@ In the programm the following arguments can be used.
 
 To run this on a single sample it looks something like this
 ~~~
-trimmomatic SE -phred33 -threads 2 Arabidopsis_sample1.fq.gz trimmed/Arabidopsis_sample1_qc.fq ILLUMINACLIP:adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25 CROP:100
+trimmomatic SE -phred33 -threads 2 Arabidopsis_sample1.fq.gz trimmed/Arabidopsis_sample1_qc.fq ILLUMINACLIP:adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25
 ~~~
 {: .bash}
 
@@ -479,7 +480,7 @@ this can be done with the help of 'basename'
 $ for infile in *.fq.gz
 do
  echo inputfile $infile
- outfile="$(basename $infile .fastq)"_qc.fq
+ outfile="$(basename $infile .fq.gz)"_qc.fq
  echo outputfile $outfile
  echo
 done
@@ -625,6 +626,8 @@ $ cd /home/
 
 $ mkdir genomeIndex
 
+$ gunzip AtChromosome1.fa.gz
+
 $ STAR --runMode genomeGenerate --genomeDir genomeIndex --genomeFastaFiles AtChromosome1.fa --runThreadN 2
 ~~~
 {: .bash}
@@ -713,7 +716,7 @@ Here are some examples of common used arguments.
 
 For now we will be using STAR with the following arguments
 ~~~
-$  STAR --genomeDir genomeindex --runThreadN 2 --readFilesIn Arabidopsis_sample1_qc.fq --outFileNamePrefix ERR1406259Arabidopsis_sample1_qc.bam --outSAMtype BAM SortedByCoordinate --outSAMunmapped None --outFilterMismatchNmax 3 --outFilterMultimapNmax 1
+$  STAR --genomeDir genomeIndex --runThreadN 2 --readFilesIn trimmed/Arabidopsis_sample1_qc.fq --outFileNamePrefix mapped/Arabidopsis_sample1_qc --outSAMtype BAM SortedByCoordinate --outSAMunmapped None --outFilterMismatchNmax 3 --outFilterMultimapNmax 1 --outSAMattributes All
 ~~~
 {: .bash}
 
@@ -725,8 +728,8 @@ It's good again to first start with a 'dry' run with the use of echo
 ~~~
 $ for infile in trimmed/*.fq
  do
-   outfile="$(basename $infile .fq)”
-   echo "STAR --genomeDir genomeIndex --runThreadN 2 --readFilesIn trimmed/$infile --outFileNamePrefix mapped/$outfile --outSAMtype BAM SortedByCoordinate --outSAMunmapped None --outFilterMismatchNmax 3 --alignEndsType EndToEnd --outFilterMultimapNmax 1"
+   outfile="$(basename $infile .fq)”_
+   echo "STAR --genomeDir genomeIndex --runThreadN 2 --readFilesIn trimmed/$infile --outFileNamePrefix mapped/$outfile --outSAMtype BAM SortedByCoordinate --outSAMunmapped None --outFilterMismatchNmax 3 --outFilterMultimapNmax 1 --outSAMattributes All"
  done
 ~~~
 {: .bash}
@@ -734,10 +737,10 @@ $ for infile in trimmed/*.fq
 If the commands look good, rerun but this time without the echo.
 
 ~~~
-$for infile in *.fq
+$for infile in trimmed/*.fq
  do
-   outfile="$(basename $infile .fq)”
-   STAR --genomeDir genomeIndex --runThreadN 2 --readFilesIn trimmed/$infile --readFilesCommand zcat --outFileNamePrefix mapped/$outfile --outSAMtype BAM SortedByCoordinate --outSAMunmapped None --outFilterMismatchNmax 3 --alignEndsType EndToEnd --outFilterMultimapNmax 1
+   outfile="$(basename $infile .fq)”_
+   STAR --genomeDir genomeIndex --runThreadN 2 --readFilesIn trimmed/$infile --outFileNamePrefix mapped/$outfile --outSAMtype BAM SortedByCoordinate --outSAMunmapped None --outFilterMismatchNmax 3 --outFilterMultimapNmax 1 --outSAMattributes All
  done
 ~~~
 {: .bash}
@@ -824,9 +827,9 @@ Featurecounts from the subread package can do this.
 
 
 ~~~
-$ cd ~/RNAseqWorkshop/mapped
+$ cd /home/
 
-$ featureCounts -O -t mRNA -g ID -a ../general/annotation.all_transcripts.exon_features.ath.gff3 -o counts.txt *.bam
+$ featureCounts -O -t gene -g ID -a ath_annotation.gff3 -o counts.txt mapped/*.bam
 ~~~
 
 
