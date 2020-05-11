@@ -1,6 +1,6 @@
 ---
 title: "From fastq files to read counts"
-teaching: 60
+teaching: 45
 exercises: 0 
 questions:
 - "How do I perform a quality check of my RNA-seq fastq files with `FastQC`?"
@@ -10,7 +10,6 @@ questions:
 - "How do I turn RNA-seq read genome alignments into a count table?"
 objectives:
 - "Be able to remove RNA-seq reads with adapters and low quality bases."
-= ""
 keypoints:
 - "Performing read trimming ensures that no sequencing adapter is left in your final reads."
 ---
@@ -45,7 +44,7 @@ keypoints:
 We will now assess the quality of the reads that we downloaded. First, we need to make an output directory for the fastqc results to be stored. This we want to do in the 'home' directory that contains all the needed files.
 
 ~~~
-$ docker run --rm -it scienceparkstudygroup/master-gls:fastq-latest
+$ docker run -it --name bioinfo scienceparkstudygroup/master-gls:fastq-latest
 
 $ conda activate fastq
 
@@ -56,10 +55,10 @@ $ mkdir fastqc
 {: .bash}
 
 
-Let's have a look at the fastq files we'll be using in this lesson.
+Next we need to get to the directory thay actually contains the the fastq files.
 
 ~~~
-$ ls 
+$ ls fq-files
 ~~~
 {: .bash}
 
@@ -71,14 +70,14 @@ fastqc -o fastqc Arabidopsis_sample1.fq.gz
 ~~~
 {: .bash}
 
-Of course we don't want to do y=this for all the samples seperately so we can loop through the list of samples and run them all sequentially
+Of course we don't want to do this for all the samples seperately so we can loop through the list of samples and run them all sequentially
 
 With the use of echo you can start off with a "dry run"
 
 ~~~
 $ for filename in  *.fq.gz
   do
-    echo "fastqc -o fastqc $filename"
+    echo fastqc -o fastqc $filename
   done
 ~~~
 {: .bash}
@@ -96,7 +95,7 @@ fastqc -o fastqc Arabidopsis_sample4.fq.gz
 If it looks good remove the echo and go for it.
 
 ~~~
-$ for filename in fq-files/*.fq.gz
+$ for filename in *.fq.gz
   do
     fastqc -o fastqc $filename
   done
@@ -121,7 +120,7 @@ Analysis complete for Arabidopsis_sample4.fq.gz
 ~~~
 {: .output}
 
-In total, it should take about two minutes for FastQC to run on all
+In total, it should take about five minutes for FastQC to run on all
 four of our zipped FASTQ files.
 
 If the command doesn't run or you want more information on fastqc, run the following to get the help page.
@@ -139,7 +138,6 @@ $  ls fastqc/
 ~~~
 {: .bash}
 
-
 ~~~
 Arabidopsis_sample1_fastqc.html  Arabidopsis_sample2_fastqc.zip   Arabidopsis_sample4_fastqc.html
 Arabidopsis_sample1_fastqc.zip	 Arabidopsis_sample3_fastqc.html  Arabidopsis_sample4_fastqc.zip
@@ -155,13 +153,17 @@ For each of the samples there are two files. a .html and a .zip
 If we were working on our local computer, outside of the container, we'd be able to display each of these
 HTML files as a webpage:
 
+If we were working on our local computers, we'd be able to display each of these
+HTML files as a webpage:
+
 ~~~
+$ cd fastqc/
 $ open Arabidopsis_sample1_fastqc.html
 ~~~
 {: .bash}
 
 
-However, if you try this on our genseq instance, you'll get an error:
+However, if you try this in the docker container we're working in, you'll get an error:
 
 ~~~
 bash: open: command not found
@@ -173,31 +175,43 @@ browsers installed on it, so the remote computer doesn't know how to
 open the file. We want to look at the webpage summary reports, so
 let's transfer them to our local computers (i.e. your laptop).
 
-
 If you're also working on a remote computer you will first have to copy 
 the files outside of the container using `docker cp` and next from the 
 remote computer to your local computer with the help of `scp`.
-
 
 First we need to exit the container and next we can transfer our HTML 
 files to our local computer using `docker cp`.
 
 ~~~
-$ docker cp bioinfo:/home/fastqc/ ~/Desktop/fastqc
+$ mkdir -p ~/Desktop/fastqc_html
+~~~
+{: .bash}
+
+
+~~~
+$ docker cp bioinfo:/home/fastqc/ ~/Desktop/fastqc_html
 ~~~
 {: .bash}
 
 This will transfer all files in the folder home/fastqc/ to your Desktop.
 
+bioinfo refers to the name of the container.
+The second part starts with a `:` and then gives the absolute path of the files you want to transfer.
+The third part of the command gives the absolute path of the location
+you want to put the files. This is on your local computer and is the
+directory we just created `~/Desktop/fastqc_html`.
+
+
 When working on a remote computer make use of the following command
 
 ~~~
-$ scp -r dcuser@genseq-cn02.science.uva.nl:/fastqc/ ~/Desktop/fastqc_html
+$ scp -r tbliek@genseq-cn02.science.uva.nl:~/rna_seq_lesson/fastqc/ ~/Desktop/fastqc_html
 ~~~
 {: .bash}
 
+
 As a reminder, the first part
-of the command `dcuser@genseq-cn02.science.uva.nl` is
+of the command `tbliek@genseq-cn02.science.uva.nl` is
 the address for your remote computer. Make sure you replace everything
 after `dcuser@` with your instance number (the one you used to log in).
 
@@ -215,8 +229,8 @@ The -r option is used to tell scp to recursively copy the source directory and i
 You should see a status output like this:
 
 ~~~
-ERR1406259.fq.gz.html                      100%  249KB 152.3KB/s   00:01    
-ERR1406260.fq.gz.html                      100%  254KB 219.8KB/s   00:01      
+Arabidopsis_sample1_fastqc.html                      100%  249KB 152.3KB/s   00:01    
+Arabidopsis_sample1_fastqc.html                       100%  254KB 219.8KB/s   00:01      
 ~~~
 {: .output}
 
@@ -255,15 +269,15 @@ in your terminal program that is connected to your AWS instance
 our results subdirectory.   
 
 ~~~
-$ cd ~/RNAseq070319/fastqc/
+$ cd home/fastqc/
 $ ls
 ~~~
 {: .bash}
 
 ~~~
-sub06_fastqc.html  sub07_fastqc.zip   sub21_fastqc.html  sub23_fastqc.zip
-sub06_fastqc.zip   sub08_fastqc.html  sub21_fastqc.zip   sub24_fastqc.html
-sub07_fastqc.html  sub08_fastqc.zip   sub23_fastqc.html  sub24_fastqc.zip
+Arabidopsis_sample1_fastqc.html  Arabidopsis_sample2_fastqc.zip   Arabidopsis_sample4_fastqc.html
+Arabidopsis_sample1_fastqc.zip	 Arabidopsis_sample3_fastqc.html  Arabidopsis_sample4_fastqc.zip
+Arabidopsis_sample2_fastqc.html  Arabidopsis_sample3_fastqc.zip
 ~~~
 {: .output}
 
@@ -274,31 +288,16 @@ to decompress these files. Let's try doing them all at once using a
 wildcard.
 
 ~~~
-$ unzip fastqc/Arabidopsis_sample1_fastqc.zip
+$ conda install -c conda-forge unzip
+$ unzip *.zip
 ~~~
 {: .bash}
 
 ~~~
-Archive:  fastqc/Arabidopsis_sample1_fastqc.zip  
-  creating: Arabidopsis_sample1_fastqc/
-   creating: Arabidopsis_sample1_fastqc/Icons/
-   creating: Arabidopsis_sample1_fastqc/Images/
-  inflating: Arabidopsis_sample1_fastqc/Icons/fastqc_icon.png  
-  inflating: Arabidopsis_sample1_fastqc/Icons/warning.png  
-  inflating: Arabidopsis_sample1_fastqc/Icons/error.png  
-  inflating: Arabidopsis_sample1_fastqc/Icons/tick.png  
-  inflating: Arabidopsis_sample1_fastqc/summary.txt  
-  inflating: Arabidopsis_sample1_fastqc/Images/per_base_quality.png  
-  inflating: Arabidopsis_sample1_fastqc/Images/per_sequence_quality.png  
-  inflating: Arabidopsis_sample1_fastqc/Images/per_base_sequence_content.png  
-  inflating: Arabidopsis_sample1_fastqc/Images/per_sequence_gc_content.png  
-  inflating: Arabidopsis_sample1_fastqc/Images/per_base_n_content.png  
-  inflating: Arabidopsis_sample1_fastqc/Images/sequence_length_distribution.png  
-  inflating: Arabidopsis_sample1_fastqc/Images/duplication_levels.png  
-  inflating: Arabidopsis_sample1_fastqc/Images/adapter_content.png  
-  inflating: Arabidopsis_sample1_fastqc/fastqc_report.html  
-  inflating: Arabidopsis_sample1_fastqc/fastqc_data.txt  
-  inflating: Arabidopsis_sample1_fastqc/fastqc.fo  
+Archive:  Arabidopsis_sample1_fastqc.zip
+caution: filename not matched:  Arabidopsis_sample2_fastqc.zip
+caution: filename not matched:  Arabidopsis_sample3_fastqc.zip
+caution: filename not matched:  Arabidopsis_sample4_fastqc.zip
 ~~~
 {: .output}
 
@@ -315,7 +314,7 @@ discuss what we're doing with each line of our loop.
 ~~~
 $ for filename in *.zip
 > do
-> unzip $filename
+>  unzip $filename
 > done
 ~~~
 {: .bash}
@@ -325,10 +324,10 @@ In this example, the input is four filenames (one filename for each of our `.zip
 Each time the loop iterates, it will assign a file name to the variable `filename`
 and run the `unzip` command.
 The first time through the loop,
-`$filename` is `sub06_fastqc.zip`.
-The interpreter runs the command `unzip` on `sub06_fastqc.zip`.
+`$filename` is `Arabidopsis_sample1_fastqc.zip`.
+The interpreter runs the command `unzip` on `Arabidopsis_sample1_fastqc.zip`.
 For the second iteration, `$filename` becomes
-`Ssub07_fastqc.zip`. This time, the shell runs `unzip` on `sun07_fastqc.zip`.
+`Arabidopsis_sample2_fastqc.zip`. This time, the shell runs `unzip` on `Arabidopsis_sample2_fastqc.zip`.
 It then repeats this process for the four other `.zip` files in our directory.
 
 
@@ -345,7 +344,7 @@ Archive:  fastqc/Arabidopsis_sample2_fastqc.zip
   inflating: Arabidopsis_sample4_fastqc/Images/adapter_content.png  
   inflating: Arabidopsis_sample4_fastqc/fastqc_report.html  
   inflating: Arabidopsis_sample4_fastqc/fastqc_data.txt  
-  inflating: Arabidopsis_sample4_fastqc/fastqc.fo  
+  inflating: Arabidopsis_sample4_fastqc/fastqc.fo 
 ~~~
 {: .output}
 
@@ -358,7 +357,7 @@ are a lot of files here. The one we're going to focus on is the
 If you list the files in our directory now you will see:
 
 ~~~
-Arabidopsis_sample1_fastqc	 Arabidopsis_sample2_fastqc.html  Arabidopsis_sample3_fastqc.zip
+Arabidopsis_sample1_fastqc     	 Arabidopsis_sample2_fastqc.html  Arabidopsis_sample3_fastqc.zip
 Arabidopsis_sample1_fastqc.html  Arabidopsis_sample2_fastqc.zip   Arabidopsis_sample4_fastqc
 Arabidopsis_sample1_fastqc.zip	 Arabidopsis_sample3_fastqc	  Arabidopsis_sample4_fastqc.html
 Arabidopsis_sample2_fastqc	 Arabidopsis_sample3_fastqc.html  Arabidopsis_sample4_fastqc.zip
@@ -376,7 +375,7 @@ $ ls -F
 {: .bash}
 
 ~~~
-Arabidopsis_sample1_fastqc/	 Arabidopsis_sample2_fastqc.html  Arabidopsis_sample3_fastqc.zip
+Arabidopsis_sample1_fastqc/	 Arabidopsis_sample2_fastqc.html  Arabidopsis_sample3_fastqc.zip   
 Arabidopsis_sample1_fastqc.html  Arabidopsis_sample2_fastqc.zip   Arabidopsis_sample4_fastqc/
 Arabidopsis_sample1_fastqc.zip	 Arabidopsis_sample3_fastqc/	  Arabidopsis_sample4_fastqc.html
 Arabidopsis_sample2_fastqc/	 Arabidopsis_sample3_fastqc.html  Arabidopsis_sample4_fastqc.zip
@@ -391,14 +390,14 @@ $ ls -F Arabidopsis_sample1_fastqc/
 {: .bash}
 
 ~~~
-Icons/	Images/  fastqc.fo  fastqc_data.txt  fastqc_report.html  summary.txt
+fastqc_data.txt  fastqc.fo  fastqc_report.html	Icons/	Images/  summary.txt
 ~~~
 {: .output}
 
 Use `less` to preview the `summary.txt` file for this sample.
 
 ~~~
-$ less sub06_fastqc/summary.txt
+$ less Arabidopsis_sample1_fastqc/summary.txt
 ~~~
 {: .bash}
 
@@ -440,15 +439,14 @@ When making use of illumina reads this is not as much of a problem and 3'-trimmi
 To start off make a directory trimmed for the output and then back to the rawReads directory.
 
 ~~~
-$ cd ~/RNAseq070319/
+$ cd /home/
 $ mkdir trimmed
-$ cd ~/RNAseq070319/rawReads/
 ~~~
 {: .bash}
 
 
 
-The trimming and quality filtering will be done with trimmomatic.
+The trimming and quality filtering will be done with **trimmomatic**.
 In the programm the following arguments can be used.
 
 | step   | meaning |
@@ -467,7 +465,7 @@ In the programm the following arguments can be used.
 
 To run this on a single sample it looks something like this
 ~~~
-trimmomatic SE -phred33 -threads 2 sub06.fastq ../trimmed/sub06_qc.fq ILLUMINACLIP:../adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25 CROP:100
+trimmomatic SE -phred33 -threads 2 Arabidopsis_sample1.fq.gz trimmed/Arabidopsis_sample1_qc.fq ILLUMINACLIP:adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25
 ~~~
 {: .bash}
 
@@ -479,10 +477,10 @@ this can be done with the help of 'basename'
 
 
 ~~~
-$ for infile in *.fastq
+$ for infile in *.fq.gz
 do
  echo inputfile $infile
- outfile="$(basename $infile .fastq)"_qc.fq
+ outfile="$(basename $infile .fq.gz)"_qc.fq
  echo outputfile $outfile
  echo
 done
@@ -493,23 +491,17 @@ done
 This be be producing the following list
 
 ~~~
-inputfile sub06.fastq
-outputfile sub06_qc.fq
+inputfile Arabidopsis_sample1.fq.gz
+outputfile Arabidopsis_sample1_qc.fq
 
-inputfile sub07.fastq
-outputfile sub07_qc.fq
+inputfile Arabidopsis_sample2.fq.gz
+outputfile Arabidopsis_sample2_qc.fq
 
-inputfile sub08.fastq
-outputfile sub08_qc.fq
+inputfile Arabidopsis_sample3.fq.gz
+outputfile Arabidopsis_sample3_qc.fq
 
-inputfile sub21.fastq
-outputfile sub21_qc.fq
-
-inputfile sub23.fastq
-outputfile sub23_qc.fq
-
-inputfile sub24.fastq
-outputfile sub24_qc.fq
+inputfile Arabidopsis_sample4.fq.gz
+outputfile Arabidopsis_sample4_qc.fq
 ~~~
 {: .output}
 
@@ -517,10 +509,10 @@ Next we can start writing the trimmomatic loop.
 Again starting with a dry run with echo.
 
 ~~~
-$ for fastq in *.fastq
+$ for infile in *.fq.gz
 do
-  outputFile="$(basename $fastq .fastq)"_qc.fq
-  echo trimmomatic SE -phred33 -threads 2 $fastq ../trimmed/$outputFile ILLUMINACLIP:../adapters.fasta:2:30:10 LEADING:3 TRAILING:3     SLIDINGWINDOW:4:15 MINLEN:25 CROP:100
+  outfile="$(basename $infile .fastq)"_qc.fq
+  echo "trimmomatic SE -phred33 -threads 2 $infile trimmed/$outfile ILLUMINACLIP:adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25"
 done
 ~~~
 {: .bash}
@@ -529,17 +521,15 @@ done
 should be producing something like this
 
 ~~~
-trimmomatic SE -phred33 -threads 2 sub06.fastq ../trimmed/sub06_qc.fq ILLUMINACLIP:../general/adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25 CROP:100
-trimmomatic SE -phred33 -threads 2 sub07.fastq ../trimmed/sub07_qc.fq ILLUMINACLIP:../general/adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25 CROP:100
-trimmomatic SE -phred33 -threads 2 sub08.fastq ../trimmed/sub08_qc.fq ILLUMINACLIP:../general/adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25 CROP:100
-trimmomatic SE -phred33 -threads 2 sub21.fastq ../trimmed/sub21_qc.fq ILLUMINACLIP:../general/adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25 CROP:100
-trimmomatic SE -phred33 -threads 2 sub23.fastq ../trimmed/sub23_qc.fq ILLUMINACLIP:../general/adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25 CROP:100
-trimmomatic SE -phred33 -threads 2 sub24.fastq ../trimmed/sub24_qc.fq ILLUMINACLIP:../general/adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25 CROP:100
+trimmomatic SE -phred33 -threads 2 Arabidopsis_sample1.fq.gz trimmed/Arabidopsis_sample1.fq.gz_qc.fq ILLUMINACLIP:adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25
+trimmomatic SE -phred33 -threads 2 Arabidopsis_sample2.fq.gz trimmed/Arabidopsis_sample2.fq.gz_qc.fq ILLUMINACLIP:adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25
+trimmomatic SE -phred33 -threads 2 Arabidopsis_sample3.fq.gz trimmed/Arabidopsis_sample3.fq.gz_qc.fq ILLUMINACLIP:adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25
+trimmomatic SE -phred33 -threads 2 Arabidopsis_sample4.fq.gz trimmed/Arabidopsis_sample4.fq.gz_qc.fq ILLUMINACLIP:adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25
 ~~~
 {: .output}
 
 
-If it al seems ok rerun with out `echo`
+If it all looks ok, rerun with out `echo`
 
 ~~~
 $ for infile in *.fastq
@@ -547,6 +537,7 @@ do
     outfile="$(basename $infile .fastq)"_qc.fq
     trimmomatic SE -phred33 -threads 2 $infile ../trimmed/"$outfile ILLUMINACLIP:../general/adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25 CROP:100
 done
+
 ~~~
 {: .bash}
 
@@ -555,12 +546,16 @@ The following should appear:
 
 ~~~
 TrimmomaticSE: Started with arguments:
- -phred33 -threads 2 sub06.fastq ../trimmed/sub06_qc.fq ILLUMINACLIP:../general/adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25 CROP:100
+ -phred33 -threads 2 Arabidopsis_sample1.fq.gz trimmed/Arabidopsis_sample1.fq.gz_qc.fq ILLUMINACLIP:adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25
+Using Long Clipping Sequence: 'GATCGGAAGAGCACACGTCTGAACTCCAGTCACTGACCAATCTCGTATGCCGTCTTCTGCTTG'
+Using Long Clipping Sequence: 'CAAGCAGAAGACGGCATACGAGCTCTTCCGATCT'
 …
-Input Reads: 1000000 Surviving: 887553 (88.76%) Dropped: 112447 (11.24%)
+Skipping duplicate Clipping Sequence: 'ACACTCTTTCCCTACACGACGCTCTTCCGATCT'
+ILLUMINACLIP: Using 0 prefix pairs, 31 forward/reverse sequences, 0 forward only sequences, 0 reverse only sequences
+Input Reads: 250000 Surviving: 248320 (99.33%) Dropped: 1680 (0.67%)
 TrimmomaticSE: Completed successfully
 ~~~
-{: output}
+{: .output}
 
 It's possible to scroll up to check if the percentage of surviving & dropped is within the same range in all of the samples.
 
@@ -568,19 +563,58 @@ It's possible to scroll up to check if the percentage of surviving & dropped is 
 
 # 3. Alignment to a reference genome
 
-<img src="../images/RNAseqWorkflow.png" height="400" >
+<img src="../img/RNAseqWorkflow.png" height="400" >
 
 We perform read alignment or mapping to determine where in the genome our reads originated from. There are a number of tools to
 choose from and, while there is no gold standard, there are some tools that are better suited for particular NGS analyses. In this tutorial we will be using [STAR](https://physiology.med.cornell.edu/faculty/skrabanek/lab/angsd/lecture_notes/STARmanual.pdf) but also 
 a tool like [hisat2](http://ccb.jhu.edu/software/hisat2/index.shtml) does the job.
 
-The alignment process consists of two steps:
+
+
+### STAR Alignment Strategy
+
+STAR is shown to have high accuracy and outperforms other aligners by more than a factor of 50 in mapping speed, but it is memory intensive. The algorithm achieves this highly efficient mapping by performing a two-step process:
+
+Seed searching
+Clustering, stitching, and scoring
+Seed searching
+
+For every read that STAR aligns, STAR will search for the longest sequence that exactly matches one or more locations on the reference genome. These longest matching sequences are called the Maximal Mappable Prefixes (MMPs):
+
+<img src="../img/alignment_STAR_step1.png" height="350" >
+
+
+The different parts of the read that are mapped separately are called ‘seeds’. So the first MMP that is mapped to the genome is called seed1.
+
+STAR will then search again for only the unmapped portion of the read to find the next longest sequence that exactly matches the reference genome, or the next MMP, which will be seed2.
+
+<img src="../img/alignment_STAR_step2.png" height="275" >
+
+This sequential searching of only the unmapped portions of reads underlies the efficiency of the STAR algorithm. STAR uses an uncompressed suffix array (SA) to efficiently search for the MMPs, this allows for quick searching against even the largest reference genomes. Other slower aligners use algorithms that often search for the entire read sequence before splitting reads and performing iterative rounds of mapping.
+
+If STAR does not find an exact matching sequence for each part of the read due to mismatches or indels, the previous MMPs will be extended.
+
+<img src="../img/alignment_STAR_step3.png" height="650" >
+
+**If extension does not give a good alignment**, then the poor quality or adapter sequence (or other contaminating sequence) will be soft clipped.
+
+<img src="../img/alignment_STAR_step4.png" height="300" >
+
+**Clustering, stitching, and scoring**
+
+The separate seeds are stitched together to create a complete read by first clustering the seeds together based on proximity to a set of ‘anchor’ seeds, or seeds that are not multi-mapping.
+
+Then the seeds are stitched together based on the best alignment for the read (scoring based on mismatches, indels, gaps, etc.).
+
+<img src="../img/alignment_STAR_step5.png" height="400" >
+
+### The alignment process consists of two steps:
 
 1. Indexing the reference genome
 2. Aligning the reads to the reference genome
 
 
-## 3.1 Setting up
+### 3.1 Setting up
 
 ## 3.2 Index the reference genome
 Our first step is to index the reference genome for use by STAR. Indexing allows the aligner to quickly find potential alignment sites for query sequences in a genome, which saves time during alignment. Indexing the reference only has to be run once. The only reason you would want to create a new index is if you are working with a different reference genome or you are using a different tool for alignment (index files are not exchangeable between tools).
@@ -588,11 +622,13 @@ Our first step is to index the reference genome for use by STAR. Indexing allows
 Take note that depending on the genome size these index files produced by STAR can be pretty big. Make sure there's enough disk space available.
 
 ~~~
-$ cd ~/RNAseq070319/general
+$ cd /home/
 
 $ mkdir genomeIndex
 
-$ STAR --runMode genomeGenerate --genomeDir genomeIndex --genomeFastaFiles AtChromosome1.fa --runThreadN 8
+$ gunzip AtChromosome1.fa.gz
+
+$ STAR --runMode genomeGenerate --genomeDir genomeIndex --genomeFastaFiles AtChromosome1.fa --runThreadN 2
 ~~~
 {: .bash}
 
@@ -645,7 +681,7 @@ In some tools like hisat2 creating the sequence alignment files (bam-files) is d
 First of course we will need to create a directory to output the alignment files
 
 ~~~
-$ cd ~/RNAseq070319/
+$ cd /home/
 
 $ mkdir mapped
 ~~~
@@ -653,8 +689,8 @@ $ mkdir mapped
 
 Running STAR to align ( or map ) the reads and optionaly filter and sort them.
 
-In contrast to most atools, STAR does not have a help function.
-running STAR -h or STAR --help will result in an error. For information on what arguments to use you can or need to 
+In contrast to most tools, STAR does not have a help function.
+running STAR -h or STAR --help will result in an error. For information on what arguments to use you can 
 use have a look at the 
 [STAR manual.](https://physiology.med.cornell.edu/faculty/skrabanek/lab/angsd/lecture_notes/STARmanual.pdf).
 
@@ -666,7 +702,7 @@ Here are some examples of common used arguments.
 | `--runThreads` | number of threads |
 | `--genomeDir` | /path/to/genomeDir |
 | `--readFilesIn` | /path/to/read1 [/path/to/read2] |
-| `--readFilesCommand zcat` | when make use of gzipped fastq files |
+| `--readFilesCommand zcat` | when making use of gzipped fastq files |
 | `--outFileNamePrefix` | /path/to/output file name |
 | `--outSAMtype` | BAM/SAM or None  [optional: SortedByCoordinate] |
 | `--outReadsUnmapped` | [default: None] Fastx ; output in separate fasta/fastq file |
@@ -680,7 +716,7 @@ Here are some examples of common used arguments.
 
 For now we will be using STAR with the following arguments
 ~~~
-$  STAR --genomeDir genomeindex --runThreadN 2 --readFilesIn ERR1406259.fq.gz --readFilesCommand zcat --outFileNamePrefix ERR1406259 --outSAMtype BAM SortedByCoordinate --outSAMunmapped None --outFilterMismatchNmax 3 --outFilterMultimapNmax 1
+$  STAR --genomeDir genomeIndex --runThreadN 2 --readFilesIn trimmed/Arabidopsis_sample1_qc.fq --outFileNamePrefix mapped/Arabidopsis_sample1_qc --outSAMtype BAM SortedByCoordinate --outSAMunmapped None --outFilterMismatchNmax 3 --outFilterMultimapNmax 1 --outSAMattributes All
 ~~~
 {: .bash}
 
@@ -692,8 +728,8 @@ It's good again to first start with a 'dry' run with the use of echo
 ~~~
 $ for infile in trimmed/*.fq
  do
-   outfile="$(basename $infile .fq)”
-   echo "STAR --genomeDir genomeIndex --runThreadN 2 --readFilesIn trimmed/$infile --readFilesCommand zcat --outFileNamePrefix mapped/$outfile --outSAMtype BAM SortedByCoordinate --outSAMunmapped None --outFilterMismatchNmax 3 --alignEndsType EndToEnd --outFilterMultimapNmax 1"
+   outfile="$(basename $infile .fq)”_
+   echo "STAR --genomeDir genomeIndex --runThreadN 2 --readFilesIn trimmed/$infile --outFileNamePrefix mapped/$outfile --outSAMtype BAM SortedByCoordinate --outSAMunmapped None --outFilterMismatchNmax 3 --outFilterMultimapNmax 1 --outSAMattributes All"
  done
 ~~~
 {: .bash}
@@ -701,10 +737,10 @@ $ for infile in trimmed/*.fq
 If the commands look good, rerun but this time without the echo.
 
 ~~~
-$for infile in *.fq
+$for infile in trimmed/*.fq
  do
-   outfile="$(basename $infile .fq)”
-   STAR --genomeDir genomeIndex --runThreadN 2 --readFilesIn trimmed/$infile --readFilesCommand zcat --outFileNamePrefix mapped/$outfile --outSAMtype BAM SortedByCoordinate --outSAMunmapped None --outFilterMismatchNmax 3 --alignEndsType EndToEnd --outFilterMultimapNmax 1
+   outfile="$(basename $infile .fq)”_
+   STAR --genomeDir genomeIndex --runThreadN 2 --readFilesIn trimmed/$infile --outFileNamePrefix mapped/$outfile --outSAMtype BAM SortedByCoordinate --outSAMunmapped None --outFilterMismatchNmax 3 --outFilterMultimapNmax 1 --outSAMattributes All
  done
 ~~~
 {: .bash}
@@ -722,11 +758,11 @@ May 04 12:55:59 ..... Finished successfully
 The final.out file contains all the characteristics of the alignment.
 
 ~~~
-$ less ERR1406259Log.final.out
+$ less mapped/Arabidopsis_sample1_qc.final.out
 ~~~
 {: .bash}
 
-resulting in table containing all the alignment numbers.
+resulting in table containing all the alignment values.
 
 ~~~
                                  Started job on |       May 04 12:51:55
@@ -760,7 +796,7 @@ resulting in table containing all the alignment numbers.
        % of reads unmapped: too many mismatches |       0.00%
                  % of reads unmapped: too short |       0.02%
                      % of reads unmapped: other |       0.00%
-ERR1406259Log.final.out (END) 
+Arabidopsis_sample1_qcLog.final.out (END) 
 ~~~
 {: .output}
 
@@ -789,13 +825,20 @@ displayed below with the different fields highlighted.
 For downstream application for each of the samples the number of reads that maps within a gene has to be determined.
 Featurecounts from the subread package can do this.
 
+FeatureCounts can count the number of reads that map within a feature. In case of the arabidopsis annotation there are three different features to choose from. Depending on the downstream applications the choice is gene, transcript or exon. In this study we are just looking for differientially expressed genes.
 
 ~~~
-$ cd ~/RNAseqWorkshop/mapped
+$ cd /home/
 
-$ featureCounts -O -t mRNA -g ID -a ../general/annotation.all_transcripts.exon_features.ath.gff3 -o counts.txt *.bam
+$ gunzip ath_annotation.gff3.gz
+
+$ featureCounts -O -t gene -g ID -a ath_annotation.gff3 -o counts.txt mapped/*.bam
 ~~~
 
+-a <string>         Name of an annotation file. GTF/GFF format by default.
+-o <string>         Name of the output file including read counts.
+-O                  Assign reads to all their overlapping meta-features.
+-t <string>         Specify feature type in GTF annotation
+-g <string>         Specify attribute type in GTF annotation. Determines the name of the features.
 
-The file produced by `featureCounts` is a tab-delimited file.
-
+The output file produced by `featureCounts` is a tab-delimited file, can be opened in a program like excel.
