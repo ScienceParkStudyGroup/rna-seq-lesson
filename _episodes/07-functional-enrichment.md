@@ -13,8 +13,6 @@ keypoints:
 
 ---
 
-
-
 # Table of Contents
 <!-- MarkdownTOC autolink="True" levels="1,2" -->
 

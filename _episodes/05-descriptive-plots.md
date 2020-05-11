@@ -254,10 +254,12 @@ Let's start by creating the `DESeqDataSet` object and then we can talk a bit mor
 
 
 ~~~
+suppressPackageStartupMessages(library(DESeq2)) # to load DESeq2 and suppress the long startup message
+
 # Creation of the DESeqDataSet object
 dds <- DESeqDataSetFromMatrix(countData = counts, 
                               colData = xp_design, 
-                              design = ~ seed + infected + dpi) # the model does not matter here 
+                              design = ~ 1) # the model does not matter here 
 ~~~
 {: .language-r}
 
@@ -288,19 +290,21 @@ The next step is to normalize the count data in order to be able to make fair ge
 
 To perform the **median of ratios method** of normalization, DESeq2 has a single `estimateSizeFactors()` function that will generate size factors for us. We will use the function in the example below, but **in a typical RNA-seq analysis this step is automatically performed by the `DESeq()` function**, which we will see later. 
 
-```r
+~~~
 dds <- estimateSizeFactors(dds)
-```
+~~~
+{: .language-r}
 
 By assigning the results back to the `dds` object we are filling in the slots of the `DESeqDataSet` object with the appropriate information. We can take a look at the normalization factor applied to each sample using:
 
-```r
+~~~
 sizeFactors(dds)
-```
+~~~
+{: .language-r}
 
 We can plot these size factors to see how much they differ between samples. 
 ~~~
-library(dplyr)
+library(tidyverse)
 
 # create a dplyr tibble
 size_factors_df <- tibble(
@@ -318,7 +322,7 @@ p <- ggplot(size_factors_df, aes(x = sample, y = correction_factor, group = 1)) 
 # to display the plot
 p
 ~~~
-{:.language-r}
+{: .language-r}
 
 This plot indicates that size factors are all between \~0.70 and \~1.8 so relatively close to each other. 
 
@@ -482,9 +486,17 @@ anno_info_colors = list(
           "7" = "dodgerblue4")
 )
 
+
+correlation_between_samples <- cor(counts_normalised)
+
 my_custom_breaks <- quantile(
-  correlation_between_samples,
+  correlation_between_samples, # correlations
   seq(0,1,0.1))
+
+
+# load library and plot heatmap
+library(pheatmap)
+library(RColorBrewer)
 
 pheatmap(mat = correlation_between_samples, 
          color = rev(brewer.pal(n = length(my_custom_breaks) - 1,"RdYlBu")), 
@@ -497,6 +509,8 @@ pheatmap(mat = correlation_between_samples,
 {: .language-r}
 
 <img src="../img/05-pheatmap.png" height="600px">
+
+While the heatmap is full of colors and pleasant to display (arguable perhaps), it is not easy to distinguish between conditions. A Principal Component Analysis will help us to decide whether the experimental design is reflected in the count results.  
 
 <br>
 <br>
@@ -624,24 +638,26 @@ explained_var = pca$explained_var$exp_var
 
 In order to have an idea of how effective the 'compression' or variable reduction of the PCA algorithm was on our data set, we make a so-called 'scree' plot in which the explained variance is expressed as a function of the number of principal components.
 
-```R
+~~~
 # add a convenient column number for the bar plot to display
-df_eXPv <- data.frame(PC = c(1,2,3,4)), explained_variance  = pca$explained_var)
+dfev <- data.frame(PC = c(1,2,3,4), exp_var  = pca$explained_var)
 
 # make the plot
-scree_plot <- ggplot(dfev, aes(x = PC, y = explained_variance)) +
+scree_plot <- ggplot(dfev, aes(x = PC, y = exp_var)) +
        ylab('explained variance (%)') + 
        ggtitle('explained variance per component') + 
        geom_bar(stat = "identity")
 
 # display it
 scree_plot
-```
+~~~
+{: .language-r}
+
 <img src="../img/pca_iris_exp_var.png" width="600px" alt="pca_iris_exp_var PCA">
 
 It is clear that the PCA really reduces our data to almost 1 variable (component) which explains over 90% of all the variance of the data. The second component only explains 5.3%. The third and fourth even less.
 
-The whole idea behind the analysis is to visualize the high-dimensional data (e.g. a score plot). In R we can do that with the following lines of code
+The whole idea behind the analysis is to visualize the high-dimensional data (e.g. a score plot) in a smaller dimensional space (e.g. 2D space). In R we can do that with the following lines of code
 
 ~~~
 # plot the scores of the first 2 components
@@ -656,11 +672,9 @@ p
 
 <img src="../img/pca_iris_new.png" width="600px" alt="pca_iris_new">
 
-
 From the score plot it is clear that the Setosa flowers are clearly different from the Versicolor/Virginica flowers. Versicolor and Virginica cannot be separated on PC1 and/or PC2. Looking at the PC1 vs PC3 however, the two groups can be separated better. It is very important to understand that even if a principal component explains a low amount of variance it still can contain interesting (biological) information. 
 
 <img src="../img/pca_iris_1_3.png" width="600px" alt="pca_iris_1_3">
-
 
 
 The scores are indicative of how the objects in the data set score in the new component space, correspondingly the loadings indicate how the variables score in the component space. The score plots above for example show a separation on PC1 between the 3 groups. If we would like to know which variables are important for this separation we can try to interpret our data.
@@ -668,6 +682,8 @@ The scores are indicative of how the objects in the data set score in the new co
 
 
 ~~~
+library(reshape2) # to access the melt() function
+
 # reformat the loading data
 loadings <- melt(pca$loadings)
 # rename the columns
