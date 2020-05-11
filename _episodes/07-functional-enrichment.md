@@ -264,7 +264,7 @@ The `ora_analysis_all_go` is a rich and complex R object. It contains various la
 
 You can extract a nice table of results for your next breakthrough publication like this. 
 ~~~
-write_delim(x = as.data.frame(ora_analysis@result), 
+write_delim(x = as.data.frame(ora_analysis_all_go@result), 
             path = "go_results.tsv", 
             delim = "\t")
 
@@ -526,7 +526,7 @@ We can calculate the median, 75th percentile and the 90th percentile of our fold
 ~~~
 diff_genes %>% 
   filter(log2FoldChange > 0) %>% 
-  with(.,quantile(log2FoldChange, c(0.5,0.75,0.9))
+  with(.,quantile(log2FoldChange, c(0.5,0.75,0.9)))
 ~~~
 {: .language-r}
 
