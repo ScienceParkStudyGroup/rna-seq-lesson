@@ -77,7 +77,7 @@ row.names(counts) <- genes
 # reorder counts columns according to the experimental design file
 counts <- counts[, xp_design$sample]
 ~~~
-{:.language-r}
+{: .language-r}
 
 We will now filter both the `counts` and `xp_design` objects to keep a one-factor comparison and investigate the leaf transcriptome
 of Arabidopsis plants whose seeds were MgCl2 treated and whose plants were infected or not with Pseudomonas syringae DC3000 at 7dpi.
@@ -99,7 +99,7 @@ dds2 <- DESeqDataSetFromMatrix(countData = counts_filtered,
                               design = ~ infected)
 
 ~~~
-{:.language-r}
+{: .language-r}
 
 It is important to make sure that levels are properly ordered so we are indeed using the _mock_ group as our reference level. A positive gene fold change will for instance signify that the gene is upregulated in the _P. syringae_ condition relatively to the _mock_ condition.  
 
@@ -109,7 +109,7 @@ One way to see how levels are interpreted within the DESeqDataSet object is to d
 ~~~
 dds2$infected
 ~~~
-{:.language-r}
+{: .language-r}
 
 ~~~
 [1] mock  mock  mock  mock  Pseudomonas_syringae_DC3000
@@ -316,11 +316,11 @@ diff = res %>%
   filter(padj < 0.01) %>% 
   arrange(desc(log2FoldChange), 
           desc(padj))
-
-write_delim(x = diff, path = "differential_genes.tsv")
+head(diff)
 ~~~
 {: .language-r}
 
+You could write this file on your disk with `write.csv()` for instance to save a comma-separated text file containing your results. 
 <br>
 
 
@@ -456,7 +456,7 @@ Well....not very useful right?
 > ~~~ 
 > counts_normalised_only_diff_genes %>% 
 >     rownames_to_column("genes") %>% 
->     pivot_longer(- genes,names_to = "sample", values_to = "counts") %>% 
+>     pivot_longer(- genes, names_to = "sample", values_to = "counts") %>% 
 >     with(., hist(counts, col = "dodgerblue"))
 > ~~~
 > {: .language-r}
@@ -470,13 +470,25 @@ Well....not very useful right?
 > >       with(., hist(log2(counts), col = "dodgerblue"))
 > > ~~~
 > > {: .language-r}
+> > If you re-run the code for the first heatmap with a log2 transformation, you will get a simple way to display different gene count levels. We add `+ 1` to account for genes with count values equal to 0. 
+> > ~~~
+> > pheatmap(log2(counts_normalised_only_diff_genes + 1), 
+         cluster_rows = FALSE, 
+         cluster_cols = FALSE, 
+         scale = "none",
+         show_rownames = FALSE, 
+         show_colnames = TRUE)
+> > ~~~
+> > {: .language-r}
 > {: .solution}
 {: .challenge}
+
+Although the scaling has been slightly improved it is still not really an optimal heatmap. 
 
 
 ## 4.2 Second version with scaling 
 
-When creating a heatmap, it is vital to control how scaling is performed. A possible solution is to specify `scale = "row"` to the `pheatmap()` function to perform row scaling since gene expression levels will become comparable. But I'd recommend to do it "manually" to understand and control the scaling procedure. 
+When creating a heatmap, it is vital to control how scaling is performed. A possible solution is to specify `scale = "row"` to the `pheatmap()` function to perform row scaling since gene expression levels will become comparable. Instead, I'd recommend to do it "manually" to understand and control the scaling procedure. 
 
 We can perform a Z-score calculation for each gene so that $$Z = {x - \mu \over \sigma}$$   where $$x$$ is an individual gene count inside a given sample, $$\mu$$ the row mean of for that gene across all samples and $$\sigma$$ its standard deviation.  
 Check background and R code instructions [here](https://www.datatechnotes.com/2018/02/z-score-with-r.html).
@@ -537,10 +549,12 @@ pheatmap(counts_scaled,
 {: .language-r}
 
 
-After applying the scaling procedure, the gene expression levels become more comparable. Still, it isn't really useful so far. 
+After applying the scaling procedure, the gene expression levels become more comparable. Still, this heatmap isn't really useful so far. 
+
 <img src="../img/06-heatmap-2.png" width="400px" alt="second heatmap (scaled)"  >
 
-This is the original heatmap
+This is the original heatmap.
+
 <img src="../img/06-heatmap-1.png" alt="first heatmap version" width="400px">
 
 > ## Notice
@@ -579,7 +593,7 @@ This is getting easier to read. Genes with similar profiles that distinguish dif
 You can change this default behavion easily and try other clustering methods (see `?hclust` for supported methods).
 
 > ## Discussion
-> The gene clusters do not seem to be pretty clear cut though. Do you have an idea why? 
+> The gene clusters do not seem to be pretty clear cut though. Do you have an idea why?   
 > **Hint:** we still have 48 samples under investigation but we are working on 4979 genes (differential genes between what?)
 {: .discussion}
 

@@ -676,7 +676,6 @@ From the score plot it is clear that the Setosa flowers are clearly different fr
 
 <img src="../img/pca_iris_1_3.png" width="600px" alt="pca_iris_1_3">
 
-
 The scores are indicative of how the objects in the data set score in the new component space, correspondingly the loadings indicate how the variables score in the component space. The score plots above for example show a separation on PC1 between the 3 groups. If we would like to know which variables are important for this separation we can try to interpret our data.
 
 
@@ -697,12 +696,11 @@ p
 {: .language-r}
 
 
-
-![pca_iris_loadings](../img/pca_iris_loadings.png)
-
+<img src="../img/pca_iris_loadings.png" width="600px" alt="Iris loadings">
 
 
-From the loading plot for PC1 it is clear that Petal.Length is the most important factor while Sepal.Width is the one which is least important. Because PC1 explains 92.5 % of the total variance we can conclude that Petal.Length is the most important factor that separates the three groups of flowers. There are many more things to learn on PCA (e.g. scaling, filtering) but that is out of the scope of these exercises. 
+From the loading plot for PC1 it is clear that `Petal.Length` is the most important factor while `Sepal.Width` is the one which is least important. Because PC1 explains 92.5 % of the total variance we can conclude that `Petal.Length` is the most important factor that separates the three groups of flowers.   
+There are many more things to learn on PCA (e.g. scaling, filtering) but that is out of the scope of these exercises. 
 
 
 ## 5.3 PCA applied to RNA-seq
@@ -720,17 +718,66 @@ library(ggplot2)
 ~~~
 {: .language-r}
 
+Let's make a first version of a PCA plot using the `plotPCA()` function of the `DESeq2` library. We are going to plot our experimental design on several PCA plots. 
+
+### 5.3.1 Infected versus mock
+Let's first see how our _P. syringae_ infection condition is reflected at the PCA level.
 
 ~~~
-# PCA using the plotPCA function
 # variance-stabilizing transformation
 vst_dds <- vst(dds)
 
+# PCA using the plotPCA function
+pcaData <- plotPCA(vst_dds, intgroup = c("infected"), returnData = TRUE) 
+
+percentVar <- round(100 * attr(pcaData, "percentVar"))
+
 # customised PCA plot
+ggplot(pcaData, aes(PC1, PC2, color = infected)) +
+  geom_point() +
+  xlab(paste0("PC1: ",percentVar[1],"% variance")) +
+  ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
+  coord_fixed() +
+  ggtitle("PCA plot")
+~~~
+{: .language-r}
+
+<img src="../img/05-pca-1.png" width="800px" alt="PCA with infected conditions overlayed">
+
+This PCA plot clearly shows that the infected condition seems to be related to the first principal component (59% of the variance).
+
+But we can also overlay different experimental conditions on this PCA plot. A PCA analysis let the data "self-organise".
+Have a look at this new PCA plot with the seed conditions superimposed.  
+
+~~~
+# PCA using the plotPCA function
+pcaData <- plotPCA(vst_dds, intgroup = c("seed"), returnData = TRUE)
+
+percentVar <- round(100 * attr(pcaData, "percentVar"))
+
+# customised PCA plot
+ggplot(pcaData, aes(PC1, PC2, color = seed)) +
+  geom_point() +
+  xlab(paste0("PC1: ",percentVar[1],"% variance")) +
+  ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
+  coord_fixed() +
+  ggtitle("PCA plot")
+~~~
+{: .language-r}
+
+<img src="../img/05-pca-2.png" width="800px" alt="PCA with seed inoculation conditions overlayed" >
+
+
+You can see that the sample positions have not changed on the plot. But the colors have since we wanted to color samples by their seed inoculation level ("MgCl2", "Fr1" or "PA1").
+
+We are now creating a final and complete version of the PCA with all factors included. It is quite a complex plot but you should find previous patterns back.
+~~~
+# PCA using the plotPCA function
 pcaData <- plotPCA(vst_dds, intgroup = c("seed", "infected", "dpi"), returnData = TRUE)
 
 percentVar <- round(100 * attr(pcaData, "percentVar"))
 
+# customised PCA plot
 ggplot(pcaData, aes(PC1, PC2, color = seed, shape = infected, size = dpi)) +
   geom_point() +
   xlab(paste0("PC1: ",percentVar[1],"% variance")) +
@@ -740,8 +787,7 @@ ggplot(pcaData, aes(PC1, PC2, color = seed, shape = infected, size = dpi)) +
 ~~~
 {: .language-r}
 
-<img src="../img/pca.png" width="800px" alt="complete PCA" >
-
+<img src="../img/05-pca-3.png" width="800px" alt="complete PCA" >
 
 # 6. Bonus: home-made DESeq normalization function
 

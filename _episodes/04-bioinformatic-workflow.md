@@ -10,8 +10,12 @@ questions:
 - "How do I turn RNA-seq read genome alignments into a count table?"
 objectives:
 - "Be able to remove RNA-seq reads with adapters and low quality bases."
+- "Be able to perform RNA-seq read alignment to a reference genome."
 keypoints:
 - "Performing read trimming ensures that no sequencing adapter is left in your final reads."
+- "Align RNA-seq reads to a reference genome using a splice-aware aligner like `STAR`."
+- "The SAM/BAM format is the end-result of a read alignment to a reference genome."
+- "The resulting `.bam` files are used to generate a count table for use in differential expression analyses."
 ---
 
 # Table of contents
@@ -25,7 +29,7 @@ keypoints:
   - [1.5 Documenting our work](#15-documenting-our-work)
 - [2. Trimming and filtering](#2-trimming-and-filtering)
 - [3. Alignment to a reference genome](#3-alignment-to-a-reference-genome)
-  - [3.1 Setting up](#31-setting-up)
+  - [3.1 STAR Alignment Strategy](#31-star-alignment-strategy)
   - [3.2 Index the reference genome](#32-index-the-reference-genome)
   - [3.3 Align reads to reference genome](#33-align-reads-to-reference-genome)
   - [3.4 The SAM/BAM format](#34-the-sambam-format)
@@ -153,9 +157,6 @@ For each of the samples there are two files. a .html and a .zip
 If we were working on our local computer, outside of the container, we'd be able to display each of these
 HTML files as a webpage:
 
-If we were working on our local computers, we'd be able to display each of these
-HTML files as a webpage:
-
 ~~~
 $ cd fastqc/
 $ open Arabidopsis_sample1_fastqc.html
@@ -170,7 +171,7 @@ bash: open: command not found
 ~~~
 {: .output}
 
-This is because the container were working in doesn't have any web
+This is because the container we are working in does not have any web
 browsers installed on it, so the remote computer doesn't know how to
 open the file. We want to look at the webpage summary reports, so
 let's transfer them to our local computers (i.e. your laptop).
@@ -193,9 +194,9 @@ $ docker cp bioinfo:/home/fastqc/ ~/Desktop/fastqc_html
 ~~~
 {: .bash}
 
-This will transfer all files in the folder home/fastqc/ to your Desktop.
+This will transfer all files in the folder `home/fastqc/` to your Desktop.
 
-bioinfo refers to the name of the container.
+`bioinfo` refers to the name of the container.
 The second part starts with a `:` and then gives the absolute path of the files you want to transfer.
 The third part of the command gives the absolute path of the location
 you want to put the files. This is on your local computer and is the
@@ -571,7 +572,7 @@ a tool like [hisat2](http://ccb.jhu.edu/software/hisat2/index.shtml) does the jo
 
 
 
-### STAR Alignment Strategy
+## 3.1 STAR Alignment Strategy
 
 STAR is shown to have high accuracy and outperforms other aligners by more than a factor of 50 in mapping speed, but it is memory intensive. The algorithm achieves this highly efficient mapping by performing a two-step process:
 
@@ -608,13 +609,11 @@ Then the seeds are stitched together based on the best alignment for the read (s
 
 <img src="../img/alignment_STAR_step5.png" height="400" >
 
-### The alignment process consists of two steps:
+**The alignment process consists of two steps:**
 
 1. Indexing the reference genome
 2. Aligning the reads to the reference genome
 
-
-### 3.1 Setting up
 
 ## 3.2 Index the reference genome
 Our first step is to index the reference genome for use by STAR. Indexing allows the aligner to quickly find potential alignment sites for query sequences in a genome, which saves time during alignment. Indexing the reference only has to be run once. The only reason you would want to create a new index is if you are working with a different reference genome or you are using a different tool for alignment (index files are not exchangeable between tools).
@@ -669,7 +668,6 @@ result should be:
 -rw-r--r-- 1 tbliek genseq-local 1565873616 Apr 29 16:56 SAindex
 ~~~
 {: .output}
-
 
 
 ## 3.3 Align reads to reference genome
@@ -834,11 +832,12 @@ $ gunzip ath_annotation.gff3.gz
 
 $ featureCounts -O -t gene -g ID -a ath_annotation.gff3 -o counts.txt mapped/*.bam
 ~~~
+{: .bash}
 
--a <string>         Name of an annotation file. GTF/GFF format by default.
--o <string>         Name of the output file including read counts.
--O                  Assign reads to all their overlapping meta-features.
--t <string>         Specify feature type in GTF annotation
--g <string>         Specify attribute type in GTF annotation. Determines the name of the features.
+* `-a <string>`         Name of an annotation file. GTF/GFF format by default.
+* `-o <string>`         Name of the output file including read counts.
+* `-O`                  Assign reads to all their overlapping meta-features.
+* `-t <string>`         Specify feature type in GTF annotation
+* `-g <string>`         Specify attribute type in GTF annotation. Determines the name of the features.
 
-The output file produced by `featureCounts` is a tab-delimited file, can be opened in a program like excel.
+The output file produced by `featureCounts` is a tab-delimited file that can be opened in a spreadsheet program like Excel.
