@@ -247,15 +247,6 @@ t.test(x = xp_normal_conditions_more_spread$expression,
 <img src="../img/02-normal-stress-hist-more-spread.png" alt="two conditions plotted" height="400px">
 
 
-~~~
-t.test(x = xp_normal_conditions_more_spread$expression, 
-       y = xp_heat_stress$expression, 
-       alternative = "two.sided",
-       var.equal = FALSE, 
-       conf.level = 0.95)
-~~~
-{: .language-r}
-
 ## 1.4 Type I and type II errors 
 
 Type I errors occur when the __H<sub>0</sub> (null) hypothesis__ is rejected wrongly (e.g., the two treatment means are equal) in favor of an alternative hypothesis (e.g., that the two means are different). Type I errors are probably most familiar to researchers and much effort is expended to ensure that Type I errors are minimized. 
