@@ -7,19 +7,22 @@ title:
 
 <!-- MarkdownTOC autolink="True" levels="1,2" -->
 
-- [Option 1 \(preferred\): using a Docker image](#option-1-preferred-using-a-docker-image)
-	- [`fastq-latest` image for bioinformatic steps \(episodes 03 and 04\)](#fastq-latest-image-for-bioinformatic-steps-episodes-03-and-04)
-	- [`rnaseq-latest` image for count data analysis \(episodes 05, 06 and 07\)](#rnaseq-latest-image-for-count-data-analysis-episodes-05-06-and-07)
-- [Option 2: manual installation](#option-2-manual-installation)
-	- [Softwares and packages](#softwares-and-packages)
-	- [Data files](#data-files)
-- [Original study](#original-study)
-	- [Gene counts](#gene-counts)
-	- [Experimental design table](#experimental-design-table)
+- [1. Option 1 \(preferred\): using a Docker image](#1-option-1-preferred-using-a-docker-image)
+	- [1.1 Installing Docker](#11-installing-docker)
+	- [1.2 The `fastq-latest` image for bioinformatic steps \(episodes 03 and 04\)](#12-the-fastq-latest-image-for-bioinformatic-steps-episodes-03-and-04)
+	- [1.3 The `rnaseq-latest` image for count data analysis \(episodes 05, 06 and 07\)](#13-the-rnaseq-latest-image-for-count-data-analysis-episodes-05-06-and-07)
+- [2. Option 2: manual installation](#2-option-2-manual-installation)
+	- [2.1 Softwares and packages](#21-softwares-and-packages)
+	- [2.2 Data files](#22-data-files)
+- [3. Original study](#3-original-study)
+	- [3.1 Gene counts](#31-gene-counts)
+	- [3.2 Experimental design table](#32-experimental-design-table)
 
 <!-- /MarkdownTOC -->
 
-# Option 1 (preferred): using a Docker image
+# 1. Option 1 (preferred): using a Docker image
+
+## 1.1 Installing Docker
 
 The preferred option to install all softwares and packages is to use a tailor-made Docker image. See [this nice introduction to Docker here](https://aws.amazon.com/docker/).   
 
@@ -27,7 +30,34 @@ There are two Docker images necessary to complete this RNA-seq lesson:
 1. The command-line Docker `fastq-latest` image necessary to perform all bioinformatic analyses on the sequencing files: trimming, alignment and count table generation.
 2. The RStudio Docker `rnaseq-latest` image necessary to perform all count-related analyses: EDA, differential expression and downstream functional analyses.   
 
-## `fastq-latest` image for bioinformatic steps (episodes 03 and 04)
+
+So first thing first, we need to install Docker itself. 
+
+> ## Install Docker
+> Unfortunately, in many common situations installing Docker on your laptop will not straightforward if you do not have a large amount of technical experience. We have helpers on hand that have worked their way through the install process but be prepared for some troubleshooting.
+> Please try to install the appropriate software from the list below depending on the operating system that your laptop is running:
+> #### Microsoft Windows
+> **You must have admin rights to run docker!** Some parts of the lesson will work without running as admin but if you are unable to `Run as admin` on your machine some of this workshop might not work easily.
+> 
+> If you have Windows 10 Pro Edition:
+>  - First try to install the [Docker Desktop (Windows)](https://hub.docker.com/editions/community/docker-ce-desktop-windows), or **failing that**;
+> - Install the [Docker Toolbox (Windows)](https://docs.docker.com/toolbox/toolbox_install_windows/).
+>
+> If you have Windows 10 Home Edition:
+> - Install the [Docker Toolbox (Windows)](https://docs.docker.com/toolbox/toolbox_install_windows/).
+>
+>#### Apple macOS
+> Either:
+> - First, try to install the [Docker Desktop (Mac)](https://hub.docker.com/editions/community/docker-ce-desktop-mac), or **failing that**:
+> - Install the [Docker Toolbox (Mac)](https://docs.docker.com/toolbox/toolbox_install_mac/).
+> 
+> #### Linux
+> There are too many varieties of Linux to give precise instructions here, but hopefully you can locate documentation for getting Docker installed on your Linux distribution. It may already be installed. Note that Docker do list a number of versions of the Docker Engine for different Linux distributions [here](https://hub.docker.com/search/?type=edition&offering=community). 
+{: .prereq}
+
+
+
+## 1.2 The `fastq-latest` image for bioinformatic steps (episodes 03 and 04)
 
 This Docker image will allow you to complete the [episodes 03](https://scienceparkstudygroup.github.io/rna-seq-lesson/03-qc-of-sequencing-results/index.html) and [04](https://scienceparkstudygroup.github.io/rna-seq-lesson/04-bioinformatic-workflow/index.html) that work on `.fastq` sequencing files.
 
@@ -52,7 +82,7 @@ __Docker command-line explanations:__
 - The `-v $PWD:/home/` maps your working directory (e.g. `~/Desktop/rnaseq-tutorial`) to the container `/home/` folder. 
 
 
-## `rnaseq-latest` image for count data analysis (episodes 05, 06 and 07)
+## 1.3 The `rnaseq-latest` image for count data analysis (episodes 05, 06 and 07)
 
 This image is based on a [Bioconductor Docker imag release 3.10](https://hub.docker.com/r/bioconductor/bioconductor_docker/tags) image with additional packages such as `pheatmap` or `tidyverse`.
 
@@ -85,10 +115,10 @@ __Docker command-line explanations:__
 - The `--name` gives a name to the running container for easy retrieval.  
 - The `-p 8787:8787` follow the format `-p host_port:container_port`. Therefore the port 8787 inside the container will be exposed to the outside port on the host machine. That way, the running instance of RStudio can be access through the <IP address>:port format.
 
-# Option 2: manual installation
+# 2. Option 2: manual installation
 This is the second way to install softwares and packages. It _should_ work but there is no guarantee that it _will_ work since R and packages versions on your machine might be different from the software and package versions used in this lesson. Thus, the preferred way is still to use the Docker image (option 1).  
 
-## Softwares and packages
+## 2.1 Softwares and packages
 
 > ## Before you start.
 >
@@ -112,7 +142,7 @@ This is the second way to install softwares and packages. It _should_ work but t
 {: .prereq}
 
 
-## Data files 
+## 2.2 Data files 
 
 
 > ## What you need to download.
@@ -126,13 +156,13 @@ This is the second way to install softwares and packages. It _should_ work but t
 > - These `counts.txt` file was obtained by running the `v0.1.1` version of a [RNA-Seq bioinformatic pipeline](https://github.com/KoesGroup/Snakemake_hisat-DESeq/blob/master/README.md) on the [mRNA-Seq sequencing files from Vogel et al. (2016)](https://www.ebi.ac.uk/ena/data/view/PRJEB13938).
 {: .prereq}
 
-# Original study
+# 3. Original study
 This RNA-seq lesson will make use of a dataset from a study on the model plant _Arabidopsis thaliana_ inoculated with commensal leaf bacteria (_Methylobacterium extorquens_ or _Sphingomonas melonis_) and infected or not with a leaf bacterial pathogen called _Pseudomonas syringae_. Leaf samples were collected from Arabidopsis plantlets from plants inoculated or not with commensal bacteria and infected or not with the leaf pathogen either after two days (2 dpi, dpi: days post-inoculation) or seven days (6 dpi). 
 
 All details from the study are available in [Vogel et al. in 2016 and was published in New Phytologist](https://nph.onlinelibrary.wiley.com/doi/full/10.1111/nph.14036).  
 
 
-## Gene counts
+## 3.1 Gene counts
 The dimension of this table are 33,769 rows x 49 columns.  
   * 33,769 rows: one for gene and sample names and the rest for gene counts.  
   * 49 columns: one for the gene id and the rest for sample accession identifiers (from the EBI European Nucleotide Archive).
@@ -151,7 +181,7 @@ The dimension of this table are 33,769 rows x 49 columns.
 
 ... many more lines ...
 
-## Experimental design table
+## 3.2 Experimental design table
 
 dpi: days post-inoculation. 
 
