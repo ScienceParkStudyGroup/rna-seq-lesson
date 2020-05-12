@@ -36,7 +36,7 @@ So first thing first, we need to install Docker itself.
 > ## Install Docker
 > Unfortunately, in many common situations installing Docker on your laptop will not straightforward if you do not have a large amount of technical experience. We have helpers on hand that have worked their way through the install process but be prepared for some troubleshooting.
 > Please try to install the appropriate software from the list below depending on the operating system that your laptop is running:
-> #### Microsoft Windows
+> ### Microsoft Windows
 > **You must have admin rights to run docker!** Some parts of the lesson will work without running as admin but if you are unable to `Run as admin` on your machine some of this workshop might not work easily.
 > 
 > If you have Windows 10 Pro Edition:
@@ -46,16 +46,19 @@ So first thing first, we need to install Docker itself.
 > If you have Windows 10 Home Edition:
 > - Install the [Docker Toolbox (Windows)](https://docs.docker.com/toolbox/toolbox_install_windows/).
 >
->#### Apple macOS
+> ### Apple macOS
 > Either:
 > - First, try to install the [Docker Desktop (Mac)](https://hub.docker.com/editions/community/docker-ce-desktop-mac), or **failing that**:
 > - Install the [Docker Toolbox (Mac)](https://docs.docker.com/toolbox/toolbox_install_mac/).
 > 
-> #### Linux
+> ### Linux
 > There are too many varieties of Linux to give precise instructions here, but hopefully you can locate documentation for getting Docker installed on your Linux distribution. It may already be installed. Note that Docker do list a number of versions of the Docker Engine for different Linux distributions [here](https://hub.docker.com/search/?type=edition&offering=community). 
+>
+> ### Troubleshooting
+> Sometimes with git-bash and Windows, you can get issues listed here:   
+> `the input device is not a TTY.  If you are using mintty, try prefixing the command with 'winpty'`. This can be troubleshooted following [this blog post](https://pitman.io/posts/tips-for-using-docker-from-git-bash-on-windows/).
 {: .prereq}
 
-Troubleshooting. Sometimes with git-bash and Windows, you can get help here: https://pitman.io/posts/tips-for-using-docker-from-git-bash-on-windows/
 
 
 ## 1.2 The `fastq-latest` image for bioinformatic steps (episodes 03 and 04)
