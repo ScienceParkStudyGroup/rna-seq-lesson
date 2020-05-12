@@ -55,6 +55,7 @@ So first thing first, we need to install Docker itself.
 > There are too many varieties of Linux to give precise instructions here, but hopefully you can locate documentation for getting Docker installed on your Linux distribution. It may already be installed. Note that Docker do list a number of versions of the Docker Engine for different Linux distributions [here](https://hub.docker.com/search/?type=edition&offering=community). 
 {: .prereq}
 
+Troubleshooting. Sometimes with git-bash and Windows, you can get help here: https://pitman.io/posts/tips-for-using-docker-from-git-bash-on-windows/
 
 
 ## 1.2 The `fastq-latest` image for bioinformatic steps (episodes 03 and 04)
