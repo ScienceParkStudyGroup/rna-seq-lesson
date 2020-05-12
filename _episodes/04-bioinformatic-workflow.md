@@ -512,7 +512,7 @@ Again starting with a dry run with echo.
 ~~~
 $ for infile in *.fq.gz
 do
-  outfile="$(basename $infile .fastq)"_qc.fq
+  outfile="$(basename $infile .fq.gz)"_qc.fq
   echo "trimmomatic SE -phred33 -threads 2 $infile trimmed/$outfile ILLUMINACLIP:adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25"
 done
 ~~~
@@ -533,9 +533,9 @@ trimmomatic SE -phred33 -threads 2 Arabidopsis_sample4.fq.gz trimmed/Arabidopsis
 If it all looks ok, rerun with out `echo`
 
 ~~~
-$ for infile in *.fastq
+$ for infile in *.fq.gz
 do
-    outfile="$(basename $infile .fastq)"_qc.fq
+    outfile="$(basename $infile .fq.gz)"_qc.fq
     trimmomatic SE -phred33 -threads 2 $infile ../trimmed/"$outfile ILLUMINACLIP:../general/adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25 CROP:100
 done
 
