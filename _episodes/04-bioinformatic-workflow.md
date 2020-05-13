@@ -12,6 +12,9 @@ objectives:
 - "Be able to remove RNA-seq reads with adapters and low quality bases."
 keypoints:
 - "Performing read trimming ensures that no sequencing adapter is left in your final reads."
+- "Align RNA-seq reads to a reference genome using a splice-aware aligner like `STAR`."
+- "The SAM/BAM format is the end-result of a read alignment to a reference genome."
+- "The resulting `.bam` files are used to generate a count table for use in differential expression analyses."
 ---
 
 # Table of contents
