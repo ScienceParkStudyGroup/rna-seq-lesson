@@ -33,6 +33,7 @@ keypoints:
   - [3.3 Align reads to reference genome](#33-align-reads-to-reference-genome)
   - [3.4 The SAM/BAM format](#34-the-sambam-format)
 - [4. Creating the counts file](#4-creating-the-counts-file)
+- [5. Removal of Container and Image](#5-Removal-of-Container-and-Image)
 
 <!-- /MarkdownTOC -->
   
@@ -58,10 +59,10 @@ $ mkdir fastqc
 {: .bash}
 
 
-Next we need to get to the directory thay actually contains the the fastq files.
+Next we need to get to the directory that actually contains the the fastq files.
 
 ~~~
-$ ls fq-files
+$ ls /home/
 ~~~
 {: .bash}
 
@@ -106,7 +107,7 @@ $ for filename in *.fq.gz
 {: .bash}
 
 You will see an automatically updating output message telling you the
-progress of the analysis. It shoul look something like this:
+progress of the analysis. It should look something like this:
 
 ~~~
 Started analysis of Arabidopsis_sample1.fq.gz
@@ -134,7 +135,7 @@ $ fastqc -h
 {: .bash}
 
 But if all went right, the FastQC program will have created several new files within our
-`~/home/fastqc` directory.
+`/home/fastqc` directory.
 
 ~~~
 $  ls fastqc/
@@ -233,7 +234,7 @@ You should see a status output like this:
 
 ~~~
 Arabidopsis_sample1_fastqc.html                      100%  249KB 152.3KB/s   00:01    
-Arabidopsis_sample1_fastqc.html                       100%  254KB 219.8KB/s   00:01      
+Arabidopsis_sample2_fastqc.html                       100%  254KB 219.8KB/s   00:01      
 ~~~
 {: .output}
 
