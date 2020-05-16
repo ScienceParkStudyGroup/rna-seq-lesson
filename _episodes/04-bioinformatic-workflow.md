@@ -17,33 +17,146 @@ keypoints:
 - "The resulting `.bam` files are used to generate a count table for use in differential expression analyses."
 ---
 
-# Table of contents
-<!-- MarkdownTOC autolink="True" levels="1,2" -->
+# 1. Table of contents
+<!-- TOC -->
 
-- [1 Quality control and trimming](#1-quality-control-and-trimming)
-  - [1.1 Running FastQC](#11-running-fastqc)
-  - [1.2 Viewing the FastQC results](#12-viewing-the-fastqc-results)
-  - [1.3 Decoding the other FastQC outputs](#13-decoding-the-other-fastqc-outputs)
-  - [1.4 Working with the FastQC text output](#14-working-with-the-fastqc-text-output)
-  - [1.5 Documenting our work](#15-documenting-our-work)
-- [2. Trimming and filtering](#2-trimming-and-filtering)
-- [3. Alignment to a reference genome](#3-alignment-to-a-reference-genome)
-  - [3.1 Setting up](#31-setting-up)
-  - [3.2 Index the reference genome](#32-index-the-reference-genome)
-  - [3.3 Align reads to reference genome](#33-align-reads-to-reference-genome)
-  - [3.4 The SAM/BAM format](#34-the-sambam-format)
-- [4. Creating the counts file](#4-creating-the-counts-file)
-- [5. Removal of Container and Image](#5-Removal-of-Container-and-Image)
+- [1. Table of contents](#1-table-of-contents)
+- [2. Introduction](#2-introduction)
+    - [2.1. The fastq format](#21-the-fastq-format)
+- [2. Quality control of FASTQ files](#2-quality-control-of-fastq-files)
+    - [2.1. Running FastQC](#21-running-fastqc)
+    - [2.2. Viewing the FastQC results](#22-viewing-the-fastqc-results)
+    - [2.3. Decoding the other FastQC outputs](#23-decoding-the-other-fastqc-outputs)
+    - [2.4. Working with the FastQC text output](#24-working-with-the-fastqc-text-output)
+    - [2.5. Documenting our work](#25-documenting-our-work)
+- [3. Trimming and filtering](#3-trimming-and-filtering)
+- [4. Alignment to a reference genome](#4-alignment-to-a-reference-genome)
+    - [4.1. Index the reference genome](#41-index-the-reference-genome)
+    - [4.2. Align reads to reference genome](#42-align-reads-to-reference-genome)
+    - [4.3. The SAM/BAM format](#43-the-sambam-format)
+- [5. Creating the counts file](#5-creating-the-counts-file)
+- [6. Removal of Container and Image](#6-removal-of-container-and-image)
 
-<!-- /MarkdownTOC -->
-  
+<!-- /TOC -->
+
 
 <img src="../img/04-workflow-overview.png" width="500px" alt="workflow overview">
 
-# 1 Quality control and trimming
+
+# 2. Introduction
+
+## 2.1. The fastq format
+
+Check the Wikipedia page for now: https://en.wikipedia.org/wiki/FASTQ_format
 
 
-## 1.1 Running FastQC  
+The first step in the RNA-Seq workflow is to take the FASTQ files received from the sequencing facility and assess the quality of the sequence reads. 
+
+**Unmapped read data (FASTQ)**
+
+The [FASTQ](https://en.wikipedia.org/wiki/FASTQ_format) file format is the defacto file format for sequence reads generated from next-generation sequencing technologies. This file format evolved from FASTA in that it contains sequence data, but also contains quality information. Similar to FASTA, the FASTQ file begins with a header line. The difference is that the FASTQ header is denoted by a `@` character. For a single record (sequence read) there are four lines, each of which are described below:
+
+|Line|Description|
+|----|-----------|
+|1|Always begins with '@' and then information about the read|
+|2|The actual DNA sequence|
+|3|Always begins with a '+' and sometimes the same info in line 1|
+|4|Has a string of characters which represent the quality scores; must have same number of characters as line 2|
+
+Let's start and enter the container and have a look what the files we will be using actualy look like.
+
+
+~~~
+$ docker run -it --name bioinfo scienceparkstudygroup/master-gls:fastq-latest
+
+$ conda activate fastq
+
+$ cd home
+~~~
+{: .bash}
+
+As you can see the `/home/` directory contains 4 fastq files. The files are generaly quite big (they usualy contain up to 40 milion reads), so it's a smart thing to keep them zipped as they are.
+`zcat` is a simular function as `cat` but works on zipped files. With the use of this function we can have a look at the files without having to unzip them. 
+~~~
+$ zcat Arabidopsis_sample2.fq.gz | head -n 20
+~~~
+{: .bash}
+This will show the first 20 lines of the file, containing 5 reads.
+
+~~~
+@ERR1406259.27450842
+CATCGCTGAAGATCTGTGAACCAGCCTTGAACCAAACTGCCTCTCCAAACTTGACTCCGTTCCTGGCCAAAAGCTCAGGGAAGACGCAGCCTAGGGCTCCG
++
+?ABEEEDCBFEDGHFJFJIHFEFCC=>BEC>FJ@GHCHBHCGFJHG;:F<AI;90F=E44:8FA>@8C;;33237-?84(>*$A#$#/B.5)->0%/8D=;
+@ERR1406259.27450849
+GTTTTTTTCACTTGATAAATTTGCATTTTAAAACACACTTCATGGATAAAACGGATCATTTCTTGCCACTCTTCTTAAGTCCAGAACCTCCAAAGGATCCC
++
+@@?DFCBEEHCDFIFJEGEFGHEDIC>DHFFEF@FH>FG@FA;C9B=B>FHE09C<DE>;H:EH4C/D341;-B,<>:67+--,0;32@8'D)<B@>'&4!
+@ERR1406259.27450850
+GTAACTAACCCTGTCTCGAGCCGTTGTCATGAACAAGAACGCTGCGTGGCCTAACCCTGCTAGCTTCGTGGACAGAACCATGTCATAGTACCTTCCTTTGA
++
+@>=BEBCEFEBHHFEJHDCJHFDFGBFGEIE=IF?DDAJ?A@=8FI<@:C7B;:43G77434;*64<9=63+,:3/4/A0';(6B3=%45/>#)<#$=2,-
+@ERR1406259.27450851
+TTTGGCTTGGCAACAGTCTTCCTCATTGTCACACGGCCGCTTCCAAGGACTTCTGAAGCCGCAGGGGAAAGGTTCACAGCCTTTCCGGCGAAAGCAGGGGA
++
+9<<B>:D<?.CC@8C=C/7@1:+8%>+,&!!!4)!'%&75/A;.7B3!!!!#!!!!!!#!#!!!#!!!!!#!#!!!!!#!!!!!!"!!!!!!!!!!!!!!!
+@ERR1406259.27450856
+GAGAAGGCAAAGGAGAATGATAAAGAACCGAGAATCAGCTGCAAGGTCCCGGGCCAGGAAACAGATATTCACGGCAGACCAAACAATATACTGGAATGTAA
++
+<?CEF>>AEDFFBDCAFCCFDHCDD<D;=;GBFA@A<;<;89;8<4:7>;E5<B=9/@=F@:<;:A@/481*<6&-?,9744**71:-43333.,##!,08
+~~~
+{: .output}
+
+
+
+
+Let's have a close look at the first read of this sample:
+
+```
+@ERR1406259.27450842
+CATCGCTGAAGATCTGTGAACCAGCCTTGAACCAAACTGCCTCTCCAAACTTGACTCCGTTCCTGGCCAAAAGCTCAGGGAAGACGCAGCCTAGGGCTCCG
++
+?ABEEEDCBFEDGHFJFJIHFEFCC=>BEC>FJ@GHCHBHCGFJHG;:F<AI;90F=E44:8FA>@8C;;33237-?84(>*$A#$#/B.5)->0%/8D=;
+```
+
+As mentioned previously, line 4 has characters encoding the quality of each nucleotide in the read. The legend below provides the mapping of quality scores (Phred-33) to the quality encoding characters. **Different quality encoding scales exist (differing by offset in the ASCII table), but note the most commonly used one is fastqsanger**
+
+```
+ Quality encoding: !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHI
+                   |         |         |         |         |
+    Quality score: 0........10........20........30........40                                
+```
+ 
+Using the quality encoding character legend, the first nucelotide in the read (C) is called with a quality score of 30. The second base (A) has a quality of 32, etc.
+
+Each quality score represents the probability that the corresponding nucleotide call is incorrect. This quality score is logarithmically based and is calculated as:
+
+	Q = -10 x log10(P), where P is the probability that a base call is erroneous
+
+These probabaility values are the results from the base calling algorithm and dependent on how much signal was captured for the base incorporation. The score values can be interpreted as follows:
+
+|Phred Quality Score |Probability of incorrect base call |Base call accuracy|
+|:-------------------|:---------------------------------:|-----------------:|
+|10	|1 in 10 |	90%|
+|20	|1 in 100|	99%|
+|30	|1 in 1000|	99.9%|
+|40	|1 in 10,000|	99.99%|
+
+Therefore, for the first nucleotide in the read (C), there is a 1 in 1000 chance that the base was called incorrectly. Also you can see that the second half of the read contains a lot of bases that have a more then 10% probabaility that the base is called incorrectly.
+
+> ## Question
+> How many reads do these samples contain? 
+> > ## Solution
+> >  To get the number of reads, get the number of lines and divide by 4. `zcat Arabidopsis_sample2.fq.gz | wc -l` gives 1,000,000 lines -> 250,000 reads. 
+> {: .solution}
+{: .challenge}
+
+
+# 2. Quality control of FASTQ files
+
+
+
+## 2.1. Running FastQC  
 
 We will now assess the quality of the reads that we downloaded. First, we need to make an output directory for the fastqc results to be stored. This we want to do in the 'home' directory that contains all the needed files.
 
@@ -150,7 +263,7 @@ Arabidopsis_sample2_fastqc.html  Arabidopsis_sample3_fastqc.zip
 {: .output}
 
 
-## 1.2 Viewing the FastQC results
+## 2.2. Viewing the FastQC results
 
 For each of the samples there are two files. a .html and a .zip 
 
@@ -251,7 +364,7 @@ Your computer will open each of the HTML files in your default web browser. Depe
 tabs in a single window or six separate browser windows.
 
  
-## 1.3 Decoding the other FastQC outputs
+## 2.3. Decoding the other FastQC outputs
 We've now looked at quite a few "Per base sequence quality" FastQC graphs, but there are nine other graphs that we haven't talked about! Below we have provided a brief overview of interpretations for each of these plots. It's important to keep in mind
 
 + **Per tile sequence quality**: the machines that perform sequencing are divided into tiles. This plot displays patterns in base quality along these tiles. Consistently low scores are often found around the edges, but hot spots can also occur in the middle if an air bubble was introduced at some point during the run.
@@ -264,7 +377,7 @@ We've now looked at quite a few "Per base sequence quality" FastQC graphs, but t
 + **Overrepresented sequences**: A list of sequences that occur more frequently than would be expected by chance.
 + **Adapter Content**: a graph indicating where adapater sequences occur in the reads.
 
-## 1.4 Working with the FastQC text output
+## 2.4. Working with the FastQC text output
 
 Now that we've looked at our HTML reports to get a feel for the data,
 let's look more closely at the other output files. Go back to the tab
@@ -422,7 +535,7 @@ PASS    Adapter Content Arabidopsis_sample1.fq.gz
 The summary file gives us a list of tests that FastQC ran, and tells
 us whether this sample passed, failed, or is borderline (`WARN`). Remember to quit from `less` you enter `q`.
 
-## 1.5 Documenting our work
+## 2.5. Documenting our work
 
 We can make a record of the results we obtained for all our samples
 by concatenating all of our `summary.txt` files into a single file
@@ -434,7 +547,7 @@ $ cat */summary.txt > fastqc_summaries.txt
 ~~~
 {: .bash}
 
-# 2. Trimming and filtering
+# 3. Trimming and filtering
 
 Before we will do the alignment we need to remove sequences of low quality and sequences that are to short (below 25 bases).
 Also in this case we will trim down long sequences to 100 bases, quality of the Ion-torrent reads drops the further it gets.
@@ -565,7 +678,7 @@ It's possible to scroll up to check if the percentage of surviving & dropped is 
 
 
 
-# 3. Alignment to a reference genome
+# 4. Alignment to a reference genome
 
 <img src="../img/RNAseqWorkflow.png" height="400" >
 
@@ -575,7 +688,7 @@ a tool like [hisat2](http://ccb.jhu.edu/software/hisat2/index.shtml) does the jo
 
 
 
-### STAR Alignment Strategy
+**STAR Alignment Strategy**
 
 STAR is shown to have high accuracy and outperforms other aligners by more than a factor of 50 in mapping speed, but it is memory intensive. The algorithm achieves this highly efficient mapping by performing a two-step process:
 
@@ -612,15 +725,15 @@ Then the seeds are stitched together based on the best alignment for the read (s
 
 <img src="../img/alignment_STAR_step5.png" height="400" >
 
-### The alignment process consists of two steps:
+**The alignment process consists of two steps:**
 
 1. Indexing the reference genome
 2. Aligning the reads to the reference genome
 
 
-### 3.1 Setting up
+**Setting up**
 
-## 3.2 Index the reference genome
+## 4.1. Index the reference genome
 Our first step is to index the reference genome for use by STAR. Indexing allows the aligner to quickly find potential alignment sites for query sequences in a genome, which saves time during alignment. Indexing the reference only has to be run once. The only reason you would want to create a new index is if you are working with a different reference genome or you are using a different tool for alignment (index files are not exchangeable between tools).
 
 Take note that depending on the genome size these index files produced by STAR can be pretty big. Make sure there's enough disk space available.
@@ -676,7 +789,7 @@ result should be:
 
 
 
-## 3.3 Align reads to reference genome
+## 4.2. Align reads to reference genome
 
 In some tools like hisat2 creating the sequence alignment files (bam-files) is done in two steps. first the aligning it self. After that the alignment file will be filtered for instance to only contain the reads that actualy map to the genome. This is done with [sam flags](https://broadinstitute.github.io/picard/explain-flags.html) in samtools view (with the '-F 4' all the unmapped reads will be removed). STAR on the other hand has a build in filter and also a sort function. So the output is ready to use for downstream tools.  
 
@@ -805,7 +918,7 @@ Arabidopsis_sample1_qcLog.final.out (END)
 {: .output}
 
 
-## 3.4 The SAM/BAM format
+## 4.3. The SAM/BAM format
 The [SAM file](https://github.com/adamfreedman/knowyourdata-genomics/blob/gh-pages/lessons/01-know_your_data.md#aligned-reads-sam),
 is a tab-delimited text file that contains information for each individual read and its alignment to the genome. While we do not
 have time to go in detail of the features of the SAM format, the paper by
@@ -824,7 +937,7 @@ displayed below with the different fields highlighted.
 <img src="../img/sam_bam2.png">
 
 
-# 4. Creating the counts file
+# 5. Creating the counts file
 
 For downstream application for each of the samples the number of reads that maps within a gene has to be determined.
 Featurecounts from the subread package can do this.
@@ -849,7 +962,7 @@ The output file produced by `featureCounts` is a tab-delimited file, can be open
 
 
 
-# 5. Removal of Container and Image
+# 6. Removal of Container and Image
 
 If you have run this lesson locally and finished it all you might want to remove the container and the image (occupies about 4 gb of space).
 
