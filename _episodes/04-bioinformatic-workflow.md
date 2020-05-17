@@ -23,19 +23,28 @@ keypoints:
 - [1. Table of contents](#1-table-of-contents)
 - [2. Introduction](#2-introduction)
     - [2.1. The fastq format](#21-the-fastq-format)
-- [2. Quality control of FASTQ files](#2-quality-control-of-fastq-files)
-    - [2.1. Running FastQC](#21-running-fastqc)
-    - [2.2. Viewing the FastQC results](#22-viewing-the-fastqc-results)
-    - [2.3. Decoding the other FastQC outputs](#23-decoding-the-other-fastqc-outputs)
-    - [2.4. Working with the FastQC text output](#24-working-with-the-fastqc-text-output)
-    - [2.5. Documenting our work](#25-documenting-our-work)
-- [3. Trimming and filtering](#3-trimming-and-filtering)
-- [4. Alignment to a reference genome](#4-alignment-to-a-reference-genome)
-    - [4.1. Index the reference genome](#41-index-the-reference-genome)
-    - [4.2. Align reads to reference genome](#42-align-reads-to-reference-genome)
-    - [4.3. The SAM/BAM format](#43-the-sambam-format)
-- [5. Creating the counts file](#5-creating-the-counts-file)
-- [6. Removal of Container and Image](#6-removal-of-container-and-image)
+- [3. Quality control of FASTQ files](#3-quality-control-of-fastq-files)
+    - [3.1. Running FastQC](#31-running-fastqc)
+    - [3.2. Viewing the FastQC results](#32-viewing-the-fastqc-results)
+        - [3.2.1. Decoding the FastQC outputs](#321-decoding-the-fastqc-outputs)
+        - [3.2.2. Sequencing error profiles](#322-sequencing-error-profiles)
+        - [3.2.3. Expected Errors](#323-expected-errors)
+        - [3.2.4. Worrisome](#324-worrisome)
+        - [3.2.5. Quality assessment](#325-quality-assessment)
+        - [3.2.6. Per sequence quality scores](#326-per-sequence-quality-scores)
+        - [3.2.7. Per base sequence content](#327-per-base-sequence-content)
+        - [3.2.8. Per sequence GC content](#328-per-sequence-gc-content)
+        - [3.2.9. Sequence duplication level](#329-sequence-duplication-level)
+        - [3.2.10. Overrepresented sequences](#3210-overrepresented-sequences)
+    - [3.3. Working with the FastQC text output](#33-working-with-the-fastqc-text-output)
+    - [3.4. Documenting our work](#34-documenting-our-work)
+- [4. Trimming and filtering](#4-trimming-and-filtering)
+- [5. Alignment to a reference genome](#5-alignment-to-a-reference-genome)
+    - [5.1. Index the reference genome](#51-index-the-reference-genome)
+    - [5.2. Align reads to reference genome](#52-align-reads-to-reference-genome)
+    - [5.3. The SAM/BAM format](#53-the-sambam-format)
+- [6. Creating the counts file](#6-creating-the-counts-file)
+- [7. Removal of Container and Image](#7-removal-of-container-and-image)
 
 <!-- /TOC -->
 
@@ -107,9 +116,6 @@ GAGAAGGCAAAGGAGAATGATAAAGAACCGAGAATCAGCTGCAAGGTCCCGGGCCAGGAAACAGATATTCACGGCAGACC
 ~~~
 {: .output}
 
-
-
-
 Let's have a close look at the first read of this sample:
 
 ```
@@ -152,20 +158,15 @@ Therefore, for the first nucleotide in the read (C), there is a 1 in 1000 chance
 {: .challenge}
 
 
-# 2. Quality control of FASTQ files
+# 3. Quality control of FASTQ files
 
 
+## 3.1. Running FastQC  
 
-## 2.1. Running FastQC  
-
-We will now assess the quality of the reads that we downloaded. First, we need to make an output directory for the fastqc results to be stored. This we want to do in the 'home' directory that contains all the needed files.
+We will now create the quality reports of the reads that we downloaded. First, we need to make an output directory for the fastqc results to be stored. This we want to do in the 'home' directory that contains all the needed files.
 
 ~~~
-$ docker run -it --name bioinfo scienceparkstudygroup/master-gls:fastq-latest
-
-$ conda activate fastq
-
-$ cd home
+$ cd /home/
 
 $ mkdir fastqc
 ~~~
@@ -263,7 +264,7 @@ Arabidopsis_sample2_fastqc.html  Arabidopsis_sample3_fastqc.zip
 {: .output}
 
 
-## 2.2. Viewing the FastQC results
+## 3.2. Viewing the FastQC results
 
 For each of the samples there are two files. a .html and a .zip 
 
@@ -364,8 +365,11 @@ Your computer will open each of the HTML files in your default web browser. Depe
 tabs in a single window or six separate browser windows.
 
  
-## 2.3. Decoding the other FastQC outputs
-We've now looked at quite a few "Per base sequence quality" FastQC graphs, but there are nine other graphs that we haven't talked about! Below we have provided a brief overview of interpretations for each of these plots. It's important to keep in mind
+### 3.2.1. Decoding the FastQC outputs
+Upon opening the file Below we have provided a brief overview of interpretations for each of these plots. It's important to keep in mind
+Now that we have run FASTQC and downloaded the report, we can take a look at the metrics and assess the quality of our sequencing data!
+
+
 
 + **Per tile sequence quality**: the machines that perform sequencing are divided into tiles. This plot displays patterns in base quality along these tiles. Consistently low scores are often found around the edges, but hot spots can also occur in the middle if an air bubble was introduced at some point during the run.
 + **Per sequence quality scores**: a density plot of quality for all reads at all positions. This plot shows what quality scores are most common.
@@ -377,7 +381,118 @@ We've now looked at quite a few "Per base sequence quality" FastQC graphs, but t
 + **Overrepresented sequences**: A list of sequences that occur more frequently than would be expected by chance.
 + **Adapter Content**: a graph indicating where adapater sequences occur in the reads.
 
-## 2.4. Working with the FastQC text output
+
+FastQC has a really well documented [manual page](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/) with [detailed explanations](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/Help/) about every plot in the report. 
+
+Within our report, a summary of all of the modules is given on the left-hand side of the report. Don't take the **yellow "WARNING"s** and **red "FAIL"s** too seriously; they should be interpreted as flags for modules to check out. 
+
+<img src="../img/fastqc_summary.png" width="200">
+
+The first module gives the basic statistics for the sample. Generally it is a good idea to keep track of the total number of reads sequenced for each sample and to make sure the read length and %GC content is as expected.
+
+<img src="../img/fastqc_basic_stats.png" width="400">
+
+One of the most important analysis modules is the **"Per base sequence quality"** plot. This plot provides the distribution of quality scores at each position in the read across all reads. This plot can alert us to whether there were any problems occuring during sequencing and whether we might need to contact the sequencing facility.
+
+![FastQC_seq_qual](../img/FastQC_seq_qual.png)
+
+The y-axis gives the quality scores, while the x-axis represents the position in the read. The color coding of the plot denotes what are considered high, medium and low quality scores. 
+
+For example, the box plot at nucleotide 1 shows the distribution of quality scores for **the first nucleotide of all reads** in the `Mov10_oe_1` sample. The yellow box represents the 25th and 75th percentiles, with the red line as the median. The whiskers are the 10th and 90th percentiles. The blue line represents the average quality score for the nucleotide. Based on these metrics, the quality scores for the first nucleotide are quite high, with nearly all reads having scores above 28.
+
+The quality scores appear to drop going from the beginning toward the end of the reads. For reads generated by Illumina sequencing, this is not unexpected, and there are known causes for this drop in quality. To better interpret this plot it is helpful to understand the different sequencing error profiles.
+
+### 3.2.2. Sequencing error profiles
+
+For Illumina sequencing, the quality of the nucleotide base calls are related to the **signal intensity and purity of the fluorescent signal**. Low intensity fluorescence or the presence of multiple different fluorescent signals can lead to a drop in the quality score assigned to the nucleotide. Due to the nature of sequencing-by-synthesis there are some drops in quality that can be expected, but other quality issues can be indicative of a problem at the sequencing facility.
+
+We will now explore different quality issues arising from the sequencing-by-synthesis used by Illumina, both expected and unexpected.
+
+### 3.2.3. Expected Errors
+
+As sequencing progresses from the first cycle to the last cycle we often anticipate a drop in the quality of the base calls. This is often due to signal decay and phasing as the sequencing run progresses. 
+
+- **Signal decay:** As sequencing proceeds, the fluorescent signal intensity decays with each cycle, yielding decreasing quality scores at the **3' end** of the read. This is due to:
+   1. Degrading fluorophores
+   2. A proportion of the strands in the cluster not being elongated
+   
+   Therefore, the proportion of signal being emitted continues to decrease with each cycle.
+
+   <img src="../img/qc_signal_decay.png" width="400">
+   
+- **Phasing:** As the number of cycles increases, the signal starts to blur as the cluster loses synchronicity, also yielding a decrease in quality scores at the **3' end** of the read. As the cycles progress, some strands get random failure of nucleotides to incorporate due to:
+   1. Incomplete removal of the 3' terminators and fluorophores
+   2. Incorporation of nucleotides without effective 3' terminators
+
+   <img src="../img/qc_phasing.png" width="500">
+   
+### 3.2.4. Worrisome
+
+- **Overclustering:** Sequencing facilities can overcluster the flow cells, which results in small distances between clusters and an overlap in the signals. The two clusters can be interpreted as a single cluster with mixed fluorescent signals being detected, decreasing signal purity, generating lower quality scores across the **entire read**.
+
+   <img src="../img/qc_overclustering.png" width="800">
+   
+- **Instrumentation breakdown:** Sequencing facilities can occasionally have issues with the sequencing instruments during a run. **Any sudden drop in quality or a large percentage of low quality reads across the read could indicate a problem at the facility.** Examples of such issues are shown below, including a manifold burst, cycles lost, and read 2 failure. For such data, the sequencing facility should be contacted for resolution, if possible.
+
+   <img src="../img/qc_manifold_burst.png" width="300">
+   
+   <img src="../img/qc_cycles_lost.png" width="300">
+   
+   <img src="../img/qc_read2_failed.png" width="350">
+
+### 3.2.5. Quality assessment
+
+Now if we return back to our plot, we can see a drop in quality towards the ends of the reads, which could be explained by signal decay or phasing. No other worrisome signs are present, so the sequencing data from the facility is of good quality. 
+
+![FastQC_seq_qual](../img/FastQC_seq_qual.png)
+
+The other modules in the FastQC report can also help interpret the quality of the data. 
+
+### 3.2.6. Per sequence quality scores
+
+The **"Per sequence quality scores"** plot gives you the average quality score on the x-axis and the number of sequences with that average on the y-axis. We hope the majority of our reads have a high average quality score with no large bumps at the lower quality values.
+
+<img src="../img/fastqc_per_sequence_quality_scores.png" width="400">
+  
+This data has a small bump at a mean quality of 12. Since it doesn't represent a large proportion of the data, it isn't extremely worrisome, but it might be worth a quick check of the reads resulting in the poor quality scores.
+
+### 3.2.7. Per base sequence content
+The next plot gives the **"Per base sequence content"**, which always gives a FAIL for RNA-seq data. This is because the first 10-12 bases result from the 'random' hexamer priming that occurs during RNA-seq library preparation. This priming is not as random as we might hope giving an enrichment in particular bases for these intial nucleotides. 
+
+<img src="../img/fastqc_per_base_sequence_content.png" width="400">
+
+### 3.2.8. Per sequence GC content
+
+The **"Per sequence GC content"** plot gives the GC distribution over all sequences. Generally is a good idea to note whether the GC content of the central peak corresponds to the [expected % GC for the organism](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2909565/). Also, the distribution should be normal unless over-represented sequences (sharp peaks on a normal distribution) or contamination with another organism (broad peak).
+
+This plot would indicate some type of over-represented sequence with the sharp peaks, indicating either contamination or a highly over-expressed gene.
+
+<img src="../img/fastqc_GC.png" width="400">
+
+### 3.2.9. Sequence duplication level
+
+The next module explores **numbers of duplicated sequences** in the library. This plot can help identify a low complexity library, which could result from too many cycles of PCR amplification or too little starting material. For RNA-seq we don't normally do anything to address this in the analysis, but if this were a pilot experiment, we might adjust the number of PCR cycles, amount of input, or amount of sequencing for future libraries. In this analysis we seem to have a large number of duplicated sequences, but this is can be expected due to the multiple copies of mRNA being duplicates. 
+
+<img src="../img/fastqc_duplication.png" width="400">
+
+
+### 3.2.10. Overrepresented sequences
+
+The **"Overrepresented sequences"** table is another important module as it displays the sequences (at least 20 bp) that occur in more than 0.1% of the total number of sequences. This table aids in identifying contamination, such as vector or adapter sequences. If the %GC content was off in the above module, this table can help identify the source. If not listed as a known adapter or vector, it can help to BLAST the sequence to determine the identity.
+
+![FastQC_contam](../img/FastQC_contam.png)
+
+As our report only represents a subset of reads (chromosome 1) for `Mov10_oe_1.subset.fq`, which can skew the QC results. We encourage you to look at the [full set of reads](../fastqc/Mov10oe_1-fastqc_report.html) and note how the QC results differ when using the entire dataset.
+
+After exploring the quality of the data, we determine from which gene or transcript the reads originated from using mapping tools. The quality of the data is important when determining where it aligns to on the genome or transcriptome, but the mapping tools we use (salmon and STAR) are able to account for adapter contamination, vector contamination and low-quality bases at the ends of reads. Therefore, after noting any QC issues, we can use our raw reads for the alignment or mapping to the reference genome or transcriptome.
+
+
+
+
+
+
+
+## 3.3. Working with the FastQC text output
 
 Now that we've looked at our HTML reports to get a feel for the data,
 let's look more closely at the other output files. Go back to the tab
@@ -535,7 +650,7 @@ PASS    Adapter Content Arabidopsis_sample1.fq.gz
 The summary file gives us a list of tests that FastQC ran, and tells
 us whether this sample passed, failed, or is borderline (`WARN`). Remember to quit from `less` you enter `q`.
 
-## 2.5. Documenting our work
+## 3.4. Documenting our work
 
 We can make a record of the results we obtained for all our samples
 by concatenating all of our `summary.txt` files into a single file
@@ -547,7 +662,7 @@ $ cat */summary.txt > fastqc_summaries.txt
 ~~~
 {: .bash}
 
-# 3. Trimming and filtering
+# 4. Trimming and filtering
 
 Before we will do the alignment we need to remove sequences of low quality and sequences that are to short (below 25 bases).
 Also in this case we will trim down long sequences to 100 bases, quality of the Ion-torrent reads drops the further it gets.
@@ -678,7 +793,7 @@ It's possible to scroll up to check if the percentage of surviving & dropped is 
 
 
 
-# 4. Alignment to a reference genome
+# 5. Alignment to a reference genome
 
 <img src="../img/RNAseqWorkflow.png" height="400" >
 
@@ -733,7 +848,7 @@ Then the seeds are stitched together based on the best alignment for the read (s
 
 **Setting up**
 
-## 4.1. Index the reference genome
+## 5.1. Index the reference genome
 Our first step is to index the reference genome for use by STAR. Indexing allows the aligner to quickly find potential alignment sites for query sequences in a genome, which saves time during alignment. Indexing the reference only has to be run once. The only reason you would want to create a new index is if you are working with a different reference genome or you are using a different tool for alignment (index files are not exchangeable between tools).
 
 Take note that depending on the genome size these index files produced by STAR can be pretty big. Make sure there's enough disk space available.
@@ -789,7 +904,7 @@ result should be:
 
 
 
-## 4.2. Align reads to reference genome
+## 5.2. Align reads to reference genome
 
 In some tools like hisat2 creating the sequence alignment files (bam-files) is done in two steps. first the aligning it self. After that the alignment file will be filtered for instance to only contain the reads that actualy map to the genome. This is done with [sam flags](https://broadinstitute.github.io/picard/explain-flags.html) in samtools view (with the '-F 4' all the unmapped reads will be removed). STAR on the other hand has a build in filter and also a sort function. So the output is ready to use for downstream tools.  
 
@@ -918,7 +1033,7 @@ Arabidopsis_sample1_qcLog.final.out (END)
 {: .output}
 
 
-## 4.3. The SAM/BAM format
+## 5.3. The SAM/BAM format
 The [SAM file](https://github.com/adamfreedman/knowyourdata-genomics/blob/gh-pages/lessons/01-know_your_data.md#aligned-reads-sam),
 is a tab-delimited text file that contains information for each individual read and its alignment to the genome. While we do not
 have time to go in detail of the features of the SAM format, the paper by
@@ -937,7 +1052,7 @@ displayed below with the different fields highlighted.
 <img src="../img/sam_bam2.png">
 
 
-# 5. Creating the counts file
+# 6. Creating the counts file
 
 For downstream application for each of the samples the number of reads that maps within a gene has to be determined.
 Featurecounts from the subread package can do this.
@@ -962,7 +1077,7 @@ The output file produced by `featureCounts` is a tab-delimited file, can be open
 
 
 
-# 6. Removal of Container and Image
+# 7. Removal of Container and Image
 
 If you have run this lesson locally and finished it all you might want to remove the container and the image (occupies about 4 gb of space).
 
