@@ -11,7 +11,10 @@ questions:
 objectives:
 - "Be able to remove RNA-seq reads with adapters and low quality bases."
 keypoints:
-- "Performing read trimming ensures that no sequencing adapter is left in your final reads."
+- "Next-Generation Sequencing techniques are massively parallel cDNA sequencing."
+- "Sequencing files are produced in a standard format: the fastq format."
+- "Using FastQC, one can easily check the sequencing quality of a fastq file."
+- "Performing read trimming ensures that seqence of bed quality and no sequencing adapter is left in your final reads."
 - "Align RNA-seq reads to a reference genome using a splice-aware aligner like `STAR`."
 - "The SAM/BAM format is the end-result of a read alignment to a reference genome."
 - "The resulting `.bam` files are used to generate a count table for use in differential expression analyses."
@@ -45,6 +48,7 @@ keypoints:
     - [5.3. The SAM/BAM format](#53-the-sambam-format)
 - [6. Creating the counts file](#6-creating-the-counts-file)
 - [7. Removal of Container and Image](#7-removal-of-container-and-image)
+- [8. Keypoints](#8-keypoints)
 
 <!-- /TOC -->
 
@@ -452,14 +456,14 @@ The other modules in the FastQC report can also help interpret the quality of th
 
 The **"Per sequence quality scores"** plot gives you the average quality score on the x-axis and the number of sequences with that average on the y-axis. We hope the majority of our reads have a high average quality score with no large bumps at the lower quality values.
 
-<img src="../img/fastqc_per_sequence_quality_scores.png" width="400">
+<img src="../img/fastqc_per_sequence_quality_scores.png" width="600">
   
 This data has a small bump at a mean quality of 12. Since it doesn't represent a large proportion of the data, it isn't extremely worrisome, but it might be worth a quick check of the reads resulting in the poor quality scores.
 
 ### 3.2.7. Per base sequence content
 The next plot gives the **"Per base sequence content"**, which always gives a FAIL for RNA-seq data. This is because the first 10-12 bases result from the 'random' hexamer priming that occurs during RNA-seq library preparation. This priming is not as random as we might hope giving an enrichment in particular bases for these intial nucleotides. 
 
-<img src="../img/fastqc_per_base_sequence_content.png" width="400">
+<img src="../img/fastqc_per_base_sequence_content.png" width="600">
 
 ### 3.2.8. Per sequence GC content
 
@@ -467,13 +471,13 @@ The **"Per sequence GC content"** plot gives the GC distribution over all sequen
 
 This plot would indicate some type of over-represented sequence with the sharp peaks, indicating either contamination or a highly over-expressed gene.
 
-<img src="../img/fastqc_GC.png" width="400">
+<img src="../img/fastqc_GC.png" width="600">
 
 ### 3.2.9. Sequence duplication level
 
 The next module explores **numbers of duplicated sequences** in the library. This plot can help identify a low complexity library, which could result from too many cycles of PCR amplification or too little starting material. For RNA-seq we don't normally do anything to address this in the analysis, but if this were a pilot experiment, we might adjust the number of PCR cycles, amount of input, or amount of sequencing for future libraries. In this analysis we seem to have a large number of duplicated sequences, but this is can be expected due to the multiple copies of mRNA being duplicates. 
 
-<img src="../img/fastqc_duplication.png" width="400">
+<img src="../img/fastqc_duplication.png" width="600">
 
 
 ### 3.2.10. Overrepresented sequences
@@ -1121,3 +1125,5 @@ To remove the image run
 $ docker rmi daef7efb73ec
 ~~~
 {: .bash}
+
+# 8. Keypoints
