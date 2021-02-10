@@ -147,11 +147,11 @@ This is the second way to install softwares and packages. It _should_ work but t
 
 
 ## 2.2 Data files 
-
+https://zenodo.org/record/4530667
 
 > ## What you need to download.
-> [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3804520.svg)](https://doi.org/10.5281/zenodo.3804520)
-> Please download the necessary data files for the lesson [from the Zenodo archive](https://doi.org/10.5281/zenodo.3804520).  
+> [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4530667.svg)](https://doi.org/10.5281/zenodo.4530667)
+> Please download the necessary data files for the lesson [from the Zenodo archive](https://doi.org/10.5281/zenodo.4530667).  
 >
 > - **Counts**: A `counts.txt` dataframe of the sample raw counts. It is a tab separated file therefore data are in tabulated separated columns.
 > - **Experimental design**: the `experimental_design_modified.txt` dataframe indicates the correspondence between samples and experimental conditions (e.g. control, treated).  
