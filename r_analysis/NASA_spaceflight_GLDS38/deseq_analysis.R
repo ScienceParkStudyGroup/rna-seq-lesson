@@ -66,24 +66,20 @@ scaled_counts %>%
 
 vst_dds <- vst(dds)
 variance_transformed_plot <- meanSdPlot(assay(vst_dds), plot = FALSE, ranks = FALSE)$gg
-variance_transformed_plot
-
 not_transformed_plot <- meanSdPlot(assay(dds),ranks = FALSE, plot = FALSE)$gg + scale_x_log10() + scale_y_log10()
-not_transformed_plot
-
 not_transformed_plot + variance_transformed_plot
 
-# PCA plot
+# PCA plot on variance transformed dataset
 pcaData <- plotPCA(vst_dds, intgroup = c("condition"), returnData = TRUE) 
 percentVar <- round(100 * attr(pcaData, "percentVar"))
 p <- ggplot(pcaData, aes(PC1, PC2, color = condition)) +
-  geom_point(size = 4) +
+  geom_point(size = 6) +
   xlab(paste0("PC1: ",percentVar[1],"% variance")) +
   ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
   coord_fixed() +
-  ggtitle("PCA plot")
+  ggtitle("PCA plot") +
+  theme(axis.text = element_text(size = 12))
 p
-
 ggsave(filename = "NASA_spaceflight_GLDS38/pca_plot.pdf")
 
 
@@ -92,7 +88,62 @@ ggsave(filename = "NASA_spaceflight_GLDS38/pca_plot.pdf")
 ###################
 
 dds <- DESeq(dds)
-res <- results(dds, contrast = c("condition", "space_flight", "ground_control"))
+res <- results(dds, contrast = c("condition", "space_flight", "ground_control")) %>% 
+  as.data.frame()
+
+# histogram of raw and adjusted p-values
+plot_raw_pvalues <- ggplot(res, aes(x = pvalue)) +
+  geom_histogram(fill = "grey") + ggtitle("Raw p-values") + labs(y = "Number of occurences")
+plot_adj_pvalues <- ggplot(res, aes(x = padj)) +
+  geom_histogram(fill = "lightblue") + ggtitle("Adjusted p-values") + labs(y = "Number of occurences")
+plot_raw_pvalues + plot_adj_pvalues
+ggsave(filename = "NASA_spaceflight_GLDS38/pvalues_histograms.pdf")
+
+# distribution of log2 fold changes
+res %>% 
+  drop_na() %>% 
+  ggplot(., aes(x = log2FoldChange)) +
+  geom_histogram() +
+  geom_vline(xintercept = 1, colour= "red") +
+  geom_vline(xintercept = -1, colour= "blue") +
+  scale_x_continuous(breaks = seq(-5,+5,1), limits = c(-5,+5)) +
+  theme(text = element_text(size = 20))
+ggsave(filename = "NASA_spaceflight_GLDS38/distri_log2fc.pdf")
+
+
+calculate_percentile_of_log2fc_value <- res %>% 
+  drop_na() %>% 
+  with(., ecdf(log2FoldChange)) # empirical cumulative distribution function 
+
+# calculate the nth percentile of selected log2 FC
+log2fc_percentiles(-1) * 100 %>%  round(digits = 2) # -> the 6th percentile 
+log2fc_percentiles(+1)* 100 %>%  round(digits = 2)  # -> the 96th percentile  
+
+# selected_quantiles = seq(from = 0.1, to = 0.9, by = 0.1)
+# fc_quantiles_pos = res %>% 
+#   filter(log2FoldChange > 0) %>% 
+#   with(., quantile(log2FoldChange, selected_quantiles, na.rm = TRUE)) %>% as.vector()
+# fc_quantiles_neg = res %>% 
+#   filter(log2FoldChange < 0) %>% 
+#   with(., quantile(log2FoldChange, selected_quantiles, na.rm = TRUE)) %>% as.vector()
+# 
+# tibble(percentile = paste0(100*selected_quantiles,"th percentile"), 
+#        neg = fc_quantiles_neg, 
+#        pos = fc_quantiles_pos) %>%
+#   pivot_longer(cols = - percentile, names_to = "sign") %>% 
+#   ggplot(., aes(x = percentile, y = value, color = sign)) +
+#   geom_point() +
+#   facet_wrap(~ sign) +
+#   coord_flip()
+
+
+res %>% 
+  as.data.frame() %>% 
+  rownames_to_column("gene") %>%  
+  as_tibble() %>% 
+  filter(padj < 0.01) %>% 
+  filter(log2FoldChange > 1) %>% 
+  left_join(x = ., y = arabidopsis2uniprot, by = "gene")
 
 
 res %>% 
@@ -103,6 +154,8 @@ res %>%
   filter(log2FoldChange > 1) %>% 
   left_join(x = ., y = arabidopsis2uniprot, by = "gene") %>% 
   write_csv(file = "NASA_spaceflight_GLDS38/diff_genes.csv")
+
+
 
 ##################
 # Volcano plot
