@@ -1,0 +1,7 @@
+sample_name,condition
+Atha_WT_Col_0_sl_FLT_Rep1_G1S1,space_flight
+Atha_WT_Col_0_sl_FLT_Rep2_G1S2,space_flight
+Atha_WT_Col_0_sl_FLT_Rep3_G1S3,space_flight
+Atha_WT_Col_0_sl_GC_Rep1_G2S1,ground_control
+Atha_WT_Col_0_sl_GC_Rep2_G2S2,ground_control
+Atha_WT_Col_0_sl_GC_Rep3_G2S3,ground_control
