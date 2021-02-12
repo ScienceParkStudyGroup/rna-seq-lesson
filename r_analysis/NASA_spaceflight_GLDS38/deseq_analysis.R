@@ -116,8 +116,8 @@ calculate_percentile_of_log2fc_value <- res %>%
   with(., ecdf(log2FoldChange)) # empirical cumulative distribution function 
 
 # calculate the nth percentile of selected log2 FC
-log2fc_percentiles(-1) * 100 %>%  round(digits = 2) # -> the 6th percentile 
-log2fc_percentiles(+1)* 100 %>%  round(digits = 2)  # -> the 96th percentile  
+log2fc_percentiles(-2) * 100 %>%  round(digits = 2) # -> the 6th percentile 
+log2fc_percentiles(+2)* 100 %>%  round(digits = 2)  # -> the 96th percentile  
 
 # selected_quantiles = seq(from = 0.1, to = 0.9, by = 0.1)
 # fc_quantiles_pos = res %>% 
@@ -137,15 +137,7 @@ log2fc_percentiles(+1)* 100 %>%  round(digits = 2)  # -> the 96th percentile
 #   coord_flip()
 
 
-res %>% 
-  as.data.frame() %>% 
-  rownames_to_column("gene") %>%  
-  as_tibble() %>% 
-  filter(padj < 0.01) %>% 
-  filter(log2FoldChange > 1) %>% 
-  left_join(x = ., y = arabidopsis2uniprot, by = "gene")
-
-
+# genes upregulated by microgravity
 res %>% 
   as.data.frame() %>% 
   rownames_to_column("gene") %>%  
@@ -153,8 +145,17 @@ res %>%
   filter(padj < 0.01) %>% 
   filter(log2FoldChange > 1) %>% 
   left_join(x = ., y = arabidopsis2uniprot, by = "gene") %>% 
-  write_csv(file = "NASA_spaceflight_GLDS38/diff_genes.csv")
+  write_csv(file = "NASA_spaceflight_GLDS38/pos_diff_genes.csv")
 
+# genes downregulated by microgravity
+res %>% 
+  as.data.frame() %>% 
+  rownames_to_column("gene") %>%  
+  as_tibble() %>% 
+  filter(padj < 0.01) %>% 
+  filter(log2FoldChange < -1) %>% 
+  left_join(x = ., y = arabidopsis2uniprot, by = "gene") %>% 
+  write_csv(file = "NASA_spaceflight_GLDS38/neg_diff_genes.csv")
 
 
 ##################
@@ -172,7 +173,7 @@ EnhancedVolcano(toptable = resLFC,
                 lab = rownames(resLFC),
                 xlim = c(-5, +5),
                 ylim = c(0,50),
-                pCutoff = 1e-06,
+                pCutoff = 0.01,
                 transcriptPointSize = 2.0,
                 FCcutoff = 1, 
                 title = "Volcano plot",
@@ -180,7 +181,7 @@ EnhancedVolcano(toptable = resLFC,
                   'Not significant',
                   'Log2 fold-change (but do not pass p-value cutoff)',
                   'Pass p-value cutoff',
-                  'Pass both p-value & Log2 fold change')
-) + guides(legend = NULL)
+                  'Pass both p-value & Log2 fold change')) + 
+  guides(legend = NULL)
 
 
