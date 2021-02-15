@@ -1,4 +1,4 @@
-library("tidyverse")
+suppressPackageStartupMessages(library("tidyverse"))
 suppressPackageStartupMessages(library("DESeq2"))           # Bioconductor package BiocManager::install("DESeq2")
 suppressPackageStartupMessages(library("EnhancedVolcano"))  # Bioconductor package BiocManager::install("EnhancedVolcano")
 suppressPackageStartupMessages(library("vsn"))
@@ -161,7 +161,7 @@ res %>%
 ##################
 # Volcano plot
 ##################
-
+res <- results(dds, contrast = c("condition", "space_flight", "ground_control"))
 resLFC <- lfcShrink(dds = dds, 
                     res = res,
                     type = "normal",
