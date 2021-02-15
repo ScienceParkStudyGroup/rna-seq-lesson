@@ -2,7 +2,7 @@ suppressPackageStartupMessages(library("tidyverse"))
 suppressPackageStartupMessages(library("DESeq2"))           # Bioconductor package BiocManager::install("DESeq2")
 suppressPackageStartupMessages(library("EnhancedVolcano"))  # Bioconductor package BiocManager::install("EnhancedVolcano")
 suppressPackageStartupMessages(library("vsn"))
-library("patchwork")
+suppressPackageStartupMessages(library("patchwork"))
 
 arabidopsis2uniprot <- read_tsv(file = "NASA_spaceflight_GLDS38/Arabidopsis_to_Uniprot_idmapping.txt", 
                     col_names = c("uniprot_id","gene")) %>% 
@@ -54,6 +54,7 @@ ggsave(filename = "NASA_spaceflight_GLDS38/size_factor_plot.pdf", width = 10, he
 ### VST + PCA
 #############
 
+# Plot of mean - sd comparison
 # Variance - mean plot for all genes
 scaled_counts %>% 
   as.data.frame() %>% 
@@ -61,16 +62,21 @@ scaled_counts %>%
   pivot_longer(cols = - gene, names_to = "sample", values_to = "counts") %>% 
   group_by(gene) %>% 
   summarise(gene_average = mean(counts), gene_stdev = sd(counts)) %>% 
-  ggplot(., aes(x = gene_average, y = gene_stdev)) +
-  geom_point() 
+  ungroup() %>% 
+  ggplot(., aes(x = log10(gene_average), y = log10(gene_stdev))) +
+  geom_point(alpha = 0.5, fill = "grey", colour = "black") 
 
-vst_dds <- vst(dds)
-variance_transformed_plot <- meanSdPlot(assay(vst_dds), plot = FALSE, ranks = FALSE)$gg
-not_transformed_plot <- meanSdPlot(assay(dds),ranks = FALSE, plot = FALSE)$gg + scale_x_log10() + scale_y_log10()
-not_transformed_plot + variance_transformed_plot
+# Stabilise the variance to avoid it depending on the mean
+dds = estimateDispersions(dds)
+vst_counts = getVarianceStabilizedData(object = dds)
+
+#variance_transformed_plot <- meanSdPlot(assay(vst_dds), plot = FALSE, ranks = FALSE)$gg
+#not_transformed_plot <- meanSdPlot(assay(dds),ranks = FALSE, plot = FALSE)$gg + scale_x_log10() + scale_y_log10()
+#not_transformed_plot
+#variance_transformed_plot
 
 # PCA plot on variance transformed dataset
-pcaData <- plotPCA(vst_dds, intgroup = c("condition"), returnData = TRUE) 
+pcaData <- plotPCA(vst(dds), intgroup = c("condition"), returnData = TRUE) 
 percentVar <- round(100 * attr(pcaData, "percentVar"))
 p <- ggplot(pcaData, aes(PC1, PC2, color = condition)) +
   geom_point(size = 6) +
@@ -116,26 +122,8 @@ calculate_percentile_of_log2fc_value <- res %>%
   with(., ecdf(log2FoldChange)) # empirical cumulative distribution function 
 
 # calculate the nth percentile of selected log2 FC
-log2fc_percentiles(-2) * 100 %>%  round(digits = 2) # -> the 6th percentile 
-log2fc_percentiles(+2)* 100 %>%  round(digits = 2)  # -> the 96th percentile  
-
-# selected_quantiles = seq(from = 0.1, to = 0.9, by = 0.1)
-# fc_quantiles_pos = res %>% 
-#   filter(log2FoldChange > 0) %>% 
-#   with(., quantile(log2FoldChange, selected_quantiles, na.rm = TRUE)) %>% as.vector()
-# fc_quantiles_neg = res %>% 
-#   filter(log2FoldChange < 0) %>% 
-#   with(., quantile(log2FoldChange, selected_quantiles, na.rm = TRUE)) %>% as.vector()
-# 
-# tibble(percentile = paste0(100*selected_quantiles,"th percentile"), 
-#        neg = fc_quantiles_neg, 
-#        pos = fc_quantiles_pos) %>%
-#   pivot_longer(cols = - percentile, names_to = "sign") %>% 
-#   ggplot(., aes(x = percentile, y = value, color = sign)) +
-#   geom_point() +
-#   facet_wrap(~ sign) +
-#   coord_flip()
-
+calculate_percentile_of_log2fc_value(-2) * 100 %>%  round(digits = 2) # -> the 6th percentile 
+calculate_percentile_of_log2fc_value(+2)* 100 %>%  round(digits = 2)  # -> the 96th percentile  
 
 # genes upregulated by microgravity
 res %>% 
