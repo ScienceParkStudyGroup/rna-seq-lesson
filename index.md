@@ -22,8 +22,13 @@ Depending on the level of participants, the bioinformatic part might be performe
 This lesson will introduce you to the basics of gene expression analysis using RNA-Seq (short for RNA sequencing). Due to the considerable progress and constant decreasing costs of RNA-Seq, this technique has became a standard
 
 ## Main learning objectives
+After completing this lesson, you should be able to:
+- Indicate the reasons for doing an RNA-Seq experiment. 
 - Identify good practices when designing a RNA-Seq experiment.
 - Memorize the steps of a complete RNA-Seq experiment: from sequencing to analysis.
+- Assess the quality of RNA-seq sequencing data ("reads") using the command-line instructions in the cloud (Linux).
+- Align RNA-seq reads to a reference genome using a splice-aware aligner (e.g. STAR).
+- Generate a count matrix from the RNA-seq data alignment  
 - Perform a QC of your experiment through Principal Component Analysis (PCA) and sample clustering. 
 - Execute a differential gene expression analysis using R and the `DESeq2` package.  
 - Be able to create key plots: volcano plot, heatmap and clustering of differentially expressed genes.  

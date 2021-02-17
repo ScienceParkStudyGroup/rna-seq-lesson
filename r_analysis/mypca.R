@@ -1,6 +1,7 @@
 mypca <- function(x, center = TRUE, scale = TRUE){
   
-  
+  # This checks that the samples/individuals are in rows
+  # If samples in columns, then the matrix is transposed
   if(nrow(x)>ncol(x))
   {
     x = t(x)

@@ -1,22 +1,24 @@
 ---
-title: "Going beyond a list of genes"
-teaching: 30
-exercises: 60 
+title: "Functional enrichment analysis"
+teaching: 45
+exercises: 15 
 questions:
-- "What are factor levels and why is it important for different expression analysis?"
+- "Given a list of differentially expressed genes, how do I search for enriched functions?"
+- "What is the difference between an over-representation analysis (ORA) and a gene set enrichment analysis (GSEA)?"
 objectives:
 - "Add extensive gene annotations using Ensembl API queried using the `biomartr` package. "
-- "Be able to perform a gene set enrichment analysis (GSEA) using a list of differentially expressed genes."
 - "Be able to perform an over representation analysis (ORA) using a list of differentially expressed genes."
+- "Be able to perform a gene set enrichment analysis (GSEA) using a list of differentially expressed genes."
+- "Build graphical representations from the results of an ORA or GSEA analysis."
 keypoints:
-- "ORA can...."
+- ""
 
 ---
 
 # Table of Contents
 <!-- MarkdownTOC autolink="True" levels="1,2" -->
 
-- [1. Introduction](#1-introduction)
+- [1. Introduction: functional enrichment](#1-introduction-functional-enrichment)
 - [2. Annotating your DE genes](#2-annotating-your-de-genes)
   - [2.1 Load the table of differential genes](#21-load-the-table-of-differential-genes)
   - [2.2 Ensembl databases](#22-ensembl-databases)
@@ -46,10 +48,14 @@ keypoints:
 
 <img src="../img/07-workflow-overview.png" width="500px" alt="workflow overview">
 
-# 1. Introduction
-You've finally managed to extract a list of differentially expressed genes from your comparison. Great job! But...now what? :question: :confused:
+# 1. Introduction: functional enrichment
+
+You've finally managed to extract a list of differentially expressed genes from your comparison. Great job! 
+But...now what? :question: :confused:
 
 Why did you do the experiment in the first place? Probably because you had an hypothesis or you were looking to open new leads. 
+
+A functional enrichement analysis will determine whether some functions are enriched in your set of differentially expressed genes. 
 
 In this tutorial, we are looking for Arabidopsis leaf genes that are induced or repressed upon inoculation by _Pseudomonas syringae_ DC3000 after 7 days.
 One important goal is to gain a higher view and not only deal with individual genes but understand which pathways are involved in the response. 
@@ -245,7 +251,11 @@ ora_analysis_bp <- enrichGO(gene = diff_arabidopsis_genes_annotated$entrezgene_i
 ~~~
 {: .language-r}
 
-Since we have 3 classes for GO terms i.e. Molecular Function (MF), Cellular Component (CC) and Biological Processes (BP), we would have to rerun this 3 times. An alternative is to indicate `ont = "ALL`.
+Since we have 3 classes for GO terms i.e. Molecular Function (MF), Cellular Component (CC) and Biological Processes (BP), we have to run this 3 times for each GO class. 
+
+> ## Exercise
+> How many GO categories do you find overrepresented (padj < 0.05) for the Cellular Component and Molecular Function classes?
+{: .challenge}
 
 ~~~
 ora_analysis_all_go <- enrichGO(gene = diff_arabidopsis_genes_annotated$entrezgene_id, 
@@ -260,11 +270,19 @@ ora_analysis_all_go <- enrichGO(gene = diff_arabidopsis_genes_annotated$entrezge
 ~~~
 {: .language-r}
 
-The `ora_analysis_all_go` is a rich and complex R object. It contains various layers of information (R object from the S4 class). Layers can be accessed through the "@" notation.
+The Gene Ontology classification is very redundant meaning that parental terms overlap a lot with their related child terms. The `clusterProfiler` package comes with a dedicated function called `simplify` to solve this issue. 
+
+~~~
+# clusterProfiler::simplify to disambiguate which simplify() function you want to use
+ora_analysis_all_go_simplified <- clusterProfiler::simplify(ora_analysis_bp) 
+~~~
+{: .language-r} 
+
+The `ora_analysis_all_go_simplified` is a rich and complex R object. It contains various layers of information (R object from the S4 class). Layers can be accessed through the "@" notation.
 
 You can extract a nice table of results for your next breakthrough publication like this. 
 ~~~
-write_delim(x = as.data.frame(ora_analysis_all_go@result), 
+write_delim(x = as.data.frame(ora_analysis_all_go_simplified@result), 
             path = "go_results.tsv", 
             delim = "\t")
 
@@ -618,7 +636,7 @@ This will clean the cache memory and allow to perform the Ensembl query again.
 - [ResearchGate related question](https://www.researchgate.net/post/How_can_I_analyze_a_set_of_DEGs_differentially_expressed_genes_to_obtain_information_from_them)	
 
 ## 8.2. References
-* [The Cluster Profiler companion boo, a great place to start](https://yulab-smu.github.io/clusterProfiler-book/chapter2.html)
+* [The Cluster Profiler companion book, a great place to start](https://yulab-smu.github.io/clusterProfiler-book/chapter2.html)
 * Zhou et al. (2019). Metascape provides a biologist-oriented resource for the analysis of systems-level datasets. Nat Commun 10, 1523 (2019). [link](https://doi.org/10.1038/s41467-019-09234-6)
 * Yates et al. (2020) Ensembl 2020, Nucleic Acids Research, Volume 48, Issue D1, 08 January 2020, Pages D682–D688, [Link](https://doi.org/10.1093/nar/gkz966)
 * Tian et al. (2017) agriGO v2.0: a GO analysis toolkit for the agricultural community. _Nucleic Acids Research_, Volume 45, Issue W1, Pages W122–W129.[Link](https://doi.org/10.1093/nar/gkx382) 

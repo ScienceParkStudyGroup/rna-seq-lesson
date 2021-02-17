@@ -6,6 +6,11 @@ suppressPackageStartupMessages(library("patchwork"))
 
 source("mypca.R")
 
+new_sample_names = c(
+  paste0("FLT", seq(1,3,1)),
+  paste0("GC", seq(1,3,1))
+)
+
 ###############
 # External info
 ###############
@@ -58,14 +63,32 @@ ggsave(filename = "NASA_spaceflight_GLDS38/size_factor_plot.pdf", width = 10, he
 ###############################
 # Compare raw and scaled counts
 ###############################
+colnames(raw_counts) = new_sample_names
+colnames(scaled_counts) = new_sample_names
 
-raw_counts %>%
+sample2condition$sample = new_sample_names
+
+p_raw <- 
+  raw_counts %>%
   rownames_to_column("gene") %>% 
   gather(key = "sample", value = "gene_counts", - gene) %>% 
   mutate(gene_counts_log = log10(gene_counts + 1)) %>% 
   ggplot(., aes(x = sample, y = gene_counts_log)) +
-  geom_boxplot()
+  geom_boxplot(fill = "lightgrey") +
+  labs(y = "Raw gene counts (log10 transformed)")
   
+p_scaled <- 
+  scaled_counts %>% 
+  as.data.frame() %>% 
+  rownames_to_column("gene") %>% 
+  gather(key = "sample", value = "gene_counts", - gene) %>% 
+  mutate(gene_counts_log = log10(gene_counts + 1)) %>% 
+  ggplot(., aes(x = sample, y = gene_counts_log)) +
+  geom_boxplot(fill = "lightgreen") +
+  labs(y = "Scaled gene counts (log10 transformed)")
+
+p_raw + p_scaled
+
 
 #############
 ### VST + PCA
@@ -83,46 +106,50 @@ scaled_counts %>%
   ggplot(., aes(x = log10(gene_average), y = log10(gene_stdev))) +
   geom_point(alpha = 0.5, fill = "grey", colour = "black") 
 
-# Stabilise the variance to avoid it depending on the mean
-dds = estimateDispersions(object = dds, fitType = "mean")
-vst_counts = getVarianceStabilizedData(object = dds)
+
 
 #variance_transformed_plot <- meanSdPlot(assay(vst_dds), plot = FALSE, ranks = FALSE)$gg
 #not_transformed_plot <- meanSdPlot(assay(dds),ranks = FALSE, plot = FALSE)$gg + scale_x_log10() + scale_y_log10()
 #not_transformed_plot
 #variance_transformed_plot
 
-# PCA plot on variance transformed dataset
-pcaData <- plotPCA(vst(dds), intgroup = c("condition"), returnData = TRUE) 
-percentVar <- round(100 * attr(pcaData, "percentVar"))
-p <- ggplot(pcaData, aes(PC1, PC2, color = condition)) +
+# PCA plot with the mypca() on scaled counts
+pca_results <- mypca(scaled_counts)
+scores <- pca_results$scores %>% 
+  rownames_to_column("sample") %>% 
+  left_join(., y = sample2condition, by = "sample")
+percentage_variance <- as.data.frame(pca_results$explained_var)
+p_pca_scaled <- ggplot(scores, aes(PC1, PC2, color = condition)) +
   geom_point(size = 6) +
-  xlab(paste0("PC1: ",percentVar[1],"% variance")) +
-  ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
+  xlab(paste0("PC1: ",percentage_variance[1,],"% variance")) +
+  ylab(paste0("PC2: ",percentage_variance[2,],"% variance")) + 
   coord_fixed() +
-  ggtitle("PCA plot") +
+  ggtitle("PCA plot (scaled counts") +
   theme(axis.text = element_text(size = 12))
-p
-ggsave(filename = "NASA_spaceflight_GLDS38/pca_plot.pdf")
+p_pca_scaled
+ggsave(filename = "NASA_spaceflight_GLDS38/pca_plot_scaled_counts.pdf")
 
 
-# If you want to plot other PCs, you'll have to extract the data first
-# 1. Transpose the matrix
-# 2. Remove columns with no variance 
-t_vst_counts <- t(vst_counts)
-t_vst_counts <- t_vst_counts[,colVars(t_vst_counts) != 0]
+####### PCA on the vst counts
+# Stabilise the variance to avoid it depending on the mean
+dds = estimateDispersions(object = dds, fitType = "mean")
+vst_counts = getVarianceStabilizedData(object = dds)
 
-pca_results <- prcomp(vst_counts, scale. = TRUE, center = TRUE)
-scores <- pca_results$x
-dfev <- data.frame(PC = c(1,2,3,4), exp_var  = pca_results$explained_var)
+pca_results <- mypca(vst_counts)
+scores <- pca_results$scores %>% 
+  rownames_to_column("sample_name") %>% 
+  left_join(., y = sample2condition, by = "sample_name")
+percentage_variance <- as.data.frame(pca_results$explained_var)
+p_vst_counts <- ggplot(scores, aes(PC1, PC2, color = condition)) +
+  geom_point(size = 6) +
+  xlab(paste0("PC1: ",percentage_variance[1,],"% variance")) +
+  ylab(paste0("PC2: ",percentage_variance[2,],"% variance")) + 
+  coord_fixed() +
+  ggtitle("PCA plot (vst transformed") +
+  theme(axis.text = element_text(size = 12))
+p_vst_counts
 
-p <- ggplot(scores) + 
-  geom_point(aes(x = PC1, y = PC2, shape = Species, col = Species)) + 
-  xlab(paste0('PC1(',explained_var[1],'%)')) + 
-  ylab(paste0('PC2(',explained_var[2],'%)')) + 
-  ggtitle('PCA score plot')
-p
-
+p_pca_scaled + p_vst_counts
 
 ###################
 ### diff expression

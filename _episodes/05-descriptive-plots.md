@@ -30,6 +30,7 @@ keypoints:
 	- [3.2 Match the experimental design and counts data](#32-match-the-experimental-design-and-counts-data)
 	- [3.3 Create the DESeqDataSet object](#33-create-the-deseqdataset-object)
 	- [3.4 Generate normalized counts](#34-generate-normalized-counts)
+	- [3.5 Comparison of raw and scaled counts](#35-comparison-of-raw-and-scaled-counts)
 - [4. Sample clustering](#4-sample-clustering)
 	- [4.1 Distance calculation](#41-distance-calculation)
 	- [4.2 Hierarchical clustering](#42-hierarchical-clustering)
@@ -358,6 +359,13 @@ You now see that integers have become decimal numbers. All good!
 > `DESeq2` doesn't actually use normalized counts to compute differentially expressed genes. Rather, it uses the raw counts and models the normalization inside the Generalized Linear Model (GLM). These normalized counts will be useful for downstream visualization of results, but cannot be used as input to DESeq2 or any other tools that peform differential expression analysis which use the negative binomial model.
 {: .callout}
 
+## 3.5 Comparison of raw and scaled counts
+
+If you compare the raw and scaled gene count distributions, you should see that the medians (black bars) are more comparable after scaling. 
+
+<img src="../img/05-raw-scaled-counts.png" width="600px" alt="Raw versus scaled counts">
+
+
 
 # 4. Sample clustering
 To assess if samples from the same condition are grouped together, we are going to perform a clustering analysis. It has two main steps:
@@ -598,10 +606,21 @@ For convenience we use a very rudimentary (own) implementation implementation of
 
 ~~~
 # define a custom R function called "mypca()""
-mypca <- function(x, center = TRUE, scale = TRUE){  
+mypca <- function(x, center = TRUE, scale = TRUE){
+  
+  # This checks that the samples/individuals are in rows
+  # If samples in columns, then the matrix is transposed
+  if(nrow(x)>ncol(x))
+  {
+    x = t(x)
+  }
+  
+  # remove constant variables
+  constant_val = apply(x,2,'sd')
+  x_reduced = x[,constant_val>0]
   
   # perform SVD
-  SVD <- svd(scale(x,center = center, scale = scale))
+  SVD <- svd(scale(x_reduced,center = center, scale = scale))
   
   # create scores data frame
   scores <- as.data.frame(SVD$u %*% diag(SVD$d))
@@ -611,7 +630,7 @@ mypca <- function(x, center = TRUE, scale = TRUE){
   # create loadings data frams
   loadings <- data.frame(SVD$v)
   colnames(loadings) <- paste0("PC", c(1:dim(loadings)[2]))
-  rownames(loadings) <- colnames(x)
+  rownames(loadings) <- colnames(x_reduced)
   
   # create data frame for explained variances
   explained_var <- as.data.frame(round((SVD$d^2) / sum(SVD$d^2)*100, digits = 1))
