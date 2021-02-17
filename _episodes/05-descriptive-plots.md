@@ -363,7 +363,7 @@ You now see that integers have become decimal numbers. All good!
 
 If you compare the raw and scaled gene count distributions, you should see that the medians (black bars) are more comparable after scaling. 
 
-<img src="../img/05-raw-scaled-counts.png" width="600px" alt="Raw versus scaled counts">
+<img src="../img/05-raw-scaled-counts.png" width="1000px" alt="Raw versus scaled counts">
 
 
 
