@@ -4,6 +4,11 @@ suppressPackageStartupMessages(library("EnhancedVolcano"))  # Bioconductor packa
 suppressPackageStartupMessages(library("vsn"))
 suppressPackageStartupMessages(library("patchwork"))
 
+source("mypca.R")
+
+###############
+# External info
+###############
 arabidopsis2uniprot <- read_tsv(file = "NASA_spaceflight_GLDS38/Arabidopsis_to_Uniprot_idmapping.txt", 
                     col_names = c("uniprot_id","gene")) %>% 
   group_by(gene) %>% 
@@ -50,6 +55,18 @@ as.data.frame(sizeFactors(dds)) %>%
 
 ggsave(filename = "NASA_spaceflight_GLDS38/size_factor_plot.pdf", width = 10, height = 7) 
 
+###############################
+# Compare raw and scaled counts
+###############################
+
+raw_counts %>%
+  rownames_to_column("gene") %>% 
+  gather(key = "sample", value = "gene_counts", - gene) %>% 
+  mutate(gene_counts_log = log10(gene_counts + 1)) %>% 
+  ggplot(., aes(x = sample, y = gene_counts_log)) +
+  geom_boxplot()
+  
+
 #############
 ### VST + PCA
 #############
@@ -67,7 +84,7 @@ scaled_counts %>%
   geom_point(alpha = 0.5, fill = "grey", colour = "black") 
 
 # Stabilise the variance to avoid it depending on the mean
-dds = estimateDispersions(dds)
+dds = estimateDispersions(object = dds, fitType = "mean")
 vst_counts = getVarianceStabilizedData(object = dds)
 
 #variance_transformed_plot <- meanSdPlot(assay(vst_dds), plot = FALSE, ranks = FALSE)$gg
@@ -87,6 +104,24 @@ p <- ggplot(pcaData, aes(PC1, PC2, color = condition)) +
   theme(axis.text = element_text(size = 12))
 p
 ggsave(filename = "NASA_spaceflight_GLDS38/pca_plot.pdf")
+
+
+# If you want to plot other PCs, you'll have to extract the data first
+# 1. Transpose the matrix
+# 2. Remove columns with no variance 
+t_vst_counts <- t(vst_counts)
+t_vst_counts <- t_vst_counts[,colVars(t_vst_counts) != 0]
+
+pca_results <- prcomp(vst_counts, scale. = TRUE, center = TRUE)
+scores <- pca_results$x
+dfev <- data.frame(PC = c(1,2,3,4), exp_var  = pca_results$explained_var)
+
+p <- ggplot(scores) + 
+  geom_point(aes(x = PC1, y = PC2, shape = Species, col = Species)) + 
+  xlab(paste0('PC1(',explained_var[1],'%)')) + 
+  ylab(paste0('PC2(',explained_var[2],'%)')) + 
+  ggtitle('PCA score plot')
+p
 
 
 ###################
