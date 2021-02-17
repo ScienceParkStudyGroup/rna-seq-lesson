@@ -14,7 +14,7 @@ mypca <- function(x, center = TRUE, scale = TRUE){
   SVD <- svd(scale(x_reduced,center = center, scale = scale))
   
   # create scores data frame
-  scores <- as.data.frame(SVD$u %% diag(SVD$d))
+  scores <- as.data.frame(SVD$u %*% diag(SVD$d))
   rownames(scores) <- rownames(x)
   colnames(scores) <- paste0("PC", c(1:dim(scores)[2]))
   
