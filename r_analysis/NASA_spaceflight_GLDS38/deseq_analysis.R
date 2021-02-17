@@ -93,10 +93,15 @@ p_raw + p_scaled
 #############
 ### VST + PCA
 #############
+# Stabilise the variance to avoid it depending on the mean
+dds = estimateDispersions(object = dds, fitType = "mean")
+vst_counts = getVarianceStabilizedData(object = dds)
+
 
 # Plot of mean - sd comparison
 # Variance - mean plot for all genes
-scaled_counts %>% 
+p_mean_sd_scaled <- 
+  scaled_counts %>% 
   as.data.frame() %>% 
   rownames_to_column("gene") %>% 
   pivot_longer(cols = - gene, names_to = "sample", values_to = "counts") %>% 
@@ -105,13 +110,22 @@ scaled_counts %>%
   ungroup() %>% 
   ggplot(., aes(x = log10(gene_average), y = log10(gene_stdev))) +
   geom_point(alpha = 0.5, fill = "grey", colour = "black") 
+p_mean_sd_scaled
 
+p_mean_sd_vst <- 
+  vst_counts %>% 
+  as.data.frame() %>% 
+  rownames_to_column("gene") %>% 
+  pivot_longer(cols = - gene, names_to = "sample", values_to = "counts") %>% 
+  group_by(gene) %>% 
+  summarise(gene_average = mean(counts), gene_stdev = sd(counts)) %>% 
+  ungroup() %>% 
+  ggplot(., aes(x = log10(gene_average), y = log10(gene_stdev))) +
+  geom_point(alpha = 0.5, fill = "grey", colour = "black") 
+p_mean_sd_vst
 
+p_mean_sd_scaled + p_mean_sd_vst
 
-#variance_transformed_plot <- meanSdPlot(assay(vst_dds), plot = FALSE, ranks = FALSE)$gg
-#not_transformed_plot <- meanSdPlot(assay(dds),ranks = FALSE, plot = FALSE)$gg + scale_x_log10() + scale_y_log10()
-#not_transformed_plot
-#variance_transformed_plot
 
 # PCA plot with the mypca() on scaled counts
 pca_results <- mypca(scaled_counts)
@@ -130,11 +144,7 @@ p_pca_scaled
 ggsave(filename = "NASA_spaceflight_GLDS38/pca_plot_scaled_counts.pdf")
 
 
-####### PCA on the vst counts
-# Stabilise the variance to avoid it depending on the mean
-dds = estimateDispersions(object = dds, fitType = "mean")
-vst_counts = getVarianceStabilizedData(object = dds)
-
+# PCA on the vst counts
 pca_results <- mypca(vst_counts)
 scores <- pca_results$scores %>% 
   rownames_to_column("sample_name") %>% 
