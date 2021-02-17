@@ -120,7 +120,7 @@ p_mean_sd_vst <-
   group_by(gene) %>% 
   summarise(gene_average = mean(counts), gene_stdev = sd(counts)) %>% 
   ungroup() %>% 
-  ggplot(., aes(x = log10(gene_average), y = log10(gene_stdev))) +
+  ggplot(., aes(x = gene_average, y = gene_stdev)) +
   geom_point(alpha = 0.5, fill = "grey", colour = "black") 
 p_mean_sd_vst
 
