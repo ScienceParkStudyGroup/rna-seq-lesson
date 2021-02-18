@@ -365,7 +365,7 @@ If you compare the raw and scaled gene count distributions, you should see that 
 
 Here, only 6 samples out of the 48 samples are shown for clarity.    
 
-<img src="../img/05-raw-scaled-counts.png" width="1000px" alt="Raw versus scaled counts">
+<img src="../img/05-raw-scaled-counts.png" width="6000px" alt="Raw versus scaled counts">
 
 
 
