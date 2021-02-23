@@ -1,7 +1,7 @@
 ---
 title: "Exploration of RNA-seq count results"
-teaching: 60	
-exercises: 30 
+teaching: 80	
+exercises: 20 
 questions:
 - "How are gene expression levels distributed within a RNA-seq experiment?"
 - "Why do I need to scale/normalize read counts?"
@@ -30,17 +30,23 @@ keypoints:
 	- [3.2 Match the experimental design and counts data](#32-match-the-experimental-design-and-counts-data)
 	- [3.3 Create the DESeqDataSet object](#33-create-the-deseqdataset-object)
 	- [3.4 Generate normalized counts](#34-generate-normalized-counts)
-	- [3.5 Comparison of raw and scaled counts](#35-comparison-of-raw-and-scaled-counts)
+	- [3.5 Comparison of raw and normalised counts](#35-comparison-of-raw-and-normalised-counts)
 - [4. Sample clustering](#4-sample-clustering)
 	- [4.1 Distance calculation](#41-distance-calculation)
 	- [4.2 Hierarchical clustering](#42-hierarchical-clustering)
 	- [4.3 Heatmap of sample-to-sample correlations](#43-heatmap-of-sample-to-sample-correlations)
 - [5. Principal Component Analysis](#5-principal-component-analysis)
-	- [5.1 Introduction to PCA](#51-introduction-to-pca)
-	- [5.2 The Iris data set](#52-the-iris-data-set)
-	- [5.3 PCA applied to RNA-seq](#53-pca-applied-to-rna-seq)
-- [6. Bonus: home-made DESeq normalization function](#6-bonus-home-made-deseq-normalization-function)
-- [References](#references)
+	- [5.1 Step by step introduction to PCA \(video\)](#51-step-by-step-introduction-to-pca-video)
+	- [5.2 Worked PCA example](#52-worked-pca-example)
+	- [5.3 The Iris data set](#53-the-iris-data-set)
+- [6. PCA applied to RNA-seq data](#6-pca-applied-to-rna-seq-data)
+	- [6.1 Variance stabilisation](#61-variance-stabilisation)
+	- [6.2 RNA-seq scree plot](#62-rna-seq-scree-plot)
+	- [6.3 Infected versus mock score plot](#63-infected-versus-mock-score-plot)
+	- [6.4 Seed inoculation score plot](#64-seed-inoculation-score-plot)
+	- [6.5 Time after infection score plot](#65-time-after-infection-score-plot)
+- [7. Bonus: home-made DESeq normalization function](#7-bonus-home-made-deseq-normalization-function)
+- [8. References](#8-references)
 	- [Useful links](#useful-links)
 	- [Photo credits](#photo-credits)
 
@@ -354,22 +360,23 @@ AT1G03993 160.203743  188.94471  199.42064 204.986439  179.90895
 {: .output}
 You now see that integers have become decimal numbers. All good!
 
-
 > ## Note 
-> `DESeq2` doesn't actually use normalized counts to compute differentially expressed genes. Rather, it uses the raw counts and models the normalization inside the Generalized Linear Model (GLM). These normalized counts will be useful for downstream visualization of results, but cannot be used as input to DESeq2 or any other tools that peform differential expression analysis which use the negative binomial model.
+> `DESeq2` doesn't actually use normalized counts to compute differentially expressed genes. Rather, it uses the __raw counts__ and models the normalization inside the Generalized Linear Model (GLM). These normalized counts will be useful for downstream visualization of results, but _cannot_ be used as input to the `DESeq()` function 
+that performs differential analysis since it relies on the negative binomial model.
 {: .callout}
 
-## 3.5 Comparison of raw and scaled counts
+## 3.5 Comparison of raw and normalised counts
 
-If you compare the raw and scaled gene count distributions, you should see that the medians (black bars) are more comparable after scaling. 
+If you compare the raw and normalised (scaled) gene count distributions, you should see that the medians (black bars) are more comparable after scaling. 
 
 Here, only 6 samples out of the 48 samples are shown for clarity.    
 
-<img src="../img/05-raw-scaled-counts.png" width="6000px" alt="Raw versus scaled counts">
+<img src="../img/05-raw-scaled-counts.png" width="600px" alt="Raw versus scaled counts">
 
-
+You can see that each sample gene count median (black horizontal bars) is more aligned to the other medians after scaling. 
 
 # 4. Sample clustering
+
 To assess if samples from the same condition are grouped together, we are going to perform a clustering analysis. It has two main steps:
 - Calculate the distance between samples based on their normalized gene counts.
 - Perform a hierarchical cluster analysis using `hclust`.
@@ -527,7 +534,50 @@ While the heatmap is full of colors and pleasant to display (arguable perhaps), 
 
 # 5. Principal Component Analysis
 
-## 5.1 Introduction to PCA
+## 5.1 Step by step introduction to PCA (video)
+
+Please watch the following video from StatQuest for a 20min-long introduction to PCA.
+
+<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/FgakZw6K1QQ" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+
+
+You can test your understanding by answering these few questions:
+
+> ## Questions
+> 1. What is the reason to perform a PCA analysis using 4 genes?
+> 2. What does SVD stands for? 
+> 3. Can a PCA analysis indicate which gene (out of the 4) is the most capable of separating sample groups?
+> 4. Given a dataframe with 10 samples and 40 variables, what is the maximum number of Principal Components (PCs) that you can compute?
+> 5. If you center the data, do you change the distances between the different samples? 
+> 6. How would you measure the accuracy of the 2D graph with only PC1 and PC2?
+> 7. How is called the graph that has individual PCs as the x-axis and the percentage of explained variance as the y-axis?
+> 8. How are the "gene proportions used to build PC1 and PC2" called? What is the proper term? Think about the cocktail recipe. 
+> 9. (Extra hard) Can you define in simple terms the _eigenvector_ of PC1 and _eigenvalue_ of PC2?
+> 10. How many times is "BAM!" pronounced by Josh Starmer during the video?
+>
+>> ## Answers
+>> 1. PCA allows to plot information from 4 genes on a human-readable 2D plot (2 dimensions, x-axis + y-axis). 
+>> 2. SVD stands for Single Value Decomposition.
+>> 3. Yes, by looking at the loading scores of the genes from each PC, it is possible to relate individual genes to the different PCs. If PC1 separates nicely the different sample groups, then the gene with the highest loading score on PC1 is the most interesting to explain that separation.
+>> 4. The maximum number of PCs is the minimum of samples and variables. So here a maximum of n = 10 PCs.
+>> 5. No, data centering does not change the distance between samples. It centers the cloud of data so that its center is the origin (0,0) on both PC1 and PC2.  
+>> 6. The accuracy of the PC1-PC2 2-dimensional plot can be measured by summing the percentage of the variance explained by PC1 and PC2. If PC1 and PC2 collectively explain 90$$%$$ of the variance, then this 2D plot would be quite a accurate representaiton of the original data. 
+>> 7. A scree plot. 
+>> 8. The recipe to build PC1 and PC2 requires variable "parts" also called variable _loading scores_.  
+>> 9. All right, then you should be the one building this lesson section, not doing it! More seriously, the eigenvalue is the sum of the squared distances from each sample projection on PC1. The eigenvector is the singular vector of unit one for PC1. 
+>> 10. I have counted 5 BAMs including one double BAM and one little BAM.       
+> {: .solution}
+{: .challenge}
+
+Sometimes, you'll only want to look at one section of the video:  
+- [Worked 2D example](https://youtu.be/FgakZw6K1QQ?t=203)
+- [Finding PC1](https://youtu.be/FgakZw6K1QQ?t=303)
+- [Calculating the percent variation explained by each PC](https://youtu.be/FgakZw6K1QQ?t=903)
+- [Worked 3D example](https://youtu.be/FgakZw6K1QQ?t=990)
+
+## 5.2 Worked PCA example
+
 In (bio)chemical analysis the data matrices can be very large. An infrared spectrum (800 wavelengths) for 50 samples for example would give a data matrix of size 40,000 (50x800) numbers.  A genomic data (e.g. 20,000 genes) for 100 patients would lead to a huge data matrix of (100x20,000) = 2,000,000 numbers. 
 
 These matrices are so large that we need convenient ways to extract the important information from these large data matrices. 
@@ -537,8 +587,6 @@ Using principal component analysis (PCA)
 - The data is reduced to smaller matrices so they can more easily be examined, plotted and interpreted.
 - The most important factors are extracted (principal components). These factors describe the multivariate (more than one variable) interactions between the measured variables.
 - The samples can be classified to identify compound spectra, determine biomarkers etc.
-
-
 
 To have an idea of how PCA works it should be noted that if there is a mutual relationship between two or more measurements (e.g. samples) they are correlated. These correlations can be strong (e.g. mass of object and weight on earth's surface) or weak (e.g. capabilities in sport and month of birth). In the example below there is a strong linear relationship between height and age for young children (*Moore, D.S. and McCabe G.P., Introduction to the Practice of Statistics (1989)*).
 
@@ -555,13 +603,12 @@ If the original data has more than two variables (e.g. n), which usually is the 
 ![image-20200416141609987](../img/pc_exp_var_tbl.png)
 
 
-## 5.2 The Iris data set
+## 5.3 The Iris data set
 
 ​The ability of PCA to capture as much variance as possible in the main principal components enables us to  to visualize (and summarize) the relation between objects (and variables) from a multi-dimensional space to a two dimensional plot.  
 
 
-
-We can use the Fisher's famous Iris flower dataset from 1936 that describes three species of Iris (_Iris setosa_, _Iris virginica_ and _Iris versicolor_). The data set consists of 50 samples from each of these three species of Iris. Four features were measured from each sample: the length and the width of the sepals and petals, in centimeters ([source Wikipedia](https://en.wikipedia.org/wiki/Iris_flower_data_set)). See some pictures below.
+We can use the Fisher's famous Iris flower dataset from 1936 that describes three species of Iris (_Iris setosa_, _Iris virginica_ and _Iris versicolor_). The data set consists of __50 samples__ from each of these three species of Iris. __Four variables (features)__ were measured from each sample: the length and the width of the sepals and petals, in centimeters ([source Wikipedia](https://en.wikipedia.org/wiki/Iris_flower_data_set)). See some pictures below.
 
 | _Iris setosa_                                     | _Iris versicolor_                                  | _Iris virginica_                                        |
 |---------------------------------------------------|----------------------------------------------------|---------------------------------------------------------|
@@ -723,98 +770,272 @@ p
 From the loading plot for PC1 it is clear that `Petal.Length` is the most important factor while `Sepal.Width` is the one which is least important. Because PC1 explains 92.5 % of the total variance we can conclude that `Petal.Length` is the most important factor that separates the three groups of flowers.   
 There are many more things to learn on PCA (e.g. scaling, filtering) but that is out of the scope of these exercises. 
 
+> ## Maximum number of Principal Components
+> The maximum number of PC is always equal to the minimum of (_n_ samples, _p_ variables). 
+> Here, the number of samples is equal to $$n = 48$$ and the number of variables to $$p = 33,768$$.
+> Therefore, the maximum number of PCs is equal to 48.    
+{: .callout}
 
-## 5.3 PCA applied to RNA-seq
 
-In the context of an RNA-seq experiment, it can be used to visualize the differences (distances) between samples and how it relates to the experimental design.
+# 6. PCA applied to RNA-seq data
 
-Let's plot the samples along the two first components.
+## 6.1 Variance stabilisation
 
-This can be done with the `plotPCA()` function of the `DESeq2` package. First, we need to stabilise the variance across genes with different means using a variance stabilising transformation or `vst()` . If interested, you can check the [corresponding detailed section in the DESeq2 vignette](https://bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#data-transformations-and-visualization).
+In the context of an RNA-seq experiment, PCA can be used to visualize the differences (distances) between samples and how it relates to the experimental design. Samples from the same experimental condition (e.g. infected with DC3000) should be grouping together if the observed variability in the data relates to the experimental design. 
 
-First, let's load the library that we need. 
+In other words, genes from biological replicates (samples of the same experimental condition) should behave similarly and result in similar sample scores. Thereby, these samples should have close coordinates on the PCA score plot.   
+
+But before we compute the PCA itself, we need to take into account one important feature of RNA-seq data: the gene variance is proportional to the gene mean. The higher the gene mean, the more variance it has. Also, genes with a low abundance (low counts) also suffer from a somehow inflated variance. 
+
+This is easy to visualise in the following plot:
 ~~~
-library(DESeq2, quietly = TRUE)
-library(ggplot2)
+# Plot of mean - sd comparison
+# Variance - mean plot for all genes
+p_mean_sd_scaled <- 
+  counts_normalised %>% 
+  as.data.frame() %>% 
+  rownames_to_column("gene") %>% 
+  pivot_longer(cols = - gene, names_to = "sample", values_to = "counts") %>% 
+  group_by(gene) %>% 
+  summarise(gene_average = mean(counts), gene_stdev = sd(counts)) %>% 
+  ungroup() %>% 
+  ggplot(., aes(x = log10(gene_average), y = log10(gene_stdev))) +
+  geom_point(alpha = 0.5, fill = "grey", colour = "black") +
+  labs(x = "Gene count average (log10 scale)",
+       y = "Gene count standard deviation (log10 scale)") +
+  ggtitle("Mean - Standard deviation relationship\n(no variance stabilisation ")
+p_mean_sd_scaled
 ~~~
 {: .language-r}
 
-Let's make a first version of a PCA plot using the `plotPCA()` function of the `DESeq2` library. We are going to plot our experimental design on several PCA plots. 
+<img src="../img/05-mean-sd-gene-before-vst.png" width="600px" alt="mean - sd relationship (before vst)">
 
-### 5.3.1 Infected versus mock
+One can clearly visualise the "heteroscedasticity" of these data: the mean is not independent from the variance. Therefore, we cannot compute the related PCA directly. We need to stabilise the variance so that the mean becomes independent from the variance. 
+
+~~~
+# Variance stabilisation
+dds = estimateDispersions(object = dds, 
+	                      fitType = "parametric", 
+	                      quiet = TRUE)
+
+vsd = varianceStabilizingTransformation(object = dds, 
+                                               blind = TRUE,           # do not take the design formula into account. 
+                                                                       # best practice for sample-level QC
+                                               fitType = "parametric")
+
+# extract the matrix of variance stabilised counts
+variance_stabilised_counts <- assay(vsd)
+
+# create the mean-sd plot
+p_mean_sd_vst <- 
+  variance_stabilised_counts %>% 
+  as.data.frame() %>% 
+  rownames_to_column("gene") %>% 
+  pivot_longer(cols = - gene, names_to = "sample", values_to = "counts") %>% 
+  group_by(gene) %>% 
+  summarise(gene_average = mean(counts), gene_stdev = sd(counts)) %>% 
+  ungroup() %>% 
+  ggplot(., aes(x = gene_average, y = gene_stdev)) +
+  geom_point(alpha = 0.5, fill = "grey", colour = "black") +
+  labs(x = "Gene count average (variance stabilised)", 
+       y = "Gene count standard deviation (variance stabilised)") +
+  ggtitle("Mean - Standard deviation relationship\n(after variance stabilisation ")
+p_mean_sd_vst
+~~~
+{: .language-r}
+
+<img src="../img/05-comparison-before-after-vst.png" width="800px" alt="comparison mean-sd relationship before and after variance stabilisation">
+
+Now that the variance is more independent from the mean, we can compute our PCA analysis. 
+
+## 6.2 RNA-seq scree plot
+
+To get an idea of how much variation can be explained by PC1, PC2, PC3, etc., a scree plot can be drawn. 
+
+First, the PCA is computed using the `mypca()` function. This returns a list with three objects, the `scores`, `loadings` and `explained_var` dataframes. 
+~~~
+pca_results <- mypca(variance_stabilised_counts, 
+                     center = TRUE, 
+                     scale = TRUE)
+~~~
+{: .language-r}
+
+Then the explained variance dataframe is used to make the scree plot. 
+~~~
+# make the plot
+ggplot(pca_results$explained_var, 
+         aes(x = seq(from = 1, to = nrow(pca_results$explained_var)), 
+             y = exp_var)) +
+  ylab('explained variance (%)') + 
+  ggtitle('Explained variance per component') + 
+  geom_bar(stat = "identity") +
+  labs(x = "Principal Component number") +
+  scale_x_continuous(breaks = seq(
+    from = 1, 
+    to = nrow(pca_results$explained_var)))
+~~~
+{: .language-r}
+
+<img src="../img/05-screeplot-rnaseq.png" width="600px" alt="RNA-seq screen plot">
+
+> ## Question
+> Using the `cumsum()` function, can you determine:
+> 1. How much percentage of the total variance are "caught" by PC1 and PC2?
+> 2. How many PCs are necessary to get 50% of the total variance?
+> 
+> > ## Solution
+> > 1. `cumsum(pca_results$explained_var)[2,1]` shows you that 28.8% of the varaince are explained by PC1 and PC2.   
+> > 2. You need to go up to PC7 to catch 51% of the variance.   
+> > 
+> > ~~~
+> > cumsum(pca_results$explained_var) %>% 
+> >   as.data.frame() %>% 
+> >   filter(exp_var > 50) %>% 
+> >   head(n = 1)
+> > ~~~
+> > {: .language-r}
+> {: .solution}
+{: .challenge}
+
+## 6.3 Infected versus mock score plot
+
 Let's first see how our _P. syringae_ infection condition is reflected at the PCA level.
 
+After computing the PCA itself, scores are extracted. 
+
 ~~~
-# variance-stabilizing transformation
-vst_dds <- vst(dds)
+pca_results <- mypca(variance_stabilised_counts, 
+                     center = TRUE, 
+                     scale = TRUE)
+scores <- pca_results$scores
 
-# PCA using the plotPCA function
-pcaData <- plotPCA(vst_dds, intgroup = c("infected"), returnData = TRUE) 
-
-percentVar <- round(100 * attr(pcaData, "percentVar"))
-
-# customised PCA plot
-ggplot(pcaData, aes(PC1, PC2, color = infected)) +
-  geom_point() +
-  xlab(paste0("PC1: ",percentVar[1],"% variance")) +
-  ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
-  coord_fixed() +
-  ggtitle("PCA plot")
+# first 5 rows and columns
+scores[1:5,1:5]
 ~~~
 {: .language-r}
 
-<img src="../img/05-pca-1.png" width="800px" alt="PCA with infected conditions overlayed">
-
-This PCA plot clearly shows that the infected condition seems to be related to the first principal component (59% of the variance).
-
-But we can also overlay different experimental conditions on this PCA plot. A PCA analysis let the data "self-organise".
-Have a look at this new PCA plot with the seed conditions superimposed.  
+The score matrix contains the samples in rows with their new coordinates on the different PCs.   
 
 ~~~
-# PCA using the plotPCA function
-pcaData <- plotPCA(vst_dds, intgroup = c("seed"), returnData = TRUE)
+      sample       PC1       PC2        PC3       PC4
+1 ERR1406259 -81.06199 -47.68192  21.968178 -13.88833
+2 ERR1406271 -67.24881 -33.81534  15.751014 -72.50003
+3 ERR1406282 -69.68432 -38.30649  28.871388  24.28975
+4 ERR1406294 -78.25228 -50.63736  -7.439196  15.96702
+5 ERR1406305 -23.26519 -18.76106 -74.047134 -43.41103
+~~~
+{: .output}
 
-percentVar <- round(100 * attr(pcaData, "percentVar"))
+Before we can create the score plot, we need to add the experimental factors of interest to this dataframe. 
+We are going to do this using the `left_join` function from the `dplyr` package. 
 
-# customised PCA plot
-ggplot(pcaData, aes(PC1, PC2, color = seed)) +
-  geom_point() +
-  xlab(paste0("PC1: ",percentVar[1],"% variance")) +
-  ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
-  coord_fixed() +
-  ggtitle("PCA plot")
+~~~
+scores_with_conditions <- 
+  scores %>% 
+  rownames_to_column("sample") %>% # to prepare to join on the "sample" column
+  left_join(x = .,                 # this means that we are passing the 'scores' dataframe 
+            y = xp_design,         # this dataframe contains the sample to condition correspondence
+            by = "sample")
 ~~~
 {: .language-r}
 
-<img src="../img/05-pca-2.png" width="800px" alt="PCA with seed inoculation conditions overlayed" >
+We now have a score dataframe that also have a "sample" column as well as the three experimental factors columns: "seed", "infected" and "dpi".
 
+If you show the first 
+
+~~~
+# shows the first 5 rows and the last 4 columns  
+scores_with_conditions[1:5, 48:52]
+~~~
+{: .language-r}  
+
+Now we have the 3 experimental conditions in our score dataframe. 
+~~~
+       PC47         PC48  seed infected dpi
+1 -0.106006 -7.40634e-13 MgCl2     mock   2
+2 -1.450006 -7.40634e-13 MgCl2     mock   2
+3  9.076943 -7.40634e-13 MgCl2     mock   2
+4  3.491862 -7.40634e-13 MgCl2     mock   2
+5  7.905262 -7.40634e-13 MgCl2     mock   7
+~~~
+{: .language-r}
+
+Let's create the plot now using `ggplot2`.
+
+If we do not overlay the "infected" experimental condition on the sample positions, we have a very bare score plot. It only shows the position of the different samples in the new PC coordinate system.
+
+<img src="../img/05-bare-score-plot.png" width="600px" alt="bare PCA score plot">
+
+> ## Question
+> Do you find this score plot informative? If yes why? If not why?
+>
+> > ## Solution
+> > This score plot does not show how the sample scores related to the different experimental conditions of interest. 
+> > One need to add the experimental condition of interest as a new layer (color, shape). 
+> {: .solution}
+{: .challenge}
+
+Let's make this plot a little bit more informative. First, the explained variance per PC is pulled out from the `pca_results` R object. This will be used to label the X and Y plot axis.
+~~~
+# explained variance
+# one % variance value per PC
+explained_variance <- 
+  pca_results$explained_var %>% 
+  pull("exp_var")
+~~~
+{: .language-r}
+
+Now it is finally plotting time!
+
+~~~
+ggplot(scores_with_conditions, 
+       aes(PC1, PC2, color = infected)) +
+  geom_point(size = 4) +
+  xlab(paste0("PC1: ",explained_variance[1],"% variance")) +
+  ylab(paste0("PC2: ",explained_variance[2],"% variance")) + 
+  coord_fixed(ratio = 1) +
+  ggtitle("PCA score plot with the infection condition overlaid")
+~~~
+{: .language-r}
+
+<img src="../img/05-infection-score-plot.png" width="800px" alt="infection score plot">
+
+It seems that the infection plays a role in PC1 but the two groups are still overlapping a lot on the left hand side. 
+
+## 6.4 Seed inoculation score plot
+
+Perhaps another experimental condition would better explain the sample distribution.
+
+Have a look at this new PCA plot with the _seed_ condition superimposed.  
+
+<img src="../img/05-seed-score-plot.png" width="800px" alt="PCA with seed inoculation conditions overlaied" >
 
 You can see that the sample positions have not changed on the plot. But the colors have since we wanted to color samples by their seed inoculation level ("MgCl2", "Fr1" or "PA1").
 
-We are now creating a final and complete version of the PCA with all factors included. It is quite a complex plot but you should find previous patterns back.
-~~~
-# PCA using the plotPCA function
-pcaData <- plotPCA(vst_dds, intgroup = c("seed", "infected", "dpi"), returnData = TRUE)
+This plot seems to show that PC2 separates the Fr1 seed inoculation from the MgCl2 or PA1 seed treatment. 
 
-percentVar <- round(100 * attr(pcaData, "percentVar"))
+> ## Challenge
+> Can you create this plot?
+{: .challenge}
 
-# customised PCA plot
-ggplot(pcaData, aes(PC1, PC2, color = seed, shape = infected, size = dpi)) +
-  geom_point() +
-  xlab(paste0("PC1: ",percentVar[1],"% variance")) +
-  ylab(paste0("PC2: ",percentVar[2],"% variance")) + 
-  coord_fixed() +
-  ggtitle("PCA plot")
-~~~
-{: .language-r}
+## 6.5 Time after infection score plot
 
-<img src="../img/05-pca-3.png" width="800px" alt="complete PCA" >
+Last but not least, the time after _Pseudomonas syringae_ DC3000 infection can be overlaid too.
 
-# 6. Bonus: home-made DESeq normalization function
+<img src="../../img/05-dpi-score-plot.png" width="800px" alt="PCA with dpi overlaid">
+
+Wait, this score plot resembles very much to the "infection score plot" that we have obtained in section 6.3. 
+Let's plot them side by side:
+
+<img src="../img/05-infection-dpi-comparison.png" width="100%" alt="comparison of infection and dpi score plots">
+
+Wooh wait. These plots are almost alike. This suggests that, perhaps, the infection by _P. syringae_ already separates the samples after 2 days. 
+
+# 7. Bonus: home-made DESeq normalization function
 
 Please consult the step-by-step R code to normalize the DESeq2 way [here](../median_of_ratios_manual_normalization/index.html).
 
-# References
+# 8. References
 
 ## Useful links
 1. [Gabriel Martos cluster analysis](https://rpubs.com/gabrielmartos/ClusterAnalysis)

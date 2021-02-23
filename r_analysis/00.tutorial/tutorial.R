@@ -3,7 +3,9 @@ suppressPackageStartupMessages(library(tidyverse))
 suppressPackageStartupMessages(library(EnhancedVolcano))
 suppressPackageStartupMessages(library(pheatmap))
 suppressPackageStartupMessages(library(patchwork))
+suppressPackageStartupMessages(library(ggrepel))
 
+source("mypca.R")
 
 ###############################
 # Episode 05: descriptive plots
@@ -82,3 +84,162 @@ p_scaled <-
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 p_raw + p_scaled
+
+
+#####
+# VST
+#####
+# Plot of mean - sd comparison
+# Variance - mean plot for all genes
+p_mean_sd_scaled <- 
+  counts_normalised %>% 
+  as.data.frame() %>% 
+  rownames_to_column("gene") %>% 
+  pivot_longer(cols = - gene, names_to = "sample", values_to = "counts") %>% 
+  group_by(gene) %>% 
+  summarise(gene_average = mean(counts), gene_stdev = sd(counts)) %>% 
+  ungroup() %>% 
+  ggplot(., aes(x = log10(gene_average), y = log10(gene_stdev))) +
+  geom_point(alpha = 0.5, fill = "grey", colour = "black") +
+  labs(x = "Gene count average (log10 scale)",
+       y = "Gene count standard deviation (log10 scale)") +
+  ggtitle("Mean - Standard deviation relationship\n(no variance stabilisation ")
+p_mean_sd_scaled
+ggsave(filename = "../img/05-mean-sd-gene-before-vst.png", plot = p_mean_sd_scaled)
+# while we have corrected for sample to sample differences (e.g. sequencing depth)
+# the SD of every gene still has a strong relationship with the mean 
+# Our data are "heteroskedastic" meaning that gene variances are not comparable
+# we need to address this
+
+# Stabilise the variance to avoid it depending on the mean
+dds = estimateDispersions(object = dds, fitType = "parametric", quiet = TRUE)
+vsd = varianceStabilizingTransformation(object = dds, 
+                                               blind = TRUE, # do not take the formula into account. Best for sample QC
+                                               fitType = "parametric")
+
+variance_stabilised_counts <- assay(vsd)
+
+p_mean_sd_vst <- 
+  variance_stabilised_counts %>% 
+  as.data.frame() %>% 
+  rownames_to_column("gene") %>% 
+  pivot_longer(cols = - gene, names_to = "sample", values_to = "counts") %>% 
+  group_by(gene) %>% 
+  summarise(gene_average = mean(counts), gene_stdev = sd(counts)) %>% 
+  ungroup() %>% 
+  ggplot(., aes(x = gene_average, y = gene_stdev)) +
+  geom_point(alpha = 0.5, fill = "grey", colour = "black") +
+  labs(x = "Gene count average (variance stabilised)", 
+       y = "Gene count standard deviation (variance stabilised)") +
+  ggtitle("Mean - Standard deviation relationship\n(after variance stabilisation ")
+p_mean_sd_vst
+
+p_mean_sd_scaled + p_mean_sd_vst
+ggsave(filename = "../img/05-comparison-before-after-vst.png")
+
+#################
+# PCA: scree plot
+#################
+
+pca_results <- mypca(variance_stabilised_counts, 
+                     center = TRUE, 
+                     scale = TRUE)
+
+# make the plot
+ggplot(pca_results$explained_var, 
+         aes(x = seq(from = 1, to = nrow(pca_results$explained_var)), 
+             y = exp_var)) +
+  ylab('explained variance (%)') + 
+  ggtitle('Explained variance per component') + 
+  geom_bar(stat = "identity") +
+  labs(x = "Principal Component number") +
+  scale_x_continuous(breaks = seq(
+    from = 1, 
+    to = nrow(pca_results$explained_var)))
+ggsave(filename = "../img/05-screeplot-rnaseq.png")
+
+# 7 components are necessary to catch 50% of the variance
+cumsum(pca_results$explained_var) %>% 
+  as.data.frame() %>% 
+  filter(exp_var > 50) %>% 
+  head(n = 1)
+
+
+#################
+# PCA: score plot
+#################
+scores <- pca_results$scores %>% 
+  rownames_to_column("sample")
+scores_with_conditions <-  inner_join(x = scores,
+                                      y = xp_design,
+                                      by = "sample")
+
+
+# explained variance
+# one % variance value per PC
+explained_variance <- pca_results$explained_var %>% 
+  pull("exp_var")
+
+# non-informative plot
+ggplot(scores_with_conditions, 
+       aes(PC1, 
+           PC2, 
+           label = sample)) +
+  geom_point(size = 4) +
+  geom_text_repel() +
+  xlab(paste0("PC1: ",explained_variance[1],"% variance")) +
+  ylab(paste0("PC2: ",explained_variance[2],"% variance")) + 
+  coord_fixed(ratio = 1) +
+  ggtitle("PCA score plot with the infection condition")
+ggsave(filename = "../img/05-bare-score-plot.png")
+
+# infection score plot
+infection_plot <- 
+  ggplot(scores_with_conditions, 
+       aes(PC1, PC2, color = infected)) +
+  geom_point(size = 4) +
+  xlab(paste0("PC1: ",explained_variance[1],"% variance")) +
+  ylab(paste0("PC2: ",explained_variance[2],"% variance")) + 
+  coord_fixed(ratio = 1) +
+  ggtitle("PCA score plot with the infection condition overlaid")
+infection_plot
+ggsave(filename = "../img/05-infection-score-plot.png", plot = infection_plot)
+
+# seed score plot
+seed_plot <- 
+  ggplot(scores_with_conditions, 
+       aes(PC1, PC2, color = seed)) +
+  geom_point(size = 2) +
+  xlab(paste0("PC1: ",explained_variance[1],"% variance")) +
+  ylab(paste0("PC2: ",explained_variance[2],"% variance")) + 
+  coord_fixed(ratio = 1) +
+  ggtitle("PCA score plot with the seed condition overlaid")
+seed_plot
+ggsave(filename = "../img/05-seed-score-plot.png", plot = seed_plot)
+
+# dpi score plot
+dpi_plot <- ggplot(scores_with_conditions, 
+       aes(PC1, PC2, color = dpi)) +
+  geom_point(size = 2) +
+  xlab(paste0("PC1: ",explained_variance[1],"% variance")) +
+  ylab(paste0("PC2: ",explained_variance[2],"% variance")) + 
+  coord_fixed(ratio = 1) +
+  ggtitle("PCA score plot with the time after infection (dpi) overlaid") +
+  scale_color_manual(values = c("orange","blue"))
+dpi_plot
+ggsave(filename = "../img/05-dpi-score-plot.png", plot = dpi_plot)
+
+# comparing the infection with dpi
+infection_plot + dpi_plot
+ggsave(filename = "../img/05-infection-dpi-comparison.png", width = 10, height = 5)
+
+# infection + seed score plot
+infection_with_seed_plot <- ggplot(scores_with_conditions, 
+                   aes(PC1, PC2, color = infected, shape = seed)) +
+  geom_point(size = 4) +
+  xlab(paste0("PC1: ",explained_variance[1],"% variance")) +
+  ylab(paste0("PC2: ",explained_variance[2],"% variance")) + 
+  coord_fixed(ratio = 1) +
+  ggtitle("PCA score plot with the infection and seed inoculation overlaid")
+infection_with_seed_plot
+ggsave(filename = "../img/05-infection-seed-score-plot.png", plot = infection_with_seed_plot)
