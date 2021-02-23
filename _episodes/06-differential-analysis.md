@@ -51,6 +51,11 @@ In this episode, we will see how to perform a simple one-condition experimental 
 
 This will yield a table containing genes $$log_{2}$$ fold change and their corrected p-values. We will also see how to create a few typical representations classically used to display RNA-seq results such as volcano plots and heatmaps. 
 
+> ## Important note
+> For differential expression analysis, you should use the __raw__ counts and __not__ the scaled counts. 
+> As the DESeq2 model fit requires raw counts (integers), make sure that you use the `counts.txt` file. 
+{: .callout}
+
 # 2. Differential expression analysis
 
 ## 2.1 Creating the DESeqDataSet object

@@ -128,11 +128,25 @@ p_mean_sd_scaled + p_mean_sd_vst
 
 
 # PCA plot with the mypca() on scaled counts
-pca_results <- mypca(scaled_counts)
+pca_results <- mypca(scaled_counts, scale = TRUE)
+percentage_variance <- as.data.frame(pca_results$explained_var) %>% 
+  rownames_to_column("PC")
+
+# make the plot
+scree_plot <- ggplot(percentage_variance, aes(x = PC, y = exp_var)) +
+  ylab('explained variance (%)') + 
+  ggtitle('explained variance per component') + 
+  geom_bar(stat = "identity")
+
+# display it
+scree_plot
+
+
+
 scores <- pca_results$scores %>% 
   rownames_to_column("sample") %>% 
   left_join(., y = sample2condition, by = "sample")
-percentage_variance <- as.data.frame(pca_results$explained_var)
+
 p_pca_scaled <- ggplot(scores, aes(PC1, PC2, color = condition)) +
   geom_point(size = 6) +
   xlab(paste0("PC1: ",percentage_variance[1,],"% variance")) +
@@ -150,6 +164,7 @@ scores <- pca_results$scores %>%
   rownames_to_column("sample_name") %>% 
   left_join(., y = sample2condition, by = "sample_name")
 percentage_variance <- as.data.frame(pca_results$explained_var)
+
 p_vst_counts <- ggplot(scores, aes(PC1, PC2, color = condition)) +
   geom_point(size = 6) +
   xlab(paste0("PC1: ",percentage_variance[1,],"% variance")) +

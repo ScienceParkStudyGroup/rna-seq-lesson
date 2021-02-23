@@ -59,8 +59,9 @@ ggplot(size_factors_df, aes(x = sample, y = size, colour = seed)) +
 counts_normalised = counts(dds, normalized = TRUE)
 
 # comparison raw and scaled
+# only 6 samples taken for clarity
 p_raw <- 
-  counts %>%
+  counts[,1:6] %>%
   rownames_to_column("gene") %>% 
   gather(key = "sample", value = "gene_counts", - gene) %>% 
   mutate(gene_counts_log = log10(gene_counts + 1)) %>% 
@@ -70,7 +71,7 @@ p_raw <-
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 p_scaled <- 
-  counts_normalised %>% 
+  counts_normalised[,1:6] %>% 
   as.data.frame() %>% 
   rownames_to_column("gene") %>% 
   gather(key = "sample", value = "gene_counts", - gene) %>% 
