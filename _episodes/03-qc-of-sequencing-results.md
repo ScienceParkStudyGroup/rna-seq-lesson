@@ -3,154 +3,125 @@ title: "Library preparation and QC"
 teaching: 45
 exercises: 0
 questions:
-- "What are the current techniques for RNA-seq using NGS?"
-- "How is sequencing quality assessed?"
-- "What are the file format that is yielded by sequencing machines?"
-- "What tool can I use to assess the quality of my RNA-seq sequencing files?"
+- "What ecxactly is a bam file."
+- "What do all these numbers mean"
+- "how to prepare bam files for visualisation."
+- "How to use the IGV, an interactiWhatv genome viewer."
 objectives:
-- "Be able to describe how RNA sequencing reads are obtained."
-- "Be able to distinguish between a failed and a successful sequencing run."
-- "Learn how to generate a reproducible code notebook with Rmarkdown."
-keypoints:
-- "Next-Generation Sequencing techniques are massively parallel cDNA sequencing."
-- "Sequencing files are produced in a standard format: the fastq format."
-- "Using FastQC, one can easily check the sequencing quality of a fastq file."
+- "How to upload and view your bam file in IGV"
+- "Create a counts file to extract the number of reads that map within a gene, using featureCounts"
 ---
 
-# Table of Contents
+# 1. Table of Contents
+<!-- TOC -->
 
-<!-- MarkdownTOC autolink="True" levels="1,2,3" -->
+- [1. Table of Contents](#1-table-of-contents)
+- [2. The SAM/BAM format](#2-the-sambam-format)
+    - [2.1 What's in a SAM/BAM file](#21-whats-in-a-sambam-file)
+- [3. Visualazation of a bam file](#3-visualazation-of-a-bam-file)
+    - [3.1. Preparation of the Bam file for IGV](#31-preparation-of-the-bam-file-for-igv)
+        - [Sorting](#sorting)
+        - [Indexing](#indexing)
+    - [3.2. IGV](#32-igv)
+- [6. Creating the counts file](#6-creating-the-counts-file)
 
-- [1. Introduction](#1-introduction)
-   - [1.1 The fastq format](#11-the-fastq-format)
-   - [1.2 Assessing quality metrics](#12-assessing-quality-metrics)
-   - [1.3 Sequencing error profiles](#13-sequencing-error-profiles)
-      - [Expected Errors](#expected-errors)
-      - [Worrisome](#worrisome)
-   - [1.4 Quality assessment](#14-quality-assessment)
-      - [Per sequence quality scores](#per-sequence-quality-scores)
-      - [Per base sequence content](#per-base-sequence-content)
-      - [Per sequence GC content](#per-sequence-gc-content)
-      - [Sequence duplication level](#sequence-duplication-level)
-      - [Overrepresented sequences](#overrepresented-sequences)
-- [2. MultiQC](#2-multiqc)
+<!-- /TOC -->
 
-<!-- /MarkdownTOC -->
+# 2. The SAM/BAM format
+The [SAM file](https://github.com/adamfreedman/knowyourdata-genomics/blob/gh-pages/lessons/01-know_your_data.md#aligned-reads-sam),
+is a tab-delimited text file that contains information for each individual read and its alignment to the genome. While we do not
+have time to go in detail of the features of the SAM format, the paper by
+[Heng Li et al.](http://bioinformatics.oxfordjournals.org/content/25/16/2078.full) provides a lot more detail on the specification.
 
-# 1. Introduction
+**The compressed binary version of SAM is called a BAM file.** We use this version to reduce size and to allow for *indexing*, which enables efficient random access of the data contained within the file.
 
-## 1.1 The fastq format
+## 2.1 What's in a SAM/BAM file
+The file begins with a **header**, which is optional. The header is used to describe source of data, reference sequence, method of
+alignment, etc., this will change depending on the aligner being used. Following the header is the **alignment section**. Each line
+that follows corresponds to alignment information for a single read. Each alignment line has **11 mandatory fields** for essential
+mapping information and a variable number of other fields for aligner specific information. An example entry from a SAM file is
+displayed below with the different fields highlighted.
 
-Check the Wikipedia page for now: https://en.wikipedia.org/wiki/FASTQ_format
+<img src="../img/sam_bam_1.png">
 
-## 1.2 Assessing quality metrics	
+<img src="../img/sam_bam2.png">
 
-Now that we have run FASTQC and downloaded the report, we can take a look at the metrics and assess the quality of our sequencing data!
+# 3. Visualazation of a bam file
 
-FastQC has a really well documented [manual page](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/) with [detailed explanations](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/Help/) about every plot in the report. 
+A BAM file can be visualized using a genome viewer like IGV.
+We can't just upload the files in the viewer. We first need the files to be sorted and indexed.
+To do this we make use of samtools. This is a tool specificaly designed to work with BAM and SAM files.
 
-Within our report, a summary of all of the modules is given on the left-hand side of the report. Don't take the **yellow "WARNING"s** and **red "FAIL"s** too seriously; they should be interpreted as flags for modules to check out. 
+## 3.1. Preparation of the Bam file for IGV
 
-<img src="../img/fastqc_summary.png" width="200">
+To start of we'll have a look at how to use samtools to have a peak at the the contents of the bam files. 
 
-The first module gives the basic statistics for the sample. Generally it is a good idea to keep track of the total number of reads sequenced for each sample and to make sure the read length and %GC content is as expected.
+As these file are binary you can not simply use:
 
-<img src="../img/fastqc_basic_stats.png" width="400">
+~~~
+$ head arabidopsis1.bam
+~~~
 
-One of the most important analysis modules is the **"Per base sequence quality"** plot. This plot provides the distribution of quality scores at each position in the read across all reads. This plot can alert us to whether there were any problems occuring during sequencing and whether we might need to contact the sequencing facility.
+This will give an unreadable result.
+samtools view helps to make the content readable
 
-![FastQC_seq_qual](../img/FastQC_seq_qual.png)
+~~~
+$ samtools view arabidopsis1.bam | head
+~~~
 
-The y-axis gives the quality scores, while the x-axis represents the position in the read. The color coding of the plot denotes what are considered high, medium and low quality scores. 
+Samtools will make the data readeble, this data is then piped through head to show the first 5 lines of the file
 
-For example, the box plot at nucleotide 1 shows the distribution of quality scores for **the first nucleotide of all reads** in the `Mov10_oe_1` sample. The yellow box represents the 25th and 75th percentiles, with the red line as the median. The whiskers are the 10th and 90th percentiles. The blue line represents the average quality score for the nucleotide. Based on these metrics, the quality scores for the first nucleotide are quite high, with nearly all reads having scores above 28.
+### Sorting
 
-The quality scores appear to drop going from the beginning toward the end of the reads. For reads generated by Illumina sequencing, this is not unexpected, and there are known causes for this drop in quality. To better interpret this plot it is helpful to understand the different sequencing error profiles.
+Samtools can also be used to sort the read alignments. The aliments will reordered starting from the beginning of chromosome 1 to the end of the last chromosome.
 
-## 1.3 Sequencing error profiles
+~~~
+$ samtools sort -o arabidopsis1_sorted.bam arabidopsis1.bam
+~~~
 
-For Illumina sequencing, the quality of the nucleotide base calls are related to the **signal intensity and purity of the fluorescent signal**. Low intensity fluorescence or the presence of multiple different fluorescent signals can lead to a drop in the quality score assigned to the nucleotide. Due to the nature of sequencing-by-synthesis there are some drops in quality that can be expected, but other quality issues can be indicative of a problem at the sequencing facility.
+where -o defines the name of the output file (also a bam).
 
-We will now explore different quality issues arising from the sequencing-by-synthesis used by Illumina, both expected and unexpected.
+### Indexing
 
-### Expected Errors
+stuff on indexing the BAM file
 
-As sequencing progresses from the first cycle to the last cycle we often anticipate a drop in the quality of the base calls. This is often due to signal decay and phasing as the sequencing run progresses. 
+## 3.2. IGV
 
-- **Signal decay:** As sequencing proceeds, the fluorescent signal intensity decays with each cycle, yielding decreasing quality scores at the **3' end** of the read. This is due to:
-   1. Degrading fluorophores
-   2. A proportion of the strands in the cluster not being elongated
-   
-   Therefore, the proportion of signal being emitted continues to decrease with each cycle.
-
-   <img src="../img/qc_signal_decay.png" width="400">
-   
-- **Phasing:** As the number of cycles increases, the signal starts to blur as the cluster loses synchronicity, also yielding a decrease in quality scores at the **3' end** of the read. As the cycles progress, some strands get random failure of nucleotides to incorporate due to:
-   1. Incomplete removal of the 3' terminators and fluorophores
-   2. Incorporation of nucleotides without effective 3' terminators
-
-   <img src="../img/qc_phasing.png" width="500">
-   
-### Worrisome
-
-- **Overclustering:** Sequencing facilities can overcluster the flow cells, which results in small distances between clusters and an overlap in the signals. The two clusters can be interpreted as a single cluster with mixed fluorescent signals being detected, decreasing signal purity, generating lower quality scores across the **entire read**.
-
-   <img src="../img/qc_overclustering.png" width="800">
-   
-- **Instrumentation breakdown:** Sequencing facilities can occasionally have issues with the sequencing instruments during a run. **Any sudden drop in quality or a large percentage of low quality reads across the read could indicate a problem at the facility.** Examples of such issues are shown below, including a manifold burst, cycles lost, and read 2 failure. For such data, the sequencing facility should be contacted for resolution, if possible.
-
-   <img src="../img/qc_manifold_burst.png" width="300">
-   
-   <img src="../img/qc_cycles_lost.png" width="300">
-   
-   <img src="../img/qc_read2_failed.png" width="350">
-
-## 1.4 Quality assessment
-
-Now if we return back to our plot, we can see a drop in quality towards the ends of the reads, which could be explained by signal decay or phasing. No other worrisome signs are present, so the sequencing data from the facility is of good quality. 
-
-![FastQC_seq_qual](../img/FastQC_seq_qual.png)
-
-The other modules in the FastQC report can also help interpret the quality of the data. 
-
-### Per sequence quality scores
-
-The **"Per sequence quality scores"** plot gives you the average quality score on the x-axis and the number of sequences with that average on the y-axis. We hope the majority of our reads have a high average quality score with no large bumps at the lower quality values.
-
-<img src="../img/fastqc_per_sequence_quality_scores.png" width="400">
-  
-This data has a small bump at a mean quality of 12. Since it doesn't represent a large proportion of the data, it isn't extremely worrisome, but it might be worth a quick check of the reads resulting in the poor quality scores.
-
-### Per base sequence content
-The next plot gives the **"Per base sequence content"**, which always gives a FAIL for RNA-seq data. This is because the first 10-12 bases result from the 'random' hexamer priming that occurs during RNA-seq library preparation. This priming is not as random as we might hope giving an enrichment in particular bases for these intial nucleotides. 
-
-<img src="../img/fastqc_per_base_sequence_content.png" width="400">
-
-### Per sequence GC content
-
-The **"Per sequence GC content"** plot gives the GC distribution over all sequences. Generally is a good idea to note whether the GC content of the central peak corresponds to the [expected % GC for the organism](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2909565/). Also, the distribution should be normal unless over-represented sequences (sharp peaks on a normal distribution) or contamination with another organism (broad peak).
-
-This plot would indicate some type of over-represented sequence with the sharp peaks, indicating either contamination or a highly over-expressed gene.
-
-<img src="../img/fastqc_GC.png" width="400">
-
-### Sequence duplication level
-
-The next module explores **numbers of duplicated sequences** in the library. This plot can help identify a low complexity library, which could result from too many cycles of PCR amplification or too little starting material. For RNA-seq we don't normally do anything to address this in the analysis, but if this were a pilot experiment, we might adjust the number of PCR cycles, amount of input, or amount of sequencing for future libraries. In this analysis we seem to have a large number of duplicated sequences, but this is can be expected due to the multiple copies of mRNA being duplicates. 
-
-<img src="../img/fastqc_duplication.png" width="400">
+For this exercise we'll be making use of an online version of [IGV](https://igv.org/app/). 
+The arabidopsis genome that we used for the mapping is available in this web app. It can be found under genome -> A. thaliana (TAIR 10). The bam files can be added as a track. Choose tracks -> local file.
+select both the bam file and the accompanying bai.<br/>
+You should get something like this
+<img src="../img/fullgenomeIGV.png">
 
 
-### Overrepresented sequences
+Mapping has in this case only been done against chromosome 1. So if we want to see are reads choose chromosome 1. Zoom in to see the reads.
 
-The **"Overrepresented sequences"** table is another important module as it displays the sequences (at least 20 bp) that occur in more than 0.1% of the total number of sequences. This table aids in identifying contamination, such as vector or adapter sequences. If the %GC content was off in the above module, this table can help identify the source. If not listed as a known adapter or vector, it can help to BLAST the sequence to determine the identity.
+<img src="../img/sam_bam_1.png">
 
-![FastQC_contam](../img/FastQC_contam.png)
+It is also posible to search for genes. just pop the name in the search box and click the magnificationsglass. Try with the genes: AT1G16080, AT10370
 
-As our report only represents a subset of reads (chromosome 1) for `Mov10_oe_1.subset.fq`, which can skew the QC results. We encourage you to look at the [full set of reads](../fastqc/Mov10oe_1-fastqc_report.html) and note how the QC results differ when using the entire dataset.
+<img src="../img/gene10370.png">
+<img src="../img/gene16080.png">
 
-After exploring the quality of the data, we determine from which gene or transcript the reads originated from using mapping tools. The quality of the data is important when determining where it aligns to on the genome or transcriptome, but the mapping tools we use (salmon and STAR) are able to account for adapter contamination, vector contamination and low-quality bases at the ends of reads. Therefore, after noting any QC issues, we can use our raw reads for the alignment or mapping to the reference genome or transcriptome.
+# 6. Creating the counts file
 
-# 2. MultiQC
-A tool to aggregate reports on a sample to sample basis. 
-Check out the marvelous intro video and various tutorials: https://multiqc.info/
+For downstream application for each of the samples the number of reads that maps within a gene has to be determined.
+Featurecounts from the subread package can do this.
+
+FeatureCounts can count the number of reads that map within a feature. In case of the arabidopsis annotation there are three different features to choose from. Depending on the downstream applications the choice is gene, transcript or exon. In this study we are just looking for differientially expressed genes.
+
+~~~
+$ cd /home/
+
+$ gunzip ath_annotation.gff3.gz
+
+$ featureCounts -O -t gene -g ID -a ath_annotation.gff3 -o counts.txt mapped/*.bam
+~~~
+
+-a <string>         Name of an annotation file. GTF/GFF format by default.
+-o <string>         Name of the output file including read counts.
+-O                  Assign reads to all their overlapping meta-features.
+-t <string>         Specify feature type in GTF annotation
+-g <string>         Specify attribute type in GTF annotation. Determines the name of the features.
+
+The output file produced by `featureCounts` is a tab-delimited file, can be opened in a program like excel.
