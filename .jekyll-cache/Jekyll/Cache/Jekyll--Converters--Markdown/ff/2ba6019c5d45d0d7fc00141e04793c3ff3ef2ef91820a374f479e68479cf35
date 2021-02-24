@@ -1,0 +1,120 @@
+I"�<h1 id="1-table-of-contents">1. Table of Contents</h1>
+<!-- TOC -->
+
+<ul>
+  <li><a href="#1-table-of-contents">1. Table of Contents</a></li>
+  <li><a href="#2-the-sambam-format">2. The SAM/BAM format</a>
+    <ul>
+      <li><a href="#21-whats-in-a-sambam-file">2.1 What’s in a SAM/BAM file</a></li>
+    </ul>
+  </li>
+  <li><a href="#3-visualazation-of-a-bam-file">3. Visualazation of a bam file</a>
+    <ul>
+      <li><a href="#31-preparation-of-the-bam-file-for-igv">3.1. Preparation of the Bam file for IGV</a>
+        <ul>
+          <li><a href="#sorting">Sorting</a></li>
+          <li><a href="#indexing">Indexing</a></li>
+        </ul>
+      </li>
+      <li><a href="#32-igv">3.2. IGV</a></li>
+    </ul>
+  </li>
+  <li><a href="#6-creating-the-counts-file">6. Creating the counts file</a></li>
+</ul>
+
+<!-- /TOC -->
+
+<h1 id="2-the-sambam-format">2. The SAM/BAM format</h1>
+<p>The <a href="https://github.com/adamfreedman/knowyourdata-genomics/blob/gh-pages/lessons/01-know_your_data.md#aligned-reads-sam">SAM file</a>,
+is a tab-delimited text file that contains information for each individual read and its alignment to the genome. While we do not
+have time to go in detail of the features of the SAM format, the paper by
+<a href="http://bioinformatics.oxfordjournals.org/content/25/16/2078.full">Heng Li et al.</a> provides a lot more detail on the specification.</p>
+
+<p><strong>The compressed binary version of SAM is called a BAM file.</strong> We use this version to reduce size and to allow for <em>indexing</em>, which enables efficient random access of the data contained within the file.</p>
+
+<h2 id="21-whats-in-a-sambam-file">2.1 What’s in a SAM/BAM file</h2>
+<p>The file begins with a <strong>header</strong>, which is optional. The header is used to describe source of data, reference sequence, method of
+alignment, etc., this will change depending on the aligner being used. Following the header is the <strong>alignment section</strong>. Each line
+that follows corresponds to alignment information for a single read. Each alignment line has <strong>11 mandatory fields</strong> for essential
+mapping information and a variable number of other fields for aligner specific information. An example entry from a SAM file is
+displayed below with the different fields highlighted.</p>
+
+<p><img src="../img/sam_bam_1.png" /></p>
+
+<p><img src="../img/sam_bam2.png" /></p>
+
+<h1 id="3-visualazation-of-a-bam-file">3. Visualazation of a bam file</h1>
+
+<p>A BAM file can be visualized using a genome viewer like IGV.
+We can’t just upload the files in the viewer. We first need the files to be sorted and indexed.
+To do this we make use of samtools. This is a tool specificaly designed to work with BAM and SAM files.</p>
+
+<h2 id="31-preparation-of-the-bam-file-for-igv">3.1. Preparation of the Bam file for IGV</h2>
+
+<p>To start of we’ll have a look at how to use samtools to have a peak at the the contents of the bam files.</p>
+
+<p>As these file are binary you can not simply use:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ head arabidopsis1.bam
+</code></pre></div></div>
+
+<p>This will give an unreadable result.
+samtools view helps to make the content readable</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ samtools view arabidopsis1.bam | head
+</code></pre></div></div>
+
+<p>Samtools will make the data readeble, this data is then piped through head to show the first 5 lines of the file</p>
+
+<h3 id="sorting">Sorting</h3>
+
+<p>Samtools can also be used to sort the read alignments. The aliments will reordered starting from the beginning of chromosome 1 to the end of the last chromosome.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ samtools sort -o arabidopsis1_sorted.bam arabidopsis1.bam
+</code></pre></div></div>
+
+<p>where -o defines the name of the output file (also a bam).</p>
+
+<h3 id="indexing">Indexing</h3>
+
+<p>stuff on indexing the BAM file</p>
+
+<h2 id="32-igv">3.2. IGV</h2>
+
+<p>For this exercise we’ll be making use of an online version of <a href="https://igv.org/app/">IGV</a>. 
+The arabidopsis genome that we used for the mapping is available in this web app. It can be found under genome -&gt; A. thaliana (TAIR 10). The bam files can be added as a track. Choose tracks -&gt; local file.
+select both the bam file and the accompanying bai.<br />
+You should get something like this
+<img src="../img/fullgenomeIGV.png" /></p>
+
+<p>Mapping has in this case only been done against chromosome 1. So if we want to see are reads choose chromosome 1. Zoom in to see the reads.</p>
+
+<p><img src="../img/sam_bam_1.png" /></p>
+
+<p>It is also posible to search for genes. just pop the name in the search box and click the magnificationsglass. Try with the genes: AT1G16080, AT10370</p>
+
+<p><img src="../img/gene10370.png" />
+<img src="../img/gene16080.png" /></p>
+
+<h1 id="6-creating-the-counts-file">6. Creating the counts file</h1>
+
+<p>For downstream application for each of the samples the number of reads that maps within a gene has to be determined.
+Featurecounts from the subread package can do this.</p>
+
+<p>FeatureCounts can count the number of reads that map within a feature. In case of the arabidopsis annotation there are three different features to choose from. Depending on the downstream applications the choice is gene, transcript or exon. In this study we are just looking for differientially expressed genes.</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ cd /home/
+
+$ gunzip ath_annotation.gff3.gz
+
+$ featureCounts -O -t gene -g ID -a ath_annotation.gff3 -o counts.txt mapped/*.bam
+</code></pre></div></div>
+
+<p>-a <string>         Name of an annotation file. GTF/GFF format by default.
+-o <string>         Name of the output file including read counts.
+-O                  Assign reads to all their overlapping meta-features.
+-t <string>         Specify feature type in GTF annotation
+-g <string>         Specify attribute type in GTF annotation. Determines the name of the features.</string></string></string></string></p>
+
+<p>The output file produced by <code class="highlighter-rouge">featureCounts</code> is a tab-delimited file, can be opened in a program like excel.</p>
+:ET

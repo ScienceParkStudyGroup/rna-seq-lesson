@@ -1,0 +1,707 @@
+I"_�<h1 id="table-of-contents">Table of Contents</h1>
+<!-- MarkdownTOC autolink="True" levels="1,2,3" -->
+
+<ul>
+  <li><a href="#1-introduction">1. Introduction</a></li>
+  <li><a href="#1-statistical-refresher">1. Statistical refresher</a>
+    <ul>
+      <li><a href="#11-population-and-sample">1.1 Population and sample</a></li>
+      <li><a href="#12-central-tendency-and-spread">1.2 Central tendency and spread</a></li>
+      <li><a href="#13-hypothesis-test">1.3 Hypothesis test</a></li>
+      <li><a href="#14-type-i-and-type-ii-errors">1.4 Type I and type II errors</a></li>
+      <li><a href="#15-effect-size">1.5 Effect size</a></li>
+      <li><a href="#16-power-analysis-how-many-samples-do-i-need">1.6 Power analysis: how many samples do I need?</a></li>
+      <li><a href="#17-power-analysis-for-rna-seq">1.7 Power analysis for RNA-seq</a></li>
+    </ul>
+  </li>
+  <li><a href="#2-best-practices-for-experimental-design">2. Best practices for experimental design</a>
+    <ul>
+      <li><a href="#21-a-case-study">2.1 A case study</a></li>
+      <li><a href="#22-design-number-1">2.2 Design number 1</a></li>
+      <li><a href="#23-design-number-2-completely-randomized-design">2.3 Design number 2: completely randomized design</a></li>
+      <li><a href="#23-design-number-3-completely-randomized-block-design">2.3 Design number 3: completely randomized block design</a>
+        <ul>
+          <li><a href="#231-scary-formulas">2.3.1 Scary formulas</a></li>
+          <li><a href="#232-conclusion">2.3.2 Conclusion</a></li>
+        </ul>
+      </li>
+      <li><a href="#24-other-examples-of-suboptimal-design">2.4 Other examples of suboptimal design</a>
+        <ul>
+          <li><a href="#241-sex-confounded-with-treatment">2.4.1 Sex confounded with treatment</a></li>
+          <li><a href="#242-rna-isolation-batch-effects">2.4.2 RNA isolation batch effects</a></li>
+        </ul>
+      </li>
+      <li><a href="#25-the-three-principles-of-a-good-experimental-design">2.5 The three principles of a good experimental design</a></li>
+    </ul>
+  </li>
+  <li><a href="#3-other-points-relevant-to-rna-seq">3. Other points relevant to RNA-seq</a>
+    <ul>
+      <li><a href="#31-sequencing-depth">3.1 Sequencing depth</a></li>
+      <li><a href="#32-pooling-of-samples">3.2 Pooling of samples</a></li>
+    </ul>
+  </li>
+  <li><a href="#references">References</a></li>
+  <li><a href="#photo-credits">Photo credits</a></li>
+</ul>
+
+<!-- /MarkdownTOC -->
+
+<p><img src="../img/02-workflow-overview.png" width="500px" /></p>
+
+<h1 id="1-introduction">1. Introduction</h1>
+
+<p>While most scientists would rapidly dive into RNA-seq sample preparation and searching for a sequencing provider, it is crucial to spend enough time to refresh one’s statistical knowledge and embrace good experimental design practices. After all, a typical RNA-seq experiment is also an experiment like any other. We will nethertheless see some specificities of RNA-seq experiments at the end of this episode.</p>
+
+<p>Statistics are often overlooked (at best) or avoided (very often) by wet-lab biologists since it is often thought of being both complex and boring. Yet, this episode will hopefully prove that is can be simply explained and that a few pragmatic considerations will usually save a considerable amount of time and money.</p>
+
+<h1 id="1-statistical-refresher">1. Statistical refresher</h1>
+<p>First, let’s have a quick look at important notions useful to understand the rest of this episode. 
+These concepts will be important to understand experimental design applied to RNA-seq.</p>
+
+<h2 id="11-population-and-sample">1.1 Population and sample</h2>
+
+<p>The first question you need to ask yourself is “what is the population that I am considering in my experiment from which I will gather measurements?”. If you are working on wild-type tomato plants from the cultivar Moneymaker for instance, then your population of interest would be <em>all</em> plants from the Moneymaker cultivar on which you measure a particular phenotype.</p>
+
+<p>Data collection consists of measuring the values of one or several variables for each member of the population. For instance, you could measure the height and weight of people.</p>
+
+<p>If you are working on the height of the population from the Netherlands, then your population would be “all people in the Netherlands” and your variable would be “height”. A sample is a subset of that population that must be <em>representative</em> of that population. It therefore has to be selected randomly from the whole population.</p>
+
+<p><img src="../img/02-population-sample.png" width="300px" /></p>
+
+<blockquote class="discussion">
+  <h2 id="discussion">Discussion</h2>
+  <p>Let’s imagine that we study the height of people in the Netherlands. We take a representative sample of 1000 people. Could you give examples of descriptive statistics on that sample?</p>
+</blockquote>
+
+<blockquote class="callout">
+  <h2 id="distinction-between-descriptive-statistics-and-inferential-statistics">Distinction between <strong>descriptive statistics</strong> and <strong>inferential statistics</strong></h2>
+  <p>On the one hand, descriptive statistics would for instance calculate the average height based on the 1000 people sampled. But it would make no assumption on the general population in the Netherlands. <br />
+On the other hand, inferential statistics would try to impute the Netherlands population height based on this representative 1000 people sample.</p>
+</blockquote>
+
+<h2 id="12-central-tendency-and-spread">1.2 Central tendency and spread</h2>
+
+<p>Here is a boxplot made from the world’s population heights (one point is the average height in one country).</p>
+
+<p><img src="../img/02-boxplot-world-pop.png" alt="boxplot of world population height" height="400px" /></p>
+
+<p>In particular, the <strong>measures of central tendency and spread</strong> are of interest to us because they will also have important consequences for RNA-seq. <strong>One example of a measure of central tendency is the mean</strong> for instance. The mean is displayed on the boxplot as a red diamond.</p>
+
+<blockquote class="challenge">
+  <h2 id="exercise-central-tendency">Exercise: central tendency</h2>
+  <p>Take another look at the boxplot above. Can you name a measure of the central tendency other than the mean?</p>
+
+  <blockquote class="solution">
+    <h2 id="solution">Solution</h2>
+    <p>The median is another measure of central tendency. The median is the value separating the higher half from the lower half of a data sample or a population (source Wikipedia).</p>
+  </blockquote>
+</blockquote>
+
+<p>If you look at the boxplot, you will see that points are dispersed along the boxplot suggesting that some countries might have an “extreme” height compared to the majority. This measure of heterogeneity in data distribution is called the <strong>spread</strong> or <a href="https://en.wikipedia.org/wiki/Statistical_dispersion">statistical dispersion</a> and can be estimated with measures such as the <strong>standard deviation</strong>.</p>
+
+<blockquote class="challenge">
+  <h2 id="exercise-spread">Exercise: spread</h2>
+  <p>Can you name a measure of the spread other than the standard deviation?</p>
+
+  <blockquote class="solution">
+    <h2 id="solution-1">Solution</h2>
+    <p>The variance (square of the standard deviation) is another measure of the spread.</p>
+  </blockquote>
+</blockquote>
+
+<h2 id="13-hypothesis-test">1.3 Hypothesis test</h2>
+
+<p>These notions of central tendency and spread are vital to the rest of this episode. In your RNA-seq journey, you will work with thousands of genes. But before you do so, it is important to understand how statistical tests and the infamous p-values are computed  by working with one gene.</p>
+
+<p>Say you are studying a plant gene called <a href="https://www.uniprot.org/uniprot/O80982">“heat stress transcription factor A-2” (HSFA2)</a> whose expression could be increased by heat stress…Well the gene name is definitely giving a clue! :blush: You therefore measure this gene transcript level in two conditions: normal and heat stressed.</p>
+
+<p>Then, you make a hypothesis saying:</p>
+<blockquote>
+  <p>“The average HSFA2 gene expression <em>is the same</em> in normal conditions than under heat stress in my Arabidopsis seedlings”.</p>
+</blockquote>
+
+<p>This is called the <strong>H<sub>0</sub> hypothesis or the null hypothesis</strong>.</p>
+
+<p><br /></p>
+
+<p>The alternative hypothesis would be:</p>
+<blockquote>
+  <p>“The average HSFA2 gene expression <em>is different</em> under heat stress compared to normal conditions in my Arabidopsis seedlings”.</p>
+</blockquote>
+
+<p>This is called the <strong>H<sub>1</sub> hypothesis or alternative hypothesis</strong>.</p>
+
+<p>Imagine you would be the best scientist ever and you would be capable of sampling 1000 Arabidopsis plantlets in normal conditions. 
+:seedling: x 1000</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">library</span><span class="p">(</span><span class="n">tidyverse</span><span class="p">)</span><span class="w">
+
+</span><span class="n">xp_normal_conditions</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">tibble</span><span class="p">(</span><span class="w">
+  </span><span class="n">expression</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rnorm</span><span class="p">(</span><span class="w">             </span><span class="c1"># randomly sample numbers from a normal distribution</span><span class="w">
+    </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1000</span><span class="p">,</span><span class="w">                     </span><span class="c1"># number of drawings</span><span class="w">
+    </span><span class="n">mean</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2</span><span class="p">,</span><span class="w">                     </span><span class="c1"># mean of the normal distribution</span><span class="w">
+    </span><span class="n">sd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.1</span><span class="p">),</span><span class="w">                    </span><span class="c1"># standard deviation of the normal distribution</span><span class="w">
+  </span><span class="n">condition</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"normal"</span><span class="w">            </span><span class="c1"># used later on for data frame row binding with heat stress</span><span class="w">
+  </span><span class="p">)</span><span class="w">
+
+</span><span class="n">head</span><span class="p">(</span><span class="n">xp_normal_conditions</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code># A tibble: 6 x 2
+  expression condition
+       &lt;dbl&gt; &lt;chr&gt;    
+1       1.98 normal   
+2       2.04 normal   
+3       1.99 normal   
+4       2.03 normal   
+5       2.03 normal   
+6       2.03 normal  
+</code></pre></div></div>
+
+<p>If you plot the HSF2A gene expression distribution, you get a nice schoolbook guaussian curve.</p>
+
+<p><img src="../img/02-normal-hist.png" alt="Histogram of HSFA2 gene expression value in normal conditions (n = 1000)" height="400px" /></p>
+
+<p>Let’s now create the data for another gene.</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">xp_heat_stress</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">tibble</span><span class="p">(</span><span class="n">expression</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rnorm</span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1000</span><span class="p">,</span><span class="w"> </span><span class="n">mean</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">4</span><span class="p">,</span><span class="w"> </span><span class="n">sd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.5</span><span class="p">),</span><span class="w">
+                         </span><span class="n">condition</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"heat stress"</span><span class="p">)</span><span class="w">
+
+</span><span class="n">xp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bind_rows</span><span class="p">(</span><span class="n">xp_normal_conditions</span><span class="p">,</span><span class="w"> </span><span class="n">xp_heat_stress</span><span class="p">)</span><span class="w"> </span><span class="c1"># get a peek with head(xp) and tail(xp)</span><span class="w">
+
+</span><span class="n">p3</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">ggplot</span><span class="p">(</span><span class="n">xp</span><span class="p">,</span><span class="w"> </span><span class="n">aes</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">expression</span><span class="p">,</span><span class="w"> </span><span class="n">fill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">condition</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">ggtitle</span><span class="p">(</span><span class="s2">"Distribution of HSF2A expression levels in 1000 samples"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">geom_histogram</span><span class="p">(</span><span class="n">color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"black"</span><span class="p">)</span><span class="w"> 
+</span><span class="n">p3</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="../img/02-normal-stress-hist.png" alt="two conditions plotted" height="400px" /></p>
+
+<blockquote class="challenge">
+  <h2 id="challenge">Challenge</h2>
+  <p>Can you figure out how to perform a Student t-test to test the <strong>null hypothesis H<sub>0</sub></strong> (no difference between normal and heat stress means) using the <code class="highlighter-rouge">xp_normal_conditions</code> and the <code class="highlighter-rouge">xp_heat_stress</code> dataframes?</p>
+  <blockquote class="solution">
+    <h2 id="solution-2">Solution</h2>
+
+    <div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">t.test</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xp_normal_conditions</span><span class="o">$</span><span class="n">expression</span><span class="p">,</span><span class="w"> 
+       </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xp_heat_stress</span><span class="o">$</span><span class="n">expression</span><span class="p">,</span><span class="w"> 
+       </span><span class="n">alternative</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"two.sided"</span><span class="w"> </span><span class="p">,</span><span class="w">      
+       </span><span class="n">var.equal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">,</span><span class="w">             </span><span class="c1"># important as the variance do not seem equal</span><span class="w">
+       </span><span class="n">conf.level</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.95</span><span class="p">)</span><span class="w">             </span><span class="c1"># corresponds to alpha = 0.05 </span><span class="w">
+</span></code></pre></div>    </div>
+  </blockquote>
+</blockquote>
+
+<p>The output of the Student t test yields:</p>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Welch Two Sample t-test
+
+data:  xp_normal_conditions$expression and xp_heat_stress$expression
+
+t = -124.62, df = 1079.5, p-value &lt; 2.2e-16
+
+alternative hypothesis: true difference in means is not equal to 0.95 percent confidence interval: -2.019466 -1.956859
+
+sample estimates:
+mean of x mean of y 
+ 2.004045  3.992208 
+</code></pre></div></div>
+
+<p>If the spread in normal conditions increases to 0.5 the two distributions start to overlap. But given our number of measurements, the t-test is still very significant since we can estimate variability very finely.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># increasing the spread of the normal conditions to sd = 0.5</span><span class="w">
+</span><span class="n">xp_normal_conditions_more_spread</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">tibble</span><span class="p">(</span><span class="n">expression</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rnorm</span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1000</span><span class="p">,</span><span class="w"> </span><span class="n">mean</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2</span><span class="p">,</span><span class="w"> </span><span class="n">sd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.5</span><span class="p">),</span><span class="w">
+                                           </span><span class="n">condition</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"normal"</span><span class="p">)</span><span class="w">
+
+</span><span class="n">xp2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bind_rows</span><span class="p">(</span><span class="n">xp_normal_conditions_more_spread</span><span class="p">,</span><span class="w"> </span><span class="n">xp_heat_stress</span><span class="p">)</span><span class="w"> </span><span class="c1"># heat stress values are kept unchanged</span><span class="w">
+
+</span><span class="n">p4</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">ggplot</span><span class="p">(</span><span class="n">xp2</span><span class="p">,</span><span class="w"> </span><span class="n">aes</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">expression</span><span class="p">,</span><span class="w"> </span><span class="n">fill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">condition</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">ggtitle</span><span class="p">(</span><span class="s2">"Distribution of HSF2A expression levels in 1000 samples"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">geom_histogram</span><span class="p">(</span><span class="n">color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"black"</span><span class="p">,</span><span class="w"> </span><span class="n">bins</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">30</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> 
+  </span><span class="n">theme</span><span class="p">(</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">element_text</span><span class="p">(</span><span class="n">size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">20</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w"> 
+  </span><span class="n">scale_x_continuous</span><span class="p">(</span><span class="n">limits</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="m">6</span><span class="p">))</span><span class="w">
+</span><span class="n">p4</span><span class="w">
+
+
+</span><span class="n">t.test</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xp_normal_conditions_more_spread</span><span class="o">$</span><span class="n">expression</span><span class="p">,</span><span class="w"> 
+       </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xp_heat_stress</span><span class="o">$</span><span class="n">expression</span><span class="p">,</span><span class="w"> 
+       </span><span class="n">alternative</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"two.sided"</span><span class="p">,</span><span class="w">
+       </span><span class="n">var.equal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">,</span><span class="w"> 
+       </span><span class="n">conf.level</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.95</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="../img/02-normal-stress-hist-more-spread.png" alt="two conditions plotted" height="400px" /></p>
+
+<h2 id="14-type-i-and-type-ii-errors">1.4 Type I and type II errors</h2>
+
+<p>Type I errors occur when the <strong>H<sub>0</sub> (null) hypothesis</strong> is rejected wrongly (e.g., the two treatment means are equal) in favor of an alternative hypothesis (e.g., that the two means are different). Type I errors are probably most familiar to researchers and much effort is expended to ensure that Type I errors are minimized.</p>
+
+<p>Type II errors also are common in hypothesis testing. These errors result from accepting the null hypothesis when in fact a treatment effect exists.</p>
+
+<p><br />
+<br /></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Type I error (false positive): “You’re pregnant!”</th>
+      <th>Type II error (false negative): “Sorry you’re not pregnant”</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><img src="../img/pregnant-man.jpg" alt="pregnant man" height="400px" /></td>
+      <td><img src="../img/pregnant_woman.jpg" alt="pregnant woman" height="400px" /></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>These two types of errors are related to one another.</p>
+
+<p><img src="../img/type_one_type_two_errors.png" alt="table of type I and type II errors" width="70%" /></p>
+
+<h2 id="15-effect-size">1.5 Effect size</h2>
+<p><strong>Standardized effect size following Cohen’s <em>d</em> formula</strong></p>
+
+<script type="math/tex; mode=display">d = {X_{1}- X_{2} \over s}</script>
+
+<p>Where <script type="math/tex">X_{1}</script> is the mean of the first group (e.g. treatment) and <script type="math/tex">X_{2}</script> is the mean of the second group. <script type="math/tex">s</script> is the standard variation of one of the two population if they are comparable or the pooled standard deviation.</p>
+
+<p>The pooled standard deviation is the square root of the average of the two standard deviations.</p>
+
+<p><strong>Student t test formula</strong></p>
+
+<script type="math/tex; mode=display">t = {X_{1} - X_{2} \over SE}</script>
+
+<p>The widely used Student t-test rely on the value of the <script type="math/tex">t</script> statistics which is related to this effect size since the Standard Error (SE) is equal to <script type="math/tex">SE = {SD \over \sqrt{N}}</script> with <script type="math/tex">N</script> the number of measurements and <script type="math/tex">SD</script> the standard deviation.</p>
+
+<p>This brings us to the infamous question…“how many samples do I need?”.</p>
+
+<h2 id="16-power-analysis-how-many-samples-do-i-need">1.6 Power analysis: how many samples do I need?</h2>
+
+<p>You will need to know these parameters in your experiment to be able to calculate the number of samples that you need:</p>
+<ul>
+  <li><strong>Type I error:</strong> controlled by the <script type="math/tex">\alpha</script> value. Often set to 0.01 (1%) or 0.001 (0.1%) in RNA-seq experiments.</li>
+  <li><strong>Type II error:</strong> controlled by the <script type="math/tex">\beta</script> value. <script type="math/tex">(1 - \beta)</script> will give you the power of your analysis. Should be set to 70 or 80% to detect 70 or 80% of the differentially expressed genes. The number of biological replicates might be hard to reach in practice for RNA-seq experiments.</li>
+  <li><strong>Effect size:</strong> this is a parameter you will set. For instance, if you want to investigate genes that differ between treatments with a difference of their mean of 2 then the effect size is equal to 2.</li>
+  <li><strong>Sample size</strong>: the quantity you want to calculate.</li>
+</ul>
+
+<p>We are now going to see how to calculate the number of samples to achieve a power of 70 or 80% given a certain effect size <script type="math/tex">d</script>, a level of <script type="math/tex">\alpha</script> and <script type="math/tex">\beta</script>.</p>
+
+<p>Let’s say we want:</p>
+<ul>
+  <li>Type I error of 5%. <script type="math/tex">\alpha = 0.05</script></li>
+  <li>Type II error of 0.2. <script type="math/tex">Power =  1 - \beta = 0.8</script></li>
+  <li>Effect size of 2. <script type="math/tex">d = 2</script></li>
+</ul>
+
+<p>How many samples do we need to achieve this? We are going to make use of the <code class="highlighter-rouge">pwr</code> package from R (<a href="https://cran.r-project.org/web/packages/pwr/vignettes/pwr-vignette.html">usage example here</a>).</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">library</span><span class="p">(</span><span class="s2">"pwr"</span><span class="p">)</span><span class="w">
+
+</span><span class="n">pwr.t.test</span><span class="p">(</span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2</span><span class="p">,</span><span class="w">
+           </span><span class="n">power</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">.8</span><span class="p">,</span><span class="w">
+           </span><span class="n">sig.level</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">.05</span><span class="p">,</span><span class="w">
+           </span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"two.sample"</span><span class="p">,</span><span class="w">
+           </span><span class="n">alternative</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"two.sided"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>     Two-sample t test power calculation 
+
+              n = 5.089995
+              d = 2
+      sig.level = 0.05
+          power = 0.8
+    alternative = two.sided
+
+NOTE: n is number in *each* group
+</code></pre></div></div>
+
+<p>To see a more subtle difference where <script type="math/tex">d = 1</script> we would need:</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">pwr.t.test</span><span class="p">(</span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="w">
+           </span><span class="n">power</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">.8</span><span class="p">,</span><span class="w">
+           </span><span class="n">sig.level</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">.05</span><span class="p">,</span><span class="w">
+           </span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"two.sample"</span><span class="p">,</span><span class="w">
+           </span><span class="n">alternative</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"two.sided"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>     Two-sample t test power calculation 
+
+              n = 16.71472
+              d = 1
+      sig.level = 0.05
+          power = 0.8
+    alternative = two.sided
+
+NOTE: n is number in *each* group
+</code></pre></div></div>
+
+<p>We would need 16 samples in each group as compared to 5 when <script type="math/tex">d = 2</script>.</p>
+
+<h2 id="17-power-analysis-for-rna-seq">1.7 Power analysis for RNA-seq</h2>
+
+<p>RNA-seq experiments often suffer from a low statistical power. A low statistical power reflects type II error.
+From <a href="https://www.nature.com/articles/nrn3475">Button et al. (2013) “Power failure: why small sample size undermines the reliability of neuroscience”</a>:</p>
+<blockquote>
+  <p>[low power entails that] you are missing “true effects” and there are many false negatives: genes that you should have been called differential but are not. <br />
+It also affects the <em>positive predictive value</em> (PVV) of your findings which is the probability that a differential gene (p &lt; 0.01) is a real true finding. 
+Power is therefore linked to the ability to claim “true findings”.</p>
+</blockquote>
+
+<p>A series of recent publications have emphasized that low power can lead to a lack of reproducibility of the research findings. Again, in their publication, Button and coauthors state that:</p>
+<blockquote>
+  <p>Research that produces novel results, statistically significant results (that is, typically p &lt; 0.05) and seemingly ‘clean’ results is more likely to be published. As a consequence, researchers have strong incentives to engage in research practices that make their findings publishable quickly, even if those practices reduce the likelihood that the findings reflect a true (that is, non-null) effect. Such practices include using <strong>flexible study designs</strong> and flexible statistical analyses and <strong>running small studies with low statistical power</strong>.</p>
+</blockquote>
+
+<p>The number of replicates is one of the critical parameter related to the power of an analysis. But first, let’s discuss what you understand by “replicates”.</p>
+
+<blockquote class="discussion">
+  <h2 id="discussion-1">Discussion</h2>
+  <p>What sort of replicates can you name in a typical RNA-seq experiment?</p>
+</blockquote>
+
+<p>Two types of experimental replicates coexist: <strong>technical replicates</strong> or <strong>biological replicates</strong>.</p>
+
+<p><img src="../img/replicates.png" width="500" /></p>
+
+<p><em>Image credit: <a href="https://dx.doi.org/10.15252%2Fembj.201592958">Klaus B., EMBO J (2015) <strong>34</strong>: 2727-2730</a></em></p>
+
+<ul>
+  <li>
+    <p><strong>Technical replicates:</strong> use the same biological sample to repeat the technical or experimental steps in order to accurately measure technical variation and remove it during analysis.</p>
+  </li>
+  <li>
+    <p><strong>Biological replicates</strong> use different biological samples of the same condition to measure the biological variation between samples.</p>
+  </li>
+</ul>
+
+<p>In the days of microarrays, technical replicates were considered a necessity; however, with the current RNA-Seq technologies, technical variation is much lower than biological variation and <strong>technical replicates are unneccessary</strong>.</p>
+
+<p>In contrast, <strong>biological replicates are absolutely essential</strong> for differential expression analysis. For mice or rats, this might be easy to determine what constitutes a different biological sample, but it’s a bit <strong>more difficult to determine for cell lines</strong>. <a href="http://paasp.net/accurate-design-of-in-vitro-experiments-why-does-it-matter/">This article</a> gives some great recommendations for cell line replicates.</p>
+
+<p>For differential expression analysis, the more biological replicates, the better the estimates of biological variation and the more precise our estimates of the mean expression levels. This leads to more accurate modeling of our data and identification of more differentially expressed genes. This is also reflected for statistical power. More reads marginally affect your ability to differential genes while increasing the number of biological replicates has a strong effect.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Number of differentially expressed genes</th>
+      <th>Statistical power</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><img src="../img/02-de-replicates-2.png" width="500px" /></td>
+      <td><img src="../img/02-de-replicates-3.png" width="500px" /></td>
+    </tr>
+  </tbody>
+</table>
+
+<p><em>Image credits: <a href="https://doi.org/10.1093/bioinformatics/btt688">Liu, Y., et al., Bioinformatics (2014) <strong>30</strong>(3): 301–304</a></em></p>
+
+<p>As the two figures above illustrates, <strong>biological replicates are of greater importance than sequencing depth</strong>, which is the total number of reads sequenced per sample. The figure shows the relationship between sequencing depth and number of replicates on the number of differentially expressed genes identified [<a href="https://academic.oup.com/bioinformatics/article/30/3/301/228651/RNA-seq-differential-expression-studies-more">1</a>]. Note that an <strong>increase in the number of replicates tends to return more DE genes than increasing the sequencing depth</strong>. Therefore, generally more replicates are better than higher sequencing depth, with the caveat that higher depth is required for detection of lowly expressed DE genes and for performing isoform-level differential expression.</p>
+
+<p>Replicates are almost always preferred to greater sequencing depth for bulk RNA-Seq. However, <strong>guidelines depend on the experiment performed and the desired analysis</strong>. Below we list some general guidelines for replicates and sequencing depth to help with experimental planning:</p>
+
+<ul>
+  <li><strong>General gene-level differential expression:</strong>
+    <ul>
+      <li>ENCODE guidelines suggest 30 million SE reads per sample (stranded).</li>
+      <li>15 million reads per sample is often sufficient, if there are a good number of replicates (&gt;3).</li>
+      <li>Spend money on more biological replicates, if possible.</li>
+      <li>Generally recommended to have read length &gt;= 50 bp</li>
+    </ul>
+  </li>
+  <li><strong>Gene-level differential expression with detection of lowly-expressed genes:</strong>
+    <ul>
+      <li>Similarly benefits from replicates more than sequencing depth.</li>
+      <li>Sequence deeper with at least 30-60 million reads depending on level of expression (start with 30 million with a good number of replicates).</li>
+      <li>Generally recommended to have read length &gt;= 50 bp</li>
+    </ul>
+  </li>
+  <li><strong>Isoform-level differential expression:</strong>
+    <ul>
+      <li>Of known isoforms, suggested to have a depth of at least 30 million reads per sample and paired-end reads.</li>
+      <li>Of novel isoforms should have more depth (&gt; 60 million reads per sample).</li>
+      <li>Choose biological replicates over paired/deeper sequencing.</li>
+      <li>Generally recommended to have read length &gt;= 50 bp, but longer is better as the reads will be more likely to cross exon junctions</li>
+      <li>Perform careful QC of RNA quality. Be careful to use high quality preparation methods and restrict analysis to high quality RIN # samples.</li>
+    </ul>
+  </li>
+  <li><strong>Other types of RNA analyses (intron retention, small RNA-Seq, etc.):</strong>
+    <ul>
+      <li>Different recommendations depending on the analysis.</li>
+      <li>Almost always more biological replicates are better!</li>
+    </ul>
+  </li>
+</ul>
+
+<p><br /></p>
+
+<h1 id="2-best-practices-for-experimental-design">2. Best practices for experimental design</h1>
+
+<p>In a typical biological experiment, you will encounter various sources of variation that are either:</p>
+<ul>
+  <li><strong>desirable</strong> because they are part of your experimental factors. These are typically the one you first think of when you design your experiment.</li>
+  <li><strong>undesirable</strong> (unwanted) because you are not interested in them. Although you might not list them, they will still affect the outcome of your experiment.</li>
+</ul>
+
+<p>We are going to identify these through a case study.</p>
+
+<h2 id="21-a-case-study">2.1 A case study</h2>
+<p>A scientist is hired as the new experimental design expert in a company and its first task is to design a disease assay experiment.</p>
+
+<p>The scientist has to measure the effect of a plant pathogen called “<em>Designus malatesta</em>” on two plant genotypes: one resistant to the pathogen (labelled “<em>R</em>” for resistant) and one susceptible (labelled “<em>S</em>”). You measure the quantity of the pathogen (CFU.g<sup>-1</sup>) in the plant tissue after a week.</p>
+
+<p>The scientist disposes of a total of 24 individual plants that are placed on two tables in a greenhouse compartment. Each table can accomodate 12 plants.
+The greenhouse upper right side is pointing north, close to the location of the entrance door. Finally, there is an electrical board to power lamps and other high voltage installation at the lower left side opposite of the door. Here is a scheme of the basic setup.</p>
+
+<p><img src="../img/02-xp-design-basic.png" height="400px" /></p>
+
+<blockquote class="challenge">
+  <h2 id="question">Question</h2>
+  <p>How many experimental factors controlled by the scientist can you readily identify?</p>
+  <blockquote class="solution">
+    <h2 id="solution-3">Solution</h2>
+    <p>There are two easily identifiable factors:</p>
+    <ol>
+      <li>The <strong>genotype factor</strong> with two levels: <em>R</em> and <em>S</em></li>
+      <li>The <strong>infection factor</strong> also with two levels: uninfected (control) and infected.</li>
+    </ol>
+  </blockquote>
+</blockquote>
+
+<p>Apart from experimental factors set up by the scientist, there are practical matters that may also affect the outcome of your experiment.</p>
+
+<blockquote class="challenge">
+  <h2 id="question-1">Question</h2>
+  <p>Can you identify another potential source of unwanted variation due to the practical setup of the experiment?</p>
+  <blockquote class="solution">
+    <h2 id="solution-4">Solution</h2>
+    <p>The greenhouse compartment door is on the North-East side so potentially a source of cold air. 
+On the contrary, there is an electrical board on the lower South-West side of the compartment, a potential source of warm air.
+Therefore, there might be an heterogeneity in the local temperature that plants are experiencing on table 1 and 2. 
+Another experimental factor that is undesirable can be called “temperature” and will cause table 1 and table 2 to be different.</p>
+  </blockquote>
+</blockquote>
+
+<p>We are now going to evaluate several experimental design that the scientist came up with and identify potential issues and remedies with each of them.</p>
+
+<h2 id="22-design-number-1">2.2 Design number 1</h2>
+<p>In the first design, plants from the <em>S</em> genotypes are placed on table 1 and plants from the <em>R</em> genotype are placed on table 2.</p>
+
+<p>The upper half on each table is infected with <em>D. malatesta</em> while the lower half is sprayed with water (control).</p>
+
+<p><img src="../img/02-xp-design-1.png" height="400px" /></p>
+
+<blockquote class="challenge">
+  <h2 id="question-2">Question</h2>
+  <p>Can you identify one major issue with this design?</p>
+  <blockquote class="solution">
+    <h2 id="solution-5">Solution</h2>
+    <p>The major issue is that it is not possible to distinguish the “table effect” (undesirable) from the “genotype” effect since all <em>S</em> genotypes are on table 1 while all <em>R</em> genotypes are on the table 2. 
+The “table effect” can be assimilated to a temperature effect since plants and pathogen on table 1 might experience a warmer temperature than plants and pathogen on table 2.</p>
+  </blockquote>
+</blockquote>
+
+<h2 id="23-design-number-2-completely-randomized-design">2.3 Design number 2: completely randomized design</h2>
+
+<p>In this new design, we have used a completely randomized design for the plant genotypes. To do so, we have randomized the positions of the plant genotypes on the two tables. It turns out that 8 plants from genotype <em>S</em> are on table 1 while the remaining 4 are on table 2.</p>
+
+<p><img src="../img/02-xp-design-2.png" height="400px" alt="completely randomized design" /></p>
+
+<blockquote class="challenge">
+  <h2 id="question-3">Question</h2>
+  <p>Can you identify one major issue with this design?</p>
+  <blockquote class="solution">
+    <h2 id="solution-6">Solution</h2>
+    <p>The major issue with this design is that we might end up with an unbalanced number of genotypes from the <em>S</em> or <em>R</em> class on each table. It would be preferable to have the same number on each genotype.<br />
+The fact that the infection will also happen for plants located on “half tables”, a yet unidentified source of variation might not be taken into account.</p>
+  </blockquote>
+</blockquote>
+
+<h2 id="23-design-number-3-completely-randomized-block-design">2.3 Design number 3: completely randomized block design</h2>
+
+<p>In this design, each table will accomodate a complete experimental setup. This means that each table will exhibit:</p>
+<ul>
+  <li>Plant genotypes <em>S</em> and <em>R</em> in equal numbers.</li>
+  <li>Infection or mock (water) conditions in equal numbers. 
+Both plant genotypes and treatment positions will also be randomized on each table.</li>
+</ul>
+
+<p><img src="../img/02-xp-design-3.png" height="400px" alt="randomized block design" /></p>
+
+<p>So why is this a better design? It is a better design since, for each measurement, you would record the genotype of your plant, the infection treatment and the table on which your plant was located. In this way, you can <em>separate</em> and estimate the <em>undesirable</em> effect of the temperature (table) on your measurement.</p>
+
+<h3 id="231-scary-formulas">2.3.1 Scary formulas</h3>
+
+<p><strong>Design number 2 (complete randomized block design)</strong><br />
+Fitting a multiple linear regression for the design number 2, your end-formula would look like this:</p>
+
+<script type="math/tex; mode=display">Y = \beta_{0} + \beta_{1}.X_{1} + \beta_{2}.X_{2} + \beta_{3}.X_{3} + \epsilon_{1}</script>
+
+<p>With:</p>
+<ul>
+  <li><script type="math/tex">Y</script> is your “response variable” or end-measurement. Here it is the quantity of the pathogen (CFU.g<sup>-1</sup>) in the plant tissue) after a week.</li>
+  <li><script type="math/tex">\beta_{0}</script> the intercept of your model (value of Y when <script type="math/tex">X_{1} = 0</script> and <script type="math/tex">X_{2} = 0</script>). Here it should correspond to plants of the <em>S</em> genotype that are mock inoculated. Then Y should be equal to 0 and so our <script type="math/tex">\beta_{0}</script> should be equal to zero.</li>
+  <li><script type="math/tex">\beta_{1}</script> the coefficient for the genotype effect (one coefficient for <em>R</em> and one for <em>S</em>)</li>
+  <li><script type="math/tex">\beta_{2}</script> the coefficient for the treatment effect (one coefficient for <em>mock</em> and one for <em>inoculated with D. malatesta</em>).</li>
+  <li><script type="math/tex">\beta_{3}</script> is an interaction term between the genotype and the infection factors.</li>
+  <li><script type="math/tex">\epsilon_{1}</script> is the residual error that your model fail to explain.</li>
+</ul>
+
+<p><strong>Design number 3 (complete randomized block design)</strong></p>
+
+<script type="math/tex; mode=display">Y = \beta_{0} + \beta_{1}.X_{1} + \beta_{2}.X_{2} + \beta_{3}.X_{3} + \beta_{4}.X_{4} + \epsilon_{2}</script>
+
+<p>The different coefficients have the same meaning as for design 2. In addition:</p>
+<ul>
+  <li><strong><script type="math/tex">\beta_{4}</script> is the coefficient for the table (possible temperature) effect.</strong></li>
+  <li><script type="math/tex">\epsilon_{2}</script> is the residual error.</li>
+</ul>
+
+<p>And with <script type="math/tex">\epsilon_{1}</script> &gt; <script type="math/tex">\epsilon_{2}</script></p>
+
+<h3 id="232-conclusion">2.3.2 Conclusion</h3>
+<p>If you record and control both <em>desirable</em> and <em>undesirable</em> source of variation, you are then able to include them into your statistical model and account for them. This in turns allow you to “sort the wheat from the chaff” and separate <em>undesirable</em> (e.g. temperature) sources of variation from <em>desirable</em> sources (e.g. treatments, genotypes, etc.)</p>
+
+<h2 id="24-other-examples-of-suboptimal-design">2.4 Other examples of suboptimal design</h2>
+
+<h3 id="241-sex-confounded-with-treatment">2.4.1 Sex confounded with treatment</h3>
+
+<p>A confounded RNA-Seq experiment is one where you <strong>cannot distinguish the separate effects of two different sources of variation</strong> in the data.</p>
+
+<p>For example, we know that sex has large effects on gene expression, and if all of our <em>control</em> mice were female and all of the <em>treatment</em> mice were male, then our treatment effect would be confounded by sex. <strong>We could not differentiate the effect of treatment from the effect of sex.</strong></p>
+
+<p><img src="../img/confounded_design.png" width="500" /></p>
+
+<p><strong>To AVOID confounding:</strong></p>
+
+<ul>
+  <li>
+    <p>Ensure animals in each condition are all the <strong>same sex, age, litter, and batch</strong>, if possible.</p>
+  </li>
+  <li>
+    <p>If not possible, then ensure to split the animals equally between conditions</p>
+
+    <p><img src="../img/non_confounded_design.png" width="400" /></p>
+  </li>
+</ul>
+
+<h3 id="242-rna-isolation-batch-effects">2.4.2 RNA isolation batch effects</h3>
+
+<p>Batch effects are a significant issue for RNA-Seq analyses, since you can see significant differences in expression due solely to the batch effect.</p>
+
+<p><img src="../img/batch_effect_pca.png" width="600" /></p>
+
+<p><em>Image credit: <a href="https://www.biorxiv.org/content/early/2015/08/25/025528">Hicks SC, et al., bioRxiv (2015)</a></em></p>
+
+<p>To explore the issues generated by poor batch study design, they are highlighted nicely in <a href="https://f1000research.com/articles/4-121/v1">this paper</a>.</p>
+
+<p><strong>How to know whether you have batches?</strong></p>
+
+<ul>
+  <li>
+    <p>Were all RNA isolations performed on the same day?</p>
+  </li>
+  <li>
+    <p>Were all library preparations performed on the same day?</p>
+  </li>
+  <li>
+    <p>Did the same person perform the RNA isolation/library preparation for all samples?</p>
+  </li>
+  <li>
+    <p>Did you use the same reagents for all samples?</p>
+  </li>
+  <li>
+    <p>Did you perform the RNA isolation/library preparation in the same location?</p>
+  </li>
+</ul>
+
+<p>If <em>any</em> of the answers is <strong>‘No’</strong>, then you have batches.</p>
+
+<p><strong>Best practices regarding batches:</strong></p>
+
+<ul>
+  <li>
+    <p>Design the experiment in a way to <strong>avoid batches</strong>, if possible.</p>
+  </li>
+  <li>
+    <p>If unable to avoid batches:</p>
+
+    <ul>
+      <li>
+        <p><strong>Do NOT confound</strong> your experiment by batch:</p>
+
+        <p><img src="../img/confounded_batch.png" width="300" /></p>
+
+        <p><em>Image credit: <a href="https://www.biorxiv.org/content/early/2015/08/25/025528">Hicks SC, et al., bioRxiv (2015)</a></em></p>
+      </li>
+      <li>
+        <p><strong>DO</strong> split replicates of the different sample groups across batches. The more replicates the better (definitely more than 2).</p>
+
+        <p><img src="../img/batch_effect.png" width="300" /></p>
+
+        <p><em>Image credit: <a href="https://www.biorxiv.org/content/early/2015/08/25/025528">Hicks SC, et al., bioRxiv (2015)</a></em></p>
+      </li>
+      <li>
+        <p><strong>DO</strong> include batch information in your <strong>experimental metadata</strong>. During the analysis, we can regress out the variation due to batch if not confounded so it doesn’t affect our results if we have that information.</p>
+
+        <p><img src="../img/metadata_batch.png" width="300" /></p>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<blockquote>
+  <p><strong>NOTE:</strong> <em>The sample preparation of cell line “biological” replicates “should be performed as independently as possible” (as batches), “meaning that cell culture media should be prepared freshly for each experiment, different frozen cell stocks and growth factor batches, etc. should be used [<a href="http://paasp.net/accurate-design-of-in-vitro-experiments-why-does-it-matter/">2</a>].” However, preparation across all conditions should be performed at the same time.</em></p>
+</blockquote>
+
+<h2 id="25-the-three-principles-of-a-good-experimental-design">2.5 The three principles of a good experimental design</h2>
+
+<ol>
+  <li><strong>Randomization</strong>: when you assign treatments to experimental units (e.g. a single plant). This should remove undesired and sometimes unknown bias coming from an unidentified source of variation (e.g. different temperatures in the same greehouse).</li>
+  <li><strong>Replication</strong>: by repeating the same minimal experiment more than once, you can estimate the error due to the experimenter manipulation, increase the precision by which you estimate the variable of interest and therefore better estimate your treatment effect.</li>
+  <li><strong>Blocking</strong> can help to reduce variability unexplained in one’s model. If your group consist of male and female individual, there is a chance that they will not respond in the same way to a given treatment. Therefore, “sex” should be a blocking factor in this case. In our case study, “table” was a blocking factor necessary to account for variability in temperature.</li>
+</ol>
+
+<blockquote class="callout">
+  <h2 id="a-useful-quote-source-wikipedia">A useful quote (source <a href="https://en.wikipedia.org/wiki/Blocking_(statistics)#Block_a_few_of_the_most_important_nuisance_factors">Wikipedia</a>)</h2>
+  <p>“Block what you can; randomize what you cannot.”</p>
+</blockquote>
+
+<p><br /></p>
+
+<h1 id="3-other-points-relevant-to-rna-seq">3. Other points relevant to RNA-seq</h1>
+
+<h2 id="31-sequencing-depth">3.1 Sequencing depth</h2>
+<p>Often, one will ask “how many reads per sample do I need?”. As we have seen earlier in this episode, the most important aspect is to maximise the number of biological replicates (<a href="#17-power-analysis-for-rna-seq">see the related section “Power analysis for RNA-seq</a>.</p>
+
+<p>In a study on the impact of sequencing depth on the number of genes detected, <a href="https://doi.org/10.1016/j.gene.2014.12.013">Lei et al. (2014)</a> have shown the increasing sequencing depth (number of reads) does not greatly improve 
+the number of detected genes. This has to do that highly expressed genes are easily detected and quantified with the first million of reads (rapid increase of the detection curve) and that subsequent increase in read number will go to low expressed genes. For instancem half of the transcriptome can be detected with as few as 5 million reads. Therefore, for most species and Arabidopsis in particular, a number around 15M single reads should be enough.</p>
+
+<p><img src="../img/02-genes-detected-nb-reads.png" height="600px" alt="Number of genes detected as a function of the number of reads" /></p>
+
+<h2 id="32-pooling-of-samples">3.2 Pooling of samples</h2>
+
+<p>Yes if absolutely necessary. For instance, you are collecting roots from very young seedlings and you won’t have enough material to isolate RNA.</p>
+
+<p>:warning: One reason not to pool is that you cannot identify potential outliers. Think about one seedling that would be stressed (for some unknown reason) and that might be mixed with several unstressed seedlings. This would potentially affect the level of stress-related genes in your pooled sample. Unfortunately, you would not be able to spot this outlier seedling and isolate it <em>in silico</em>.</p>
+
+<blockquote>
+  <p><strong>Sample pooling:</strong> Try to avoid pooling of individuals/experiments, if possible; however, if absolutely necessary, then each pooled set of samples would count as a <strong>single replicate</strong>. To ensure similar amounts of variation between replicates, you would want to pool the <strong>same number of individuals</strong> for each pooled set of samples.</p>
+
+  <p><em>For example, if you need at least 3 individuals to get enough material for your <code class="highlighter-rouge">control</code> replicate and at least 5 individuals to get enough material for your <code class="highlighter-rouge">treatment</code> replicate, you would pool 5 individuals for the <code class="highlighter-rouge">control</code> and 5 individuals for the <code class="highlighter-rouge">treatment</code> conditions. You would also make sure that the individuals that are pooled in both conditions are similar in sex, age, etc.</em></p>
+</blockquote>
+
+<h1 id="references">References</h1>
+<ul>
+  <li><a href="https://www.rna-seqblog.com/tag/power-analysis/">The power analysis section of the RNA-seq blog</a></li>
+  <li><a href="https://cran.r-project.org/web/packages/pwr/vignettes/pwr-vignette.html"><code class="highlighter-rouge">pwr</code> R package vignette</a></li>
+  <li><a href="http://scotty.genetics.utah.edu/">The Scotty power analysis webtool</a></li>
+  <li><a href="https://stats.idre.ucla.edu/r/dae/power-analysis-for-two-group-independent-sample-t-test/">UCLA Stat consulting on power analysis</a></li>
+  <li><a href="https://doi.org/10.1016/j.gene.2014.12.013">Lei et al. (2015) Diminishing returns in next-generation sequencing (NGS) transcriptome data. <em>Gene</em> 557(1):82-87</a></li>
+</ul>
+
+<h1 id="photo-credits">Photo credits</h1>
+
+<p><a style="background-color:black;color:white;text-decoration:none;padding:4px 6px;font-family:-apple-system, BlinkMacSystemFont, &quot;San Francisco&quot;, &quot;Helvetica Neue&quot;, Helvetica, Ubuntu, Roboto, Noto, &quot;Segoe UI&quot;, Arial, sans-serif;font-size:12px;font-weight:bold;line-height:1.2;display:inline-block;border-radius:3px" href="https://unsplash.com/@ayahya09?utm_medium=referral&amp;utm_campaign=photographer-credit&amp;utm_content=creditBadge" target="_blank" rel="noopener noreferrer" title="Download free do whatever you want high-resolution photos from Ali Yahya"><span style="display:inline-block;padding:2px 3px"><svg xmlns="http://www.w3.org/2000/svg" style="height:12px;width:auto;position:relative;vertical-align:middle;top:-2px;fill:white" viewBox="0 0 32 32"><title>unsplash-logo</title><path d="M10 9V0h12v9H10zm12 5h10v18H0V14h10v9h12v-9z"></path></svg></span><span style="display:inline-block;padding:2px 3px">Ali Yahya</span></a></p>
+
+:ET
