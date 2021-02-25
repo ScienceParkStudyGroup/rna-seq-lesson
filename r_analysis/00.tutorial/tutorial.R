@@ -285,7 +285,7 @@ ggsave(filename = "../img/05-bare-score-plot.png")
 infection_plot <- 
   ggplot(scores_with_conditions, 
        aes(PC1, PC2, color = infected)) +
-  geom_point(size = 4) +
+  geom_point(size = 2) +
   xlab(paste0("PC1: ",explained_variance[1],"% variance")) +
   ylab(paste0("PC2: ",explained_variance[2],"% variance")) + 
   coord_fixed(ratio = 1) +
