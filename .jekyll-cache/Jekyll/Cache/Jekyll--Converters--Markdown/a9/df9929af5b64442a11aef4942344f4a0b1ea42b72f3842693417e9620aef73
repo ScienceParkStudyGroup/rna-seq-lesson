@@ -1,0 +1,1196 @@
+I"��<h1 id="table-of-contents">Table of contents</h1>
+<!-- MarkdownTOC autolink="True" levels="1,2" -->
+
+<ul>
+  <li><a href="#1-introduction">1. Introduction</a></li>
+  <li><a href="#2-normalization">2. Normalization</a>
+    <ul>
+      <li><a href="#21-common-normalization-methods">2.1 Common normalization methods</a></li>
+      <li><a href="#22-rpkmfpkm-not-recommended-for-between-sample-comparisons">2.2 RPKM/FPKM (not recommended for between sample comparisons)</a></li>
+      <li><a href="#23-deseq2-normalized-counts-median-of-ratios-method">2.3 DESeq2-normalized counts: Median of ratios method</a></li>
+    </ul>
+  </li>
+  <li><a href="#3-deseq2-count-normalization">3. DESeq2 count normalization</a>
+    <ul>
+      <li><a href="#31-data-import">3.1 Data import</a></li>
+      <li><a href="#32-match-the-experimental-design-and-counts-data">3.2 Match the experimental design and counts data</a></li>
+      <li><a href="#33-create-the-deseqdataset-object">3.3 Create the DESeqDataSet object</a></li>
+      <li><a href="#34-generate-normalized-counts">3.4 Generate normalized counts</a></li>
+      <li><a href="#35-comparison-of-raw-and-normalised-counts">3.5 Comparison of raw and normalised counts</a></li>
+    </ul>
+  </li>
+  <li><a href="#4-sample-clustering">4. Sample clustering</a>
+    <ul>
+      <li><a href="#41-distance-calculation">4.1 Distance calculation</a></li>
+      <li><a href="#42-hierarchical-clustering">4.2 Hierarchical clustering</a></li>
+      <li><a href="#43-heatmap-of-sample-to-sample-correlations">4.3 Heatmap of sample-to-sample correlations</a></li>
+    </ul>
+  </li>
+  <li><a href="#5-principal-component-analysis">5. Principal Component Analysis</a>
+    <ul>
+      <li><a href="#51-step-by-step-introduction-to-pca-video">5.1 Step by step introduction to PCA (video)</a></li>
+      <li><a href="#52-worked-pca-example">5.2 Worked PCA example</a></li>
+      <li><a href="#53-the-iris-data-set">5.3 The Iris data set</a></li>
+    </ul>
+  </li>
+  <li><a href="#6-pca-applied-to-rna-seq-data">6. PCA applied to RNA-seq data</a>
+    <ul>
+      <li><a href="#61-variance-stabilisation">6.1 Variance stabilisation</a></li>
+      <li><a href="#62-rna-seq-scree-plot">6.2 RNA-seq scree plot</a></li>
+      <li><a href="#63-infected-versus-mock-score-plot">6.3 Infected versus mock score plot</a></li>
+      <li><a href="#64-seed-inoculation-score-plot">6.4 Seed inoculation score plot</a></li>
+      <li><a href="#65-time-after-infection-score-plot">6.5 Time after infection score plot</a></li>
+    </ul>
+  </li>
+  <li><a href="#7-bonus-home-made-deseq-normalization-function">7. Bonus: home-made DESeq normalization function</a></li>
+  <li><a href="#8-references">8. References</a>
+    <ul>
+      <li><a href="#useful-links">Useful links</a></li>
+      <li><a href="#photo-credits">Photo credits</a></li>
+    </ul>
+  </li>
+</ul>
+
+<!-- /MarkdownTOC -->
+
+<p><img src="../img/05-workflow-overview.png" width="500px" /></p>
+
+<h1 id="1-introduction">1. Introduction</h1>
+<p>The ultimate goal of most RNA-seq experiments is to accurately quantify the different transcripts present in a biological sample of interest. Yet, due to technical and biological causes, RNA-seq is prone to several biases that can affect sample / condition comparisons and therefore result interpretation.</p>
+
+<h1 id="2-normalization">2. Normalization</h1>
+
+<p>To be able to perform some quality check of our RNA-seq experiment and relate it to the experimental design, we will:</p>
+<ol>
+  <li>Normalize (scale) the gene counts obtained upon completion of the bioinformatic workflow.</li>
+  <li>Perform some 
+, which is necessary to make accurate comparisons of gene expression between samples.</li>
+</ol>
+
+<p>The counts of mapped reads for each gene is proportional to the expression of RNA (“interesting”) in addition to many other factors (“uninteresting”). Normalization is the process of scaling raw count values to account for the “uninteresting” factors. In this way the expression levels are more comparable between and/or within samples.</p>
+
+<p>The main factors often considered during normalization are:</p>
+
+<ul>
+  <li>
+    <p><strong>Sequencing depth:</strong> Accounting for sequencing depth is necessary for comparison of gene expression between samples. In the example below, each gene appears to have doubled in expression in <em>Sample A</em> relative to <em>Sample B</em>, however this is a consequence of <em>Sample A</em> having double the sequencing depth.</p>
+
+    <p><img src="../img/normalization_methods_depth.png" width="400" /></p>
+  </li>
+</ul>
+
+<blockquote>
+  <p><em><strong>NOTE:</strong> In the figure above, each pink and green rectangle represents a read aligned to a gene. Reads connected by dashed lines connect a read spanning an intron.</em></p>
+</blockquote>
+
+<ul>
+  <li>
+    <p><strong>Gene length:</strong> Accounting for gene length is necessary for comparing expression between different genes within the same sample. In the example, <em>Gene X</em> and <em>Gene Y</em> have similar levels of expression, but the number of reads mapped to <em>Gene X</em> would be many more than the number mapped to <em>Gene Y</em> because <em>Gene X</em> is longer.</p>
+
+    <p><img src="../img/normalization_methods_length.png" width="200" /></p>
+  </li>
+  <li>
+    <p><strong>RNA composition:</strong> A few highly differentially expressed genes between samples, differences in the number of genes expressed between samples, or presence of contamination can skew some types of normalization methods. Accounting for RNA composition is recommended for accurate comparison of expression between samples, and is particularly important when performing differential expression analyses [<a href="https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-10-r106">1</a>].</p>
+  </li>
+</ul>
+
+<p>In the example, imagine the sequencing depths are similar between Sample A and Sample B, and every gene except for gene DE presents similar expression level between samples. The counts in Sample B would be greatly skewed by the DE gene, which takes up most of the counts. Other genes for Sample B would therefore appear to be less expressed than those same genes in Sample A.</p>
+
+<p><img src="../img/normalization_methods_composition.png" width="400" /></p>
+
+<p><strong><em>While normalization is essential for differential expression analyses, it is also necessary for exploratory data analysis, visualization of data, and whenever you are exploring or comparing counts between or within samples.</em></strong></p>
+
+<h2 id="21-common-normalization-methods">2.1 Common normalization methods</h2>
+
+<p>Several common normalization methods exist to account for these differences:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Normalization method</th>
+      <th>Description</th>
+      <th>Accounted factors</th>
+      <th>Recommendations for use</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>CPM</strong> (counts per million)</td>
+      <td>counts scaled by total number of reads</td>
+      <td>sequencing depth</td>
+      <td>gene count comparisons between replicates of the same samplegroup; <strong>NOT for within sample comparisons or DE analysis</strong></td>
+    </tr>
+    <tr>
+      <td><strong>TPM</strong> (transcripts per kilobase million)</td>
+      <td>counts per length of transcript (kb) per million reads mapped</td>
+      <td>sequencing depth and gene length</td>
+      <td>gene count comparisons within a sample or between samples of the same sample group; <strong>NOT for DE analysis</strong></td>
+    </tr>
+    <tr>
+      <td><strong>RPKM/FPKM</strong> (reads/fragments per kilobase of exon per million reads/fragments mapped)</td>
+      <td>similar to TPM</td>
+      <td>sequencing depth and gene length</td>
+      <td>gene count comparisons between genes within a sample; <strong>NOT for between sample comparisons or DE analysis</strong></td>
+    </tr>
+    <tr>
+      <td>DESeq2’s <strong>median of ratios</strong> [<a href="https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-10-r106">1</a>]</td>
+      <td>counts divided by sample-specific size factors determined by median ratio of gene counts relative to geometric mean per gene</td>
+      <td>sequencing depth and RNA composition</td>
+      <td>gene count comparisons between samples and for <strong>DE analysis</strong>; <strong>NOT for within sample comparisons</strong></td>
+    </tr>
+    <tr>
+      <td>EdgeR’s <strong>trimmed mean of M values (TMM)</strong> [<a href="https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-3-r25">2</a>]</td>
+      <td>uses a weighted trimmed mean of the log expression ratios between samples</td>
+      <td>sequencing depth, RNA composition, and gene length</td>
+      <td>gene count comparisons between and within samples and for <strong>DE analysis</strong></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="22-rpkmfpkm-not-recommended-for-between-sample-comparisons">2.2 RPKM/FPKM (not recommended for between sample comparisons)</h2>
+
+<p>While TPM and RPKM/FPKM normalization methods both account for sequencing depth and gene length, RPKM/FPKM are not recommended. <strong>The reason  is that the normalized count values output by the RPKM/FPKM method are not comparable between samples.</strong></p>
+
+<p>Using RPKM/FPKM normalization, the total number of RPKM/FPKM normalized counts for each sample will be different. Therefore, you cannot compare the normalized counts for each gene equally between samples.</p>
+
+<p><strong>RPKM-normalized counts table</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>gene</th>
+      <th style="text-align: left">sample_A</th>
+      <th style="text-align: center">sample_B</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>gene_1</td>
+      <td style="text-align: left">5.5</td>
+      <td style="text-align: center">5.5</td>
+    </tr>
+    <tr>
+      <td>gene_2</td>
+      <td style="text-align: left">73.4</td>
+      <td style="text-align: center">21.8</td>
+    </tr>
+    <tr>
+      <td>…</td>
+      <td style="text-align: left">…</td>
+      <td style="text-align: center">…</td>
+    </tr>
+    <tr>
+      <td>Total RPKM-normalized counts</td>
+      <td style="text-align: left">1,000,000</td>
+      <td style="text-align: center">1,500,000</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>For example, in the table above, Sample_A has a greater proportion of counts associated with gene_1  (5.5/1,000,000) than does sample_B (5.5/1,500,000) even though the RPKM count values are the same. Therefore, we cannot directly compare the counts for gene_1 (or any other gene) between sample_A and sample_B because the total number of normalized counts are different between samples.</p>
+
+<blockquote>
+  <p><em>NOTE:</em> <a href="http://www.rna-seqblog.com/rpkm-fpkm-and-tpm-clearly-explained/">This video by StatQuest</a> shows in more detail why TPM should be used in place of RPKM/FPKM if needing to normalize for sequencing depth and gene length.</p>
+</blockquote>
+
+<h2 id="23-deseq2-normalized-counts-median-of-ratios-method">2.3 DESeq2-normalized counts: Median of ratios method</h2>
+
+<p>Since tools for differential expression analysis are comparing the counts between sample groups for the same gene, gene length does not need to be accounted for by the tool. However, <strong>sequencing depth</strong> and <strong>RNA composition</strong> do need to be taken into account.</p>
+
+<p>To normalize for sequencing depth and RNA composition, DESeq2 uses the median of ratios method. On the user-end there is only one step, but on the back-end there are multiple steps involved, as described below.</p>
+
+<blockquote>
+  <p><strong>NOTE:</strong>  The steps below describe in detail some of the steps performed by DESeq2 when you run a single function to get DE genes. Basically, for a typical RNA-seq analysis, <strong>you would not run these steps individually</strong> but rather make use of the <code class="highlighter-rouge">results()</code> function of <code class="highlighter-rouge">DESeq2</code>.</p>
+</blockquote>
+
+<p><strong>Step 1: creates a pseudo-reference sample (row-wise geometric mean)</strong></p>
+
+<p>For each gene, a pseudo-reference sample is created that is equal to the geometric mean across all samples.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>gene</th>
+      <th style="text-align: center">sample_A</th>
+      <th style="text-align: center">sample_B</th>
+      <th style="text-align: center">pseudo-reference sample</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>gene_1</td>
+      <td style="text-align: center">1489</td>
+      <td style="text-align: center">906</td>
+      <td style="text-align: center">sqrt(1489 * 906) = <strong>1161.5</strong></td>
+    </tr>
+    <tr>
+      <td>gene_2</td>
+      <td style="text-align: center">22</td>
+      <td style="text-align: center">13</td>
+      <td style="text-align: center">sqrt(22 * 13) = <strong>17.7</strong></td>
+    </tr>
+    <tr>
+      <td>…</td>
+      <td style="text-align: center">…</td>
+      <td style="text-align: center">…</td>
+      <td style="text-align: center">…</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><strong>Step 2: calculates ratio of each sample to the reference</strong></p>
+
+<p>For every gene in a sample, the ratios (sample/ref) are calculated (as shown below). This is performed for each sample in the dataset. Since the majority of genes are not differentially expressed, the majority of genes in each sample should have similar ratios within the sample.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>gene</th>
+      <th style="text-align: center">sample_A</th>
+      <th style="text-align: center">sample_B</th>
+      <th style="text-align: center">pseudo-reference sample</th>
+      <th style="text-align: center">ratio of sample_A/ref</th>
+      <th style="text-align: center">ratio of sample_B/ref</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>gene_1</td>
+      <td style="text-align: center">1489</td>
+      <td style="text-align: center">906</td>
+      <td style="text-align: center">1161.5</td>
+      <td style="text-align: center">1489/1161.5 = <strong>1.28</strong></td>
+      <td style="text-align: center">906/1161.5 = <strong>0.78</strong></td>
+    </tr>
+    <tr>
+      <td>gene_2</td>
+      <td style="text-align: center">22</td>
+      <td style="text-align: center">13</td>
+      <td style="text-align: center">16.9</td>
+      <td style="text-align: center">22/16.9 = <strong>1.30</strong></td>
+      <td style="text-align: center">13/16.9 = <strong>0.77</strong></td>
+    </tr>
+    <tr>
+      <td>gene_3</td>
+      <td style="text-align: center">793</td>
+      <td style="text-align: center">410</td>
+      <td style="text-align: center">570.2</td>
+      <td style="text-align: center">793/570.2 = <strong>1.39</strong></td>
+      <td style="text-align: center">410/570.2 = <strong>0.72</strong></td>
+    </tr>
+    <tr>
+      <td>gene_4</td>
+      <td style="text-align: center">76</td>
+      <td style="text-align: center">42</td>
+      <td style="text-align: center">56.5</td>
+      <td style="text-align: center">76/56.5 = <strong>1.35</strong></td>
+      <td style="text-align: center">42/56.5 = <strong>0.74</strong></td>
+    </tr>
+    <tr>
+      <td>gene_5</td>
+      <td style="text-align: center">521</td>
+      <td style="text-align: center">1196</td>
+      <td style="text-align: center">883.7</td>
+      <td style="text-align: center">521/883.7 = <strong>0.590</strong></td>
+      <td style="text-align: center">1196/883.7 = <strong>1.35</strong></td>
+    </tr>
+    <tr>
+      <td>…</td>
+      <td style="text-align: center">…</td>
+      <td style="text-align: center">…</td>
+      <td style="text-align: center">…</td>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center"> </td>
+    </tr>
+  </tbody>
+</table>
+
+<p><strong>Step 3: calculate the normalization factor for each sample (size factor)</strong></p>
+
+<p>The median value (column-wise for the above table) of all ratios for a given sample is taken as the normalization factor (size factor) for that sample, as calculated below. Notice that the differentially expressed genes should not affect the median value:</p>
+
+<p><code class="highlighter-rouge">normalization_factor_sample_A &lt;- median(c(1.28, 1.3, 1.39, 1.35, 0.59))</code></p>
+
+<p><code class="highlighter-rouge">normalization_factor_sample_B &lt;- median(c(0.78, 0.77, 0.72, 0.74, 1.35))</code></p>
+
+<p>The figure below illustrates the median value for the distribution of all gene ratios for a single sample (frequency is on the y-axis).</p>
+
+<p><img src="../img/deseq_median_of_ratios.png" width="400" /></p>
+
+<p>The median of ratios method makes the assumption that not ALL genes are differentially expressed; therefore, the normalization factors should account for sequencing depth and RNA composition of the sample (large outlier genes will not represent the median ratio values). <strong>This method is robust to imbalance in up-/down-regulation and large numbers of differentially expressed genes.</strong></p>
+
+<blockquote>
+  <p>Usually these size factors are around 1, if you see large variations between samples it is important to take note since it might indicate the presence of extreme outliers.</p>
+</blockquote>
+
+<p><strong>Step 4: calculate the normalized count values using the normalization factor</strong></p>
+
+<p>This is performed by dividing each raw count value in a given sample by that sample’s normalization factor to generate normalized count values. This is performed for all count values (every gene in every sample). For example, if the median ratio for sample_A was 1.3 and the median ratio for sample_B was 0.77, you could calculate normalized counts as follows:</p>
+
+<p>sample_A median ratio = 1.3</p>
+
+<p>sample_B median ratio = 0.77</p>
+
+<p><strong>Raw Counts</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>gene</th>
+      <th style="text-align: center">sample_A</th>
+      <th style="text-align: center">sample_B</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>gene_1</td>
+      <td style="text-align: center">1489</td>
+      <td style="text-align: center">906</td>
+    </tr>
+    <tr>
+      <td>gene_2</td>
+      <td style="text-align: center">22</td>
+      <td style="text-align: center">13</td>
+    </tr>
+    <tr>
+      <td>…</td>
+      <td style="text-align: center">…</td>
+      <td style="text-align: center">…</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><strong>Normalized Counts</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>gene</th>
+      <th style="text-align: center">sample_A</th>
+      <th style="text-align: center">sample_B</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>gene_1</td>
+      <td style="text-align: center">1489 / 1.3 = <strong>1145.39</strong></td>
+      <td style="text-align: center">906 / 0.77 = <strong>1176.62</strong></td>
+    </tr>
+    <tr>
+      <td>gene_2</td>
+      <td style="text-align: center">22 / 1.3 = <strong>16.92</strong></td>
+      <td style="text-align: center">13 / 0.77 = <strong>16.88</strong></td>
+    </tr>
+    <tr>
+      <td>…</td>
+      <td style="text-align: center">…</td>
+      <td style="text-align: center">…</td>
+    </tr>
+  </tbody>
+</table>
+
+<blockquote class="callout">
+  <h2 id="important-note">Important note</h2>
+  <p>Please note that normalized count values are not integers anymore but rather decimal numbers. This is a good way to rapidly check whether you are dealing with normalised/scaled data and not raw gene counts.</p>
+</blockquote>
+
+<hr />
+
+<h1 id="3-deseq2-count-normalization">3. DESeq2 count normalization</h1>
+
+<h2 id="31-data-import">3.1 Data import</h2>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Data import </span><span class="w">
+</span><span class="n">counts</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">read.delim</span><span class="p">(</span><span class="s2">"counts.txt"</span><span class="p">,</span><span class="w"> </span><span class="n">header</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">T</span><span class="p">,</span><span class="w"> </span><span class="n">stringsAsFactors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">F</span><span class="p">)</span><span class="w">
+</span><span class="n">genes</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">counts</span><span class="p">[,</span><span class="m">1</span><span class="p">]</span><span class="w">
+</span><span class="n">counts</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">counts</span><span class="p">[,</span><span class="m">-1</span><span class="p">]</span><span class="w">
+</span><span class="n">row.names</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">genes</span><span class="w">
+</span><span class="n">xp_design</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">read.delim</span><span class="p">(</span><span class="s2">"experimental_design_modified.txt"</span><span class="p">,</span><span class="w"> </span><span class="n">header</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">T</span><span class="p">,</span><span class="w"> </span><span class="n">stringsAsFactors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">F</span><span class="p">,</span><span class="w"> </span><span class="n">colClasses</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">rep</span><span class="p">(</span><span class="s2">"character"</span><span class="p">,</span><span class="m">4</span><span class="p">))</span><span class="w">
+
+</span><span class="c1"># change col names</span><span class="w">
+</span><span class="n">colnames</span><span class="p">(</span><span class="n">xp_design</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s2">"sample"</span><span class="p">,</span><span class="w"> </span><span class="s2">"seed"</span><span class="p">,</span><span class="w"> </span><span class="s2">"infected"</span><span class="p">,</span><span class="w"> </span><span class="s2">"dpi"</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># reorder counts columns according to the experimental design file</span><span class="w">
+</span><span class="n">counts</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">counts</span><span class="p">[,</span><span class="w"> </span><span class="n">xp_design</span><span class="o">$</span><span class="n">sample</span><span class="p">]</span><span class="w">
+</span></code></pre></div></div>
+
+<p>This is how the first five rows/columns of the <code class="highlighter-rouge">counts</code> dataframe look like:</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">counts</span><span class="p">[</span><span class="m">1</span><span class="o">:</span><span class="m">5</span><span class="p">,</span><span class="m">1</span><span class="o">:</span><span class="m">5</span><span class="p">]</span><span class="w">
+</span></code></pre></div></div>
+
+<p>You can see that numbers in the matrix are not decimal numbers but rather integers.</p>
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>          ERR1406259 ERR1406271 ERR1406282 ERR1406294 ERR1406305
+AT1G01010         59         79         61         71        123
+AT1G01020        365        365        441        534        648
+AT1G03987          8         14         14          4         20
+AT1G01030        111        189        124        161        220
+AT1G03993        131        155        183        236        250
+</code></pre></div></div>
+
+<p>Now that we know the theory of count normalization, we will normalize the counts using <code class="highlighter-rouge">DESeq2</code>. This requires a few steps:</p>
+
+<ol>
+  <li>Ensure the row names of the experimental design dataframe are present and in the same order as the column names of the counts dataframe.</li>
+  <li>Create a <code class="highlighter-rouge">DESeqDataSet</code> object.</li>
+  <li>Generate the normalized counts.</li>
+</ol>
+
+<h2 id="32-match-the-experimental-design-and-counts-data">3.2 Match the experimental design and counts data</h2>
+
+<p>We should always make sure that we have sample names that match between the two files, and that the samples are in the right order. DESeq2 will output an error if this is not the case.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">## Check that sample names match in both files</span><span class="w">
+</span><span class="nf">all</span><span class="p">(</span><span class="n">colnames</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span><span class="w"> </span><span class="o">%in%</span><span class="w"> </span><span class="n">xp_design</span><span class="o">$</span><span class="n">sample</span><span class="p">)</span><span class="w">
+</span><span class="nf">all</span><span class="p">(</span><span class="n">colnames</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">xp_design</span><span class="o">$</span><span class="n">sample</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p>If your data did not match, you could use the <code class="highlighter-rouge">match()</code> function to rearrange them to be matching.</p>
+
+<h2 id="33-create-the-deseqdataset-object">3.3 Create the DESeqDataSet object</h2>
+
+<p>Bioconductor software packages often define and use a custom class within R for storing data (input data, intermediate data and also results). These custom data structures are similar to <code class="highlighter-rouge">lists</code> in that they can contain multiple different data types/structures within them. But, unlike lists they have pre-specified <code class="highlighter-rouge">data slots</code>, which hold specific types/classes of data. The data stored in these pre-specified slots can be accessed by using specific package-defined functions.</p>
+
+<p>Let’s start by creating the <code class="highlighter-rouge">DESeqDataSet</code> object and then we can talk a bit more about what is stored inside it. To create the object we will need the <strong>count matrix</strong> and the <strong>experimental design</strong> table as inputs. We will also need to specify a <strong>design formula</strong>. The design formula specifies the column(s) in the experimental design table and how they should be used in the analysis. For this tutorial, we only have one column of interest, that is <code class="highlighter-rouge">~ infected</code>. This column has two factor levels i.e. <code class="highlighter-rouge">mock</code> (not inoculated) and <code class="highlighter-rouge">Pseudomonas syringae_ DC3000</code> (inoculated). This column tells DESeq2 that for each gene we want to evaluate gene expression change with respect to these two different factor levels.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">suppressPackageStartupMessages</span><span class="p">(</span><span class="n">library</span><span class="p">(</span><span class="n">DESeq2</span><span class="p">))</span><span class="w"> </span><span class="c1"># to load DESeq2 and suppress the long startup message</span><span class="w">
+
+</span><span class="c1"># Creation of the DESeqDataSet object</span><span class="w">
+</span><span class="n">dds</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">DESeqDataSetFromMatrix</span><span class="p">(</span><span class="n">countData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">counts</span><span class="p">,</span><span class="w"> 
+                              </span><span class="n">colData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xp_design</span><span class="p">,</span><span class="w"> 
+                              </span><span class="n">design</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">~</span><span class="w"> </span><span class="m">1</span><span class="p">)</span><span class="w"> </span><span class="c1"># the model does not matter here </span><span class="w">
+</span></code></pre></div></div>
+
+<p>We now have a <code class="highlighter-rouge">DESeqDataSet</code> object that contains both count data and experimental metadata that is the relationship between samples and their combination of experimental factors.</p>
+
+<p>You can inspect this object by typing its name in your R console.</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">dds</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>class: DESeqDataSet 
+dim: 33768 48 
+metadata(1): version
+assays(1): counts
+rownames(33768): AT1G01010 AT1G01020 ... ATMG01400 ATMG01410
+rowData names(0):
+colnames(48): ERR1406259 ERR1406271 ... ERR1406285 ERR1406286
+colData names(4): sample seed infected dpi
+</code></pre></div></div>
+
+<h2 id="34-generate-normalized-counts">3.4 Generate normalized counts</h2>
+
+<p>The next step is to normalize the count data in order to be able to make fair gene comparisons between samples.</p>
+
+<p>To perform the <strong>median of ratios method</strong> of normalization, DESeq2 has a single <code class="highlighter-rouge">estimateSizeFactors()</code> function that will generate size factors for us. We will use the function in the example below, but <strong>in a typical RNA-seq analysis this step is automatically performed by the <code class="highlighter-rouge">DESeq()</code> function</strong>, which we will see later.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">dds</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">estimateSizeFactors</span><span class="p">(</span><span class="n">dds</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p>By assigning the results back to the <code class="highlighter-rouge">dds</code> object we are filling in the slots of the <code class="highlighter-rouge">DESeqDataSet</code> object with the appropriate information. We can take a look at the normalization factor applied to each sample using:</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">sizeFactors</span><span class="p">(</span><span class="n">dds</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p>We can plot these size factors to see how much they differ between samples.</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">library</span><span class="p">(</span><span class="n">tidyverse</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># create a dplyr tibble</span><span class="w">
+</span><span class="n">size_factors_df</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">tibble</span><span class="p">(</span><span class="w">
+  </span><span class="n">sample</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">names</span><span class="p">(</span><span class="n">sizeFactors</span><span class="p">(</span><span class="n">dds</span><span class="p">)),</span><span class="w"> 
+  </span><span class="n">correction_factor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sizeFactors</span><span class="p">(</span><span class="n">dds</span><span class="p">)</span><span class="w">
+  </span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># line plot to connect the different size factor values</span><span class="w">
+</span><span class="n">p</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">ggplot</span><span class="p">(</span><span class="n">size_factors_df</span><span class="p">,</span><span class="w"> </span><span class="n">aes</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sample</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">correction_factor</span><span class="p">,</span><span class="w"> </span><span class="n">group</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">geom_point</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> 
+  </span><span class="n">geom_line</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">theme</span><span class="p">(</span><span class="n">axis.text.x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">element_text</span><span class="p">(</span><span class="n">angle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">90</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">5</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">scale_y_continuous</span><span class="p">(</span><span class="n">limits</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="m">0.5</span><span class="p">,</span><span class="m">2</span><span class="p">))</span><span class="w">
+
+</span><span class="c1"># to display the plot</span><span class="w">
+</span><span class="n">p</span><span class="w">
+</span></code></pre></div></div>
+
+<p>This plot indicates that size factors are all between ~0.70 and ~1.8 so relatively close to each other.</p>
+
+<p><img src="../img/05-size-factors.png" width="600px" alt="size factor plots" /></p>
+
+<p>You can use DESeq-specific functions to access the different slots and retrieve information, if you wish. For example, suppose we wanted the original count matrix we would use <code class="highlighter-rouge">counts()</code>. For instance, to retrieve the normalized counts matrix from <code class="highlighter-rouge">dds</code>, we use the <code class="highlighter-rouge">counts()</code> function and add the argument <code class="highlighter-rouge">normalized=TRUE</code>.</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># extract the normalised counts</span><span class="w">
+</span><span class="n">counts_normalised</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">counts</span><span class="p">(</span><span class="n">dds</span><span class="p">,</span><span class="w"> </span><span class="n">normalized</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Let’s take a peek at the first five rows and columns.</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">counts_normalised</span><span class="p">[</span><span class="m">1</span><span class="o">:</span><span class="m">5</span><span class="p">,</span><span class="m">1</span><span class="o">:</span><span class="m">5</span><span class="p">]</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>          ERR1406259 ERR1406271 ERR1406282 ERR1406294 ERR1406305
+AT1G01010  72.152831   96.30085   66.47355  61.669649   88.51520
+AT1G01020 446.369208  444.93431  480.57105 463.825247  466.32399
+AT1G03987   9.783435   17.06597   15.25622   3.474346   14.39272
+AT1G01030 135.745156  230.39064  135.12655 139.842443  158.31987
+AT1G03993 160.203743  188.94471  199.42064 204.986439  179.90895
+</code></pre></div></div>
+<p>You now see that integers have become decimal numbers. All good!</p>
+
+<blockquote class="callout">
+  <h2 id="note">Note</h2>
+  <p><code class="highlighter-rouge">DESeq2</code> doesn’t actually use normalized counts to compute differentially expressed genes. Rather, it uses the <strong>raw counts</strong> and models the normalization inside the Generalized Linear Model (GLM). These normalized counts will be useful for downstream visualization of results, but <em>cannot</em> be used as input to the <code class="highlighter-rouge">DESeq()</code> function 
+that performs differential analysis since it relies on the negative binomial model.</p>
+</blockquote>
+
+<h2 id="35-comparison-of-raw-and-normalised-counts">3.5 Comparison of raw and normalised counts</h2>
+
+<p>If you compare the raw and normalised (scaled) gene count distributions, you should see that the medians (black bars) are more comparable after scaling.</p>
+
+<p>Here, only 6 samples out of the 48 samples are shown for clarity.</p>
+
+<p><img src="../img/05-raw-scaled-counts.png" width="600px" alt="Raw versus scaled counts" /></p>
+
+<p>You can see that each sample gene count median (black horizontal bars) is more aligned to the other medians after scaling.</p>
+
+<h1 id="4-sample-clustering">4. Sample clustering</h1>
+
+<p>To assess if samples from the same condition are grouped together, we are going to perform a clustering analysis. It has two main steps:</p>
+<ul>
+  <li>Calculate the distance between samples based on their normalized gene counts.</li>
+  <li>Perform a hierarchical cluster analysis using <code class="highlighter-rouge">hclust</code>.</li>
+  <li>Convert the result to a dendrogram and plot the resulting sample tree.</li>
+</ul>
+
+<h2 id="41-distance-calculation">4.1 Distance calculation</h2>
+<p>The Euclidean distance will be calculated between each sample based on the 
+There are many ways to define a distance between two points.</p>
+
+<p>Simple example first!</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># sample 1 and 2</span><span class="w">
+</span><span class="n">sample_a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="m">2</span><span class="p">,</span><span class="m">3</span><span class="p">)</span><span class="w">
+</span><span class="n">sample_b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="m">2</span><span class="p">,</span><span class="m">3</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># Source: https://stackoverflow.com/questions/5559384/euclidean-distance-of-two-vectors</span><span class="w">
+</span><span class="n">euc.dist</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="k">function</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span><span class="w"> </span><span class="n">x2</span><span class="p">)</span><span class="w"> </span><span class="nf">sqrt</span><span class="p">(</span><span class="nf">sum</span><span class="p">((</span><span class="n">x1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">x2</span><span class="p">)</span><span class="w"> </span><span class="o">^</span><span class="w"> </span><span class="m">2</span><span class="p">))</span><span class="w">
+</span><span class="n">euc.dist</span><span class="p">(</span><span class="n">sample_a</span><span class="p">,</span><span class="w"> </span><span class="n">sample_b</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p>The distance is 0 because the two samples have the same coordinates in their 3-dimensional space (x = 1, y = 1, z = 1).</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">sample_a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="m">2</span><span class="p">,</span><span class="m">6</span><span class="p">)</span><span class="w">
+</span><span class="n">sample_b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="m">2</span><span class="p">,</span><span class="m">3</span><span class="p">)</span><span class="w">
+</span><span class="n">euc.dist</span><span class="p">(</span><span class="n">sample_a</span><span class="p">,</span><span class="w"> </span><span class="n">sample_b</span><span class="p">)</span><span class="w"> </span><span class="c1"># equal to 3</span><span class="w">
+
+</span><span class="c1"># if you do it manually</span><span class="w">
+</span><span class="nf">sqrt</span><span class="p">(</span><span class="nf">sum</span><span class="p">(</span><span class="m">1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="m">1</span><span class="p">)</span><span class="o">^</span><span class="m">2</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nf">sum</span><span class="p">(</span><span class="m">2</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="m">2</span><span class="p">)</span><span class="o">^</span><span class="m">2</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nf">sum</span><span class="p">(</span><span class="m">6</span><span class="w"> </span><span class="m">-3</span><span class="p">)</span><span class="o">^</span><span class="m">2</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p>This should give you the same result.</p>
+
+<p>Now, imagine you’d have to calculate the distance between each sample in a <em>N</em> dimensional space (here N = 33,768 genes). Normally only Neo can see through the Matrix but maybe you do too…</p>
+
+<p><img src="../img/05-neo-matrix.jpg" width="600px" /></p>
+
+<p>Let’s use R instead.</p>
+
+<p>We will work on the complete <code class="highlighter-rouge">counts_normalised</code> matrix as we only have to compute the distance between 48 samples. If you would do this for the ~33000 genes, it would take much much more time and you will have to stop your R session.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># calculate the sample Euclidean distances </span><span class="w">
+</span><span class="n">distances_between_samples</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">dist</span><span class="p">(</span><span class="w">
+	</span><span class="n">t</span><span class="p">(</span><span class="n">counts_normalised</span><span class="p">),</span><span class="w">               </span><span class="c1"># notice the t() for transpose. Otherwise you get the distance between genes</span><span class="w">
+	</span><span class="n">method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"euclidean"</span><span class="p">)</span><span class="w">  
+</span><span class="n">as.matrix</span><span class="p">(</span><span class="n">distances_between_samples</span><span class="p">)[</span><span class="m">1</span><span class="o">:</span><span class="m">5</span><span class="p">,</span><span class="m">1</span><span class="o">:</span><span class="m">5</span><span class="p">]</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>           ERR1406259 ERR1406271 ERR1406282 ERR1406294 ERR1406305
+ERR1406259        0.0   207590.4   167892.5   543575.1   823124.6
+ERR1406271   207590.4        0.0   192718.5   417620.6   677362.6
+ERR1406282   167892.5   192718.5        0.0   413844.6   692401.0
+ERR1406294   543575.1   417620.6   413844.6        0.0   333604.2
+ERR1406305   823124.6   677362.6   692401.0   333604.2        0.0
+</code></pre></div></div>
+
+<blockquote class="challenge">
+  <h2 id="question">Question</h2>
+  <p>How can you check that you have indeed calculated a distance between samples?</p>
+  <blockquote class="solution">
+    <h2 id="solution">Solution</h2>
+    <p>You can notice that the distance between identical a sample and itself (e.g. ERR1406259 and ERR1406259) is equal to 0.</p>
+  </blockquote>
+</blockquote>
+
+<h2 id="42-hierarchical-clustering">4.2 Hierarchical clustering</h2>
+<p>This is the step where you will define your clusters. We will use the distance matrix computed before.</p>
+
+<p>There are different methods to perform clustering and they go way beyond this course but here is a note on the different methods (<a href="https://uc-r.github.io/hc_clustering#algorithms">see the original source</a>).</p>
+
+<blockquote class="callout">
+  <h2 id="methods">Methods</h2>
+  <p><strong>Maximum or complete linkage clustering:</strong> It computes all pairwise dissimilarities between the elements in cluster 1 and the elements in cluster 2, and considers the largest value (i.e., maximum value) of these dissimilarities as the distance between the two clusters. It tends to produce more compact clusters.</p>
+
+  <p><strong>Minimum or single linkage clustering:</strong> It computes all pairwise dissimilarities between the elements in cluster 1 and the elements in cluster 2, and considers the smallest of these dissimilarities as a linkage criterion. It tends to produce long, “loose” clusters.</p>
+
+  <p><strong>Mean or average linkage clustering:</strong> It computes all pairwise dissimilarities between the elements in cluster 1 and the elements in cluster 2, and considers the average of these dissimilarities as the distance between the two clusters.</p>
+
+  <p><strong>Centroid linkage clustering:</strong> It computes the dissimilarity between the centroid for cluster 1 (a mean vector of length p variables) and the centroid for cluster 2.</p>
+
+  <p><strong>Ward’s minimum variance method:</strong> It minimizes the total within-cluster variance. At each step the pair of clusters with minimum between-cluster distance are merged.</p>
+</blockquote>
+
+<p>Here, we are going to use the Ward’s clustering method.</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">clustering_of_samples</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">hclust</span><span class="p">(</span><span class="n">distances_between_samples</span><span class="p">,</span><span class="w"> </span><span class="n">method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"ward.D2"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Finally, let’s plot your results.</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">plot</span><span class="p">(</span><span class="n">clustering_of_samples</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="../img/05-dendro.png" width="600px" /></p>
+
+<h2 id="43-heatmap-of-sample-to-sample-correlations">4.3 Heatmap of sample-to-sample correlations</h2>
+
+<p>We can also build a more pretty figure where</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># to build a sample to </span><span class="w">
+</span><span class="n">xp_design_for_heatmap</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">read.delim</span><span class="p">(</span><span class="s2">"experimental_design_modified.txt"</span><span class="p">,</span><span class="w">
+                                    </span><span class="n">header</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span><span class="w">
+                                    </span><span class="n">sep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"\t"</span><span class="p">,</span><span class="w">
+                                    </span><span class="n">colClasses</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">rep</span><span class="p">(</span><span class="s2">"factor"</span><span class="p">,</span><span class="m">4</span><span class="p">))</span><span class="w">
+                                    
+    
+
+</span><span class="n">row.names</span><span class="p">(</span><span class="n">xp_design_for_heatmap</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">xp_design_for_heatmap</span><span class="o">$</span><span class="n">sample</span><span class="w">
+</span><span class="n">xp_design_for_heatmap</span><span class="o">$</span><span class="n">sample</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="kc">NULL</span><span class="w">
+
+</span><span class="n">anno_info_colors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">list</span><span class="p">(</span><span class="w">
+  </span><span class="n">seed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="n">MgCl2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"#d8b365"</span><span class="p">,</span><span class="w"> 
+           </span><span class="n">Methylobacterium_extorquens_PA1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"#f5f5f5"</span><span class="p">,</span><span class="w"> 
+           </span><span class="n">Sphingomonas_melonis_Fr1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"#5ab4ac"</span><span class="p">),</span><span class="w">
+  </span><span class="n">infected</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="n">mock</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"gray"</span><span class="p">,</span><span class="w"> 
+               </span><span class="n">Pseudomonas_syringae_DC3000</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"black"</span><span class="p">),</span><span class="w">
+  </span><span class="n">dpi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s2">"2"</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"dodgerblue"</span><span class="p">,</span><span class="w"> 
+          </span><span class="s2">"7"</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"dodgerblue4"</span><span class="p">)</span><span class="w">
+</span><span class="p">)</span><span class="w">
+
+
+</span><span class="n">correlation_between_samples</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">cor</span><span class="p">(</span><span class="n">counts_normalised</span><span class="p">)</span><span class="w">
+
+</span><span class="n">my_custom_breaks</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">quantile</span><span class="p">(</span><span class="w">
+  </span><span class="n">correlation_between_samples</span><span class="p">,</span><span class="w"> </span><span class="c1"># correlations</span><span class="w">
+  </span><span class="n">seq</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">1</span><span class="p">,</span><span class="m">0.1</span><span class="p">))</span><span class="w">
+
+
+</span><span class="c1"># load library and plot heatmap</span><span class="w">
+</span><span class="n">library</span><span class="p">(</span><span class="n">pheatmap</span><span class="p">)</span><span class="w">
+</span><span class="n">library</span><span class="p">(</span><span class="n">RColorBrewer</span><span class="p">)</span><span class="w">
+
+</span><span class="n">pheatmap</span><span class="p">(</span><span class="n">mat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">correlation_between_samples</span><span class="p">,</span><span class="w"> 
+         </span><span class="n">color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rev</span><span class="p">(</span><span class="n">brewer.pal</span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">length</span><span class="p">(</span><span class="n">my_custom_breaks</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="s2">"RdYlBu"</span><span class="p">)),</span><span class="w"> 
+         </span><span class="n">breaks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">my_custom_breaks</span><span class="p">,</span><span class="w">
+         </span><span class="n">annotation_row</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xp_design_for_heatmap</span><span class="p">,</span><span class="w">
+         </span><span class="n">annotation_col</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xp_design_for_heatmap</span><span class="p">,</span><span class="w">
+         </span><span class="n">annotation_colors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">anno_info_colors</span><span class="w">
+         </span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="../img/05-pheatmap.png" height="600px" /></p>
+
+<p>While the heatmap is full of colors and pleasant to display (arguable perhaps), it is not easy to distinguish between conditions. A Principal Component Analysis will help us to decide whether the experimental design is reflected in the count results.</p>
+
+<p><br />
+<br /></p>
+
+<h1 id="5-principal-component-analysis">5. Principal Component Analysis</h1>
+
+<h2 id="51-step-by-step-introduction-to-pca-video">5.1 Step by step introduction to PCA (video)</h2>
+
+<p>Please watch the following video from StatQuest for a 20min-long introduction to PCA.</p>
+
+<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/FgakZw6K1QQ" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>
+
+<p>You can test your understanding by answering these few questions:</p>
+
+<blockquote class="challenge">
+  <h2 id="questions">Questions</h2>
+  <ol>
+    <li>What is the reason to perform a PCA analysis using 4 genes?</li>
+    <li>What does SVD stands for?</li>
+    <li>Can a PCA analysis indicate which gene (out of the 4) is the most capable of separating sample groups?</li>
+    <li>Given a dataframe with 10 samples and 40 variables, what is the maximum number of Principal Components (PCs) that you can compute?</li>
+    <li>If you center the data, do you change the distances between the different samples?</li>
+    <li>How would you measure the accuracy of the 2D graph with only PC1 and PC2?</li>
+    <li>How is called the graph that has individual PCs as the x-axis and the percentage of explained variance as the y-axis?</li>
+    <li>How are the “gene proportions used to build PC1 and PC2” called? What is the proper term? Think about the cocktail recipe.</li>
+    <li>(Extra hard) Can you define in simple terms the <em>eigenvector</em> of PC1 and <em>eigenvalue</em> of PC2?</li>
+    <li>How many times is “BAM!” pronounced by Josh Starmer during the video?</li>
+  </ol>
+
+  <blockquote class="solution">
+    <h2 id="answers">Answers</h2>
+    <ol>
+      <li>PCA allows to plot information from 4 genes on a human-readable 2D plot (2 dimensions, x-axis + y-axis).</li>
+      <li>SVD stands for Single Value Decomposition.</li>
+      <li>Yes, by looking at the loading scores of the genes from each PC, it is possible to relate individual genes to the different PCs. If PC1 separates nicely the different sample groups, then the gene with the highest loading score on PC1 is the most interesting to explain that separation.</li>
+      <li>The maximum number of PCs is the minimum of samples and variables. So here a maximum of n = 10 PCs.</li>
+      <li>No, data centering does not change the distance between samples. It centers the cloud of data so that its center is the origin (0,0) on both PC1 and PC2.</li>
+      <li>The accuracy of the PC1-PC2 2-dimensional plot can be measured by summing the percentage of the variance explained by PC1 and PC2. If PC1 and PC2 collectively explain 90<script type="math/tex">%</script> of the variance, then this 2D plot would be quite a accurate representaiton of the original data.</li>
+      <li>A scree plot.</li>
+      <li>The recipe to build PC1 and PC2 requires variable “parts” also called variable <em>loading scores</em>.</li>
+      <li>All right, then you should be the one building this lesson section, not doing it! More seriously, the eigenvalue is the sum of the squared distances from each sample projection on PC1. The eigenvector is the singular vector of unit one for PC1.</li>
+      <li>I have counted 5 BAMs including one double BAM and one little BAM.</li>
+    </ol>
+  </blockquote>
+</blockquote>
+
+<p>Sometimes, you’ll only want to look at one section of the video:</p>
+<ul>
+  <li><a href="https://youtu.be/FgakZw6K1QQ?t=203">Worked 2D example</a></li>
+  <li><a href="https://youtu.be/FgakZw6K1QQ?t=303">Finding PC1</a></li>
+  <li><a href="https://youtu.be/FgakZw6K1QQ?t=903">Calculating the percent variation explained by each PC</a></li>
+  <li><a href="https://youtu.be/FgakZw6K1QQ?t=990">Worked 3D example</a></li>
+</ul>
+
+<h2 id="52-worked-pca-example">5.2 Worked PCA example</h2>
+
+<p>In (bio)chemical analysis the data matrices can be very large. An infrared spectrum (800 wavelengths) for 50 samples for example would give a data matrix of size 40,000 (50x800) numbers.  A genomic data (e.g. 20,000 genes) for 100 patients would lead to a huge data matrix of (100x20,000) = 2,000,000 numbers.</p>
+
+<p>These matrices are so large that we need convenient ways to extract the important information from these large data matrices.</p>
+
+<p>Using principal component analysis (PCA)</p>
+
+<ul>
+  <li>The data is reduced to smaller matrices so they can more easily be examined, plotted and interpreted.</li>
+  <li>The most important factors are extracted (principal components). These factors describe the multivariate (more than one variable) interactions between the measured variables.</li>
+  <li>The samples can be classified to identify compound spectra, determine biomarkers etc.</li>
+</ul>
+
+<p>To have an idea of how PCA works it should be noted that if there is a mutual relationship between two or more measurements (e.g. samples) they are correlated. These correlations can be strong (e.g. mass of object and weight on earth’s surface) or weak (e.g. capabilities in sport and month of birth). In the example below there is a strong linear relationship between height and age for young children (<em>Moore, D.S. and McCabe G.P., Introduction to the Practice of Statistics (1989)</em>).</p>
+
+<p><img src="../img/age_height.png" alt="age_height" style="zoom:80%;" /></p>
+
+<p>To explain PCA we use the example above and <strong>project</strong> the cases (observations) on a new coordinate system defined by principal component 1 (PC1) and principal component 2 (PC2) .</p>
+
+<p><img src="../img/age_height_to_scores.png" /></p>
+
+<p>In this new coordinate system, PC1 explains 99.77% of the total variation of the original data set while PC2 only explains 0.23%. Consequently, only variable (PC1) is sufficient to describe the whole data set which would support the conclusion that there is only 1 underlying factor, in this case age.</p>
+
+<p>If the original data has more than two variables (e.g. n), which usually is the case, the projection would be in the n-dimensional space. Consequently more than two principal components can be calculated. By using an optimal projection, the principal components describe the maximum variance and are calculated in order of importance e.g.</p>
+
+<p><img src="../img/pc_exp_var_tbl.png" alt="image-20200416141609987" /></p>
+
+<h2 id="53-the-iris-data-set">5.3 The Iris data set</h2>
+
+<p>​The ability of PCA to capture as much variance as possible in the main principal components enables us to  to visualize (and summarize) the relation between objects (and variables) from a multi-dimensional space to a two dimensional plot.</p>
+
+<p>We can use the Fisher’s famous Iris flower dataset from 1936 that describes three species of Iris (<em>Iris setosa</em>, <em>Iris virginica</em> and <em>Iris versicolor</em>). The data set consists of <strong>50 samples</strong> from each of these three species of Iris. <strong>Four variables (features)</strong> were measured from each sample: the length and the width of the sepals and petals, in centimeters (<a href="https://en.wikipedia.org/wiki/Iris_flower_data_set">source Wikipedia</a>). See some pictures below.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th><em>Iris setosa</em></th>
+      <th><em>Iris versicolor</em></th>
+      <th><em>Iris virginica</em></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><img src="../img/Iris_setosa.jpg" width="200px" /></td>
+      <td><img src="../img/Iris_versicolor.jpg" width="200px" /></td>
+      <td><img src="../img/Iris_virginica.jpg" width="200px" /></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>In the example below there is clear separation of the three types of <a href="https://en.wikipedia.org/wiki/Iris_flower_data_set">flowers</a> which points to shared interactions between the different variables per group.</p>
+
+<p>To load this data in R  first the appropriate dataset have to be installed and loaded.</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">library</span><span class="p">(</span><span class="n">datasets</span><span class="p">)</span><span class="w">
+</span><span class="n">data</span><span class="p">(</span><span class="n">iris</span><span class="p">)</span><span class="w">
+</span><span class="n">head</span><span class="p">(</span><span class="n">iris</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Sepal.Length Sepal.Width Petal.Length Petal.Width Species
+1          5.1         3.5          1.4         0.2  setosa
+2          4.9         3.0          1.4         0.2  setosa
+3          4.7         3.2          1.3         0.2  setosa
+4          4.6         3.1          1.5         0.2  setosa
+5          5.0         3.6          1.4         0.2  setosa
+6          5.4         3.9          1.7         0.4  setosa
+</code></pre></div></div>
+
+<p>The summary of the iris data set display the content of the data. In this case the data consists of 150 objects with 5 variables. The last variable Species is a factor variable that specifies the class of the object.</p>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code> Sepal.Length    Sepal.Width     Petal.Length    Petal.Width          Species  
+ Min.   :4.300   Min.   :2.000   Min.   :1.000   Min.   :0.100   setosa    :50  
+ 1st Qu.:5.100   1st Qu.:2.800   1st Qu.:1.600   1st Qu.:0.300   versicolor:50  
+ Median :5.800   Median :3.000   Median :4.350   Median :1.300   virginica :50  
+ Mean   :5.843   Mean   :3.057   Mean   :3.758   Mean   :1.199                  
+ 3rd Qu.:6.400   3rd Qu.:3.300   3rd Qu.:5.100   3rd Qu.:1.800                  
+ Max.   :7.900   Max.   :4.400   Max.   :6.900   Max.   :2.500 
+</code></pre></div></div>
+
+<p>For convenience we use a very rudimentary (own) implementation implementation of PCA. Copy-paste this code into R to load this function into your environment and use it later on.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># define a custom R function called "mypca()""</span><span class="w">
+</span><span class="n">mypca</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="k">function</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">center</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span><span class="w"> </span><span class="n">scale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">){</span><span class="w">
+  
+  </span><span class="c1"># This checks that the samples/individuals are in rows</span><span class="w">
+  </span><span class="c1"># If samples in columns, then the matrix is transposed</span><span class="w">
+  </span><span class="k">if</span><span class="p">(</span><span class="n">nrow</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">&gt;</span><span class="n">ncol</span><span class="p">(</span><span class="n">x</span><span class="p">))</span><span class="w">
+  </span><span class="p">{</span><span class="w">
+    </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">t</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+  
+  </span><span class="c1"># remove constant variables</span><span class="w">
+  </span><span class="n">constant_val</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">apply</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="m">2</span><span class="p">,</span><span class="s1">'sd'</span><span class="p">)</span><span class="w">
+  </span><span class="n">x_reduced</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">x</span><span class="p">[,</span><span class="n">constant_val</span><span class="o">&gt;</span><span class="m">0</span><span class="p">]</span><span class="w">
+  
+  </span><span class="c1"># perform SVD</span><span class="w">
+  </span><span class="n">SVD</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">svd</span><span class="p">(</span><span class="n">scale</span><span class="p">(</span><span class="n">x_reduced</span><span class="p">,</span><span class="n">center</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">center</span><span class="p">,</span><span class="w"> </span><span class="n">scale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">scale</span><span class="p">))</span><span class="w">
+  
+  </span><span class="c1"># create scores data frame</span><span class="w">
+  </span><span class="n">scores</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">as.data.frame</span><span class="p">(</span><span class="n">SVD</span><span class="o">$</span><span class="n">u</span><span class="w"> </span><span class="o">%*%</span><span class="w"> </span><span class="n">diag</span><span class="p">(</span><span class="n">SVD</span><span class="o">$</span><span class="n">d</span><span class="p">))</span><span class="w">
+  </span><span class="n">rownames</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">rownames</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w">
+  </span><span class="n">colnames</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">paste0</span><span class="p">(</span><span class="s2">"PC"</span><span class="p">,</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="m">1</span><span class="o">:</span><span class="nf">dim</span><span class="p">(</span><span class="n">scores</span><span class="p">)[</span><span class="m">2</span><span class="p">]))</span><span class="w">
+  
+  </span><span class="c1"># create loadings data frams</span><span class="w">
+  </span><span class="n">loadings</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">data.frame</span><span class="p">(</span><span class="n">SVD</span><span class="o">$</span><span class="n">v</span><span class="p">)</span><span class="w">
+  </span><span class="n">colnames</span><span class="p">(</span><span class="n">loadings</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">paste0</span><span class="p">(</span><span class="s2">"PC"</span><span class="p">,</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="m">1</span><span class="o">:</span><span class="nf">dim</span><span class="p">(</span><span class="n">loadings</span><span class="p">)[</span><span class="m">2</span><span class="p">]))</span><span class="w">
+  </span><span class="n">rownames</span><span class="p">(</span><span class="n">loadings</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">colnames</span><span class="p">(</span><span class="n">x_reduced</span><span class="p">)</span><span class="w">
+  
+  </span><span class="c1"># create data frame for explained variances</span><span class="w">
+  </span><span class="n">explained_var</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">as.data.frame</span><span class="p">(</span><span class="nf">round</span><span class="p">((</span><span class="n">SVD</span><span class="o">$</span><span class="n">d</span><span class="o">^</span><span class="m">2</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="nf">sum</span><span class="p">(</span><span class="n">SVD</span><span class="o">$</span><span class="n">d</span><span class="o">^</span><span class="m">2</span><span class="p">)</span><span class="o">*</span><span class="m">100</span><span class="p">,</span><span class="w"> </span><span class="n">digits</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">))</span><span class="w">
+  </span><span class="n">rownames</span><span class="p">(</span><span class="n">explained_var</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">paste0</span><span class="p">(</span><span class="s2">"PC"</span><span class="p">,</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="m">1</span><span class="o">:</span><span class="nf">dim</span><span class="p">(</span><span class="n">loadings</span><span class="p">)[</span><span class="m">2</span><span class="p">]))</span><span class="w">
+  </span><span class="n">colnames</span><span class="p">(</span><span class="n">explained_var</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="s2">"exp_var"</span><span class="w">
+  
+  </span><span class="c1"># return result</span><span class="w">
+  </span><span class="n">return</span><span class="w"> </span><span class="p">(</span><span class="nf">list</span><span class="p">(</span><span class="s2">"scores"</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">scores</span><span class="p">,</span><span class="w"> </span><span class="s2">"loadings"</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">loadings</span><span class="p">,</span><span class="w"> </span><span class="s2">"explained_var"</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">explained_var</span><span class="p">))</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Now we have everything in our R environment into place, we can actually perform the PCA analysis and create the plots.<br />
+Since the four first principal components catch most if not all</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># perform the PCA analysis on only the first 4 variables (skip the Species variable)</span><span class="w">
+</span><span class="n">pca</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">mypca</span><span class="p">(</span><span class="n">iris</span><span class="p">[,</span><span class="m">1</span><span class="o">:</span><span class="m">4</span><span class="p">],</span><span class="w"> </span><span class="n">scale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">)</span><span class="w">
+</span><span class="n">scores</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">as.data.frame</span><span class="p">(</span><span class="n">pca</span><span class="o">$</span><span class="n">scores</span><span class="p">[,</span><span class="m">1</span><span class="o">:</span><span class="m">2</span><span class="p">])</span><span class="w">
+</span><span class="n">scores</span><span class="p">[</span><span class="s1">'Species'</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">iris</span><span class="o">$</span><span class="n">Species</span><span class="w">
+</span><span class="n">explained_var</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pca</span><span class="o">$</span><span class="n">explained_var</span><span class="o">$</span><span class="n">exp_var</span><span class="w">
+</span></code></pre></div></div>
+
+<p>In order to have an idea of how effective the ‘compression’ or variable reduction of the PCA algorithm was on our data set, we make a so-called ‘scree’ plot in which the explained variance is expressed as a function of the number of principal components.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># add a convenient column number for the bar plot to display</span><span class="w">
+</span><span class="n">dfev</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">data.frame</span><span class="p">(</span><span class="n">PC</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="m">2</span><span class="p">,</span><span class="m">3</span><span class="p">,</span><span class="m">4</span><span class="p">),</span><span class="w"> </span><span class="n">exp_var</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">pca</span><span class="o">$</span><span class="n">explained_var</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># make the plot</span><span class="w">
+</span><span class="n">scree_plot</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">ggplot</span><span class="p">(</span><span class="n">dfev</span><span class="p">,</span><span class="w"> </span><span class="n">aes</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PC</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">exp_var</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w">
+       </span><span class="n">ylab</span><span class="p">(</span><span class="s1">'explained variance (%)'</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> 
+       </span><span class="n">ggtitle</span><span class="p">(</span><span class="s1">'explained variance per component'</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> 
+       </span><span class="n">geom_bar</span><span class="p">(</span><span class="n">stat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"identity"</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># display it</span><span class="w">
+</span><span class="n">scree_plot</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="../img/pca_iris_exp_var.png" width="600px" alt="pca_iris_exp_var PCA" /></p>
+
+<p>It is clear that the PCA really reduces our data to almost 1 variable (component) which explains over 90% of all the variance of the data. The second component only explains 5.3%. The third and fourth even less.</p>
+
+<p>The whole idea behind the analysis is to visualize the high-dimensional data (e.g. a score plot) in a smaller dimensional space (e.g. 2D space). In R we can do that with the following lines of code</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># plot the scores of the first 2 components</span><span class="w">
+</span><span class="n">p</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">ggplot</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> 
+       </span><span class="n">geom_point</span><span class="p">(</span><span class="n">aes</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PC1</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PC2</span><span class="p">,</span><span class="w"> </span><span class="n">shape</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Species</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Species</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w"> 
+       </span><span class="n">xlab</span><span class="p">(</span><span class="n">paste0</span><span class="p">(</span><span class="s1">'PC1('</span><span class="p">,</span><span class="n">explained_var</span><span class="p">[</span><span class="m">1</span><span class="p">],</span><span class="s1">'%)'</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w"> 
+       </span><span class="n">ylab</span><span class="p">(</span><span class="n">paste0</span><span class="p">(</span><span class="s1">'PC2('</span><span class="p">,</span><span class="n">explained_var</span><span class="p">[</span><span class="m">2</span><span class="p">],</span><span class="s1">'%)'</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w"> 
+       </span><span class="n">ggtitle</span><span class="p">(</span><span class="s1">'PCA score plot'</span><span class="p">)</span><span class="w">
+</span><span class="n">p</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="../img/pca_iris_new.png" width="600px" alt="pca_iris_new" /></p>
+
+<p>From the score plot it is clear that the Setosa flowers are clearly different from the Versicolor/Virginica flowers. Versicolor and Virginica cannot be separated on PC1 and/or PC2. Looking at the PC1 vs PC3 however, the two groups can be separated better. It is very important to understand that even if a principal component explains a low amount of variance it still can contain interesting (biological) information.</p>
+
+<p><img src="../img/pca_iris_1_3.png" width="600px" alt="pca_iris_1_3" /></p>
+
+<p>The scores are indicative of how the objects in the data set score in the new component space, correspondingly the loadings indicate how the variables score in the component space. The score plots above for example show a separation on PC1 between the 3 groups. If we would like to know which variables are important for this separation we can try to interpret our data.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">library</span><span class="p">(</span><span class="n">reshape2</span><span class="p">)</span><span class="w"> </span><span class="c1"># to access the melt() function</span><span class="w">
+
+</span><span class="c1"># reformat the loading data</span><span class="w">
+</span><span class="n">loadings</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">melt</span><span class="p">(</span><span class="n">pca</span><span class="o">$</span><span class="n">loadings</span><span class="p">)</span><span class="w">
+</span><span class="c1"># rename the columns</span><span class="w">
+</span><span class="n">colnames</span><span class="p">(</span><span class="n">loadings</span><span class="p">)</span><span class="o">&lt;-</span><span class="nf">c</span><span class="p">(</span><span class="s2">"Component"</span><span class="p">,</span><span class="s2">"Value"</span><span class="p">)</span><span class="w">
+</span><span class="c1"># add the 'original' variable names</span><span class="w">
+</span><span class="n">loadings</span><span class="p">[</span><span class="s1">'Variable'</span><span class="p">]</span><span class="o">=</span><span class="n">as.factor</span><span class="p">(</span><span class="nf">rep</span><span class="p">(</span><span class="n">colnames</span><span class="p">(</span><span class="n">iris</span><span class="p">)[</span><span class="m">-5</span><span class="p">],</span><span class="m">4</span><span class="p">))</span><span class="w">
+</span><span class="c1"># plot the loading values per components</span><span class="w">
+</span><span class="n">p</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">ggplot</span><span class="p">(</span><span class="n">loadings</span><span class="p">,</span><span class="n">aes</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">Variable</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="n">Value</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w">  </span><span class="n">geom_bar</span><span class="p">(</span><span class="n">stat</span><span class="o">=</span><span class="s1">'identity'</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">facet_wrap</span><span class="p">(</span><span class="o">~</span><span class="n">Component</span><span class="p">)</span><span class="w">
+</span><span class="n">p</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="../img/pca_iris_loadings.png" width="600px" alt="Iris loadings" /></p>
+
+<p>From the loading plot for PC1 it is clear that <code class="highlighter-rouge">Petal.Length</code> is the most important factor while <code class="highlighter-rouge">Sepal.Width</code> is the one which is least important. Because PC1 explains 92.5 % of the total variance we can conclude that <code class="highlighter-rouge">Petal.Length</code> is the most important factor that separates the three groups of flowers. <br />
+There are many more things to learn on PCA (e.g. scaling, filtering) but that is out of the scope of these exercises.</p>
+
+<blockquote class="callout">
+  <h2 id="maximum-number-of-principal-components">Maximum number of Principal Components</h2>
+  <p>The maximum number of PC is always equal to the minimum of (<em>n</em> samples, <em>p</em> variables). 
+Here, the number of samples is equal to <script type="math/tex">n = 48</script> and the number of variables to <script type="math/tex">p = 33,768</script>.
+Therefore, the maximum number of PCs is equal to 48.</p>
+</blockquote>
+
+<h1 id="6-pca-applied-to-rna-seq-data">6. PCA applied to RNA-seq data</h1>
+
+<h2 id="61-variance-stabilisation">6.1 Variance stabilisation</h2>
+
+<p>In the context of an RNA-seq experiment, PCA can be used to visualize the differences (distances) between samples and how it relates to the experimental design. Samples from the same experimental condition (e.g. infected with DC3000) should be grouping together if the observed variability in the data relates to the experimental design.</p>
+
+<p>In other words, genes from biological replicates (samples of the same experimental condition) should behave similarly and result in similar sample scores. Thereby, these samples should have close coordinates on the PCA score plot.</p>
+
+<p>But before we compute the PCA itself, we need to take into account one important feature of RNA-seq data: the gene variance is proportional to the gene mean. The higher the gene mean, the more variance it has. Also, genes with a low abundance (low counts) also suffer from a somehow inflated variance.</p>
+
+<p>This is easy to visualise in the following plot:</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Plot of mean - sd comparison</span><span class="w">
+</span><span class="c1"># Variance - mean plot for all genes</span><span class="w">
+</span><span class="n">p_mean_sd_scaled</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> 
+  </span><span class="n">counts_normalised</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">as.data.frame</span><span class="p">()</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">rownames_to_column</span><span class="p">(</span><span class="s2">"gene"</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">pivot_longer</span><span class="p">(</span><span class="n">cols</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">gene</span><span class="p">,</span><span class="w"> </span><span class="n">names_to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"sample"</span><span class="p">,</span><span class="w"> </span><span class="n">values_to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"counts"</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">group_by</span><span class="p">(</span><span class="n">gene</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">summarise</span><span class="p">(</span><span class="n">gene_average</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mean</span><span class="p">(</span><span class="n">counts</span><span class="p">),</span><span class="w"> </span><span class="n">gene_stdev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sd</span><span class="p">(</span><span class="n">counts</span><span class="p">))</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">ungroup</span><span class="p">()</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">ggplot</span><span class="p">(</span><span class="n">.</span><span class="p">,</span><span class="w"> </span><span class="n">aes</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">log10</span><span class="p">(</span><span class="n">gene_average</span><span class="p">),</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">log10</span><span class="p">(</span><span class="n">gene_stdev</span><span class="p">)))</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">geom_point</span><span class="p">(</span><span class="n">alpha</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.5</span><span class="p">,</span><span class="w"> </span><span class="n">fill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"grey"</span><span class="p">,</span><span class="w"> </span><span class="n">colour</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"black"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">labs</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Gene count average (log10 scale)"</span><span class="p">,</span><span class="w">
+       </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Gene count standard deviation (log10 scale)"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">ggtitle</span><span class="p">(</span><span class="s2">"Mean - Standard deviation relationship\n(no variance stabilisation "</span><span class="p">)</span><span class="w">
+</span><span class="n">p_mean_sd_scaled</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="../img/05-mean-sd-gene-before-vst.png" width="600px" alt="mean - sd relationship (before vst)" /></p>
+
+<p>One can clearly visualise the “heteroscedasticity” of these data: the mean is not independent from the variance. Therefore, we cannot compute the related PCA directly. We need to stabilise the variance so that the mean becomes independent from the variance.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Variance stabilisation</span><span class="w">
+</span><span class="n">dds</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">estimateDispersions</span><span class="p">(</span><span class="n">object</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dds</span><span class="p">,</span><span class="w"> 
+	                      </span><span class="n">fitType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"parametric"</span><span class="p">,</span><span class="w"> 
+	                      </span><span class="n">quiet</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">)</span><span class="w">
+
+</span><span class="n">vsd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">varianceStabilizingTransformation</span><span class="p">(</span><span class="n">object</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dds</span><span class="p">,</span><span class="w"> 
+                                               </span><span class="n">blind</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span><span class="w">           </span><span class="c1"># do not take the design formula into account. </span><span class="w">
+                                                                       </span><span class="c1"># best practice for sample-level QC</span><span class="w">
+                                               </span><span class="n">fitType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"parametric"</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># extract the matrix of variance stabilised counts</span><span class="w">
+</span><span class="n">variance_stabilised_counts</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">assay</span><span class="p">(</span><span class="n">vsd</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># create the mean-sd plot</span><span class="w">
+</span><span class="n">p_mean_sd_vst</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> 
+  </span><span class="n">variance_stabilised_counts</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">as.data.frame</span><span class="p">()</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">rownames_to_column</span><span class="p">(</span><span class="s2">"gene"</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">pivot_longer</span><span class="p">(</span><span class="n">cols</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">gene</span><span class="p">,</span><span class="w"> </span><span class="n">names_to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"sample"</span><span class="p">,</span><span class="w"> </span><span class="n">values_to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"counts"</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">group_by</span><span class="p">(</span><span class="n">gene</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">summarise</span><span class="p">(</span><span class="n">gene_average</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mean</span><span class="p">(</span><span class="n">counts</span><span class="p">),</span><span class="w"> </span><span class="n">gene_stdev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sd</span><span class="p">(</span><span class="n">counts</span><span class="p">))</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">ungroup</span><span class="p">()</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">ggplot</span><span class="p">(</span><span class="n">.</span><span class="p">,</span><span class="w"> </span><span class="n">aes</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gene_average</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gene_stdev</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">geom_point</span><span class="p">(</span><span class="n">alpha</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.5</span><span class="p">,</span><span class="w"> </span><span class="n">fill</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"grey"</span><span class="p">,</span><span class="w"> </span><span class="n">colour</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"black"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">labs</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Gene count average (variance stabilised)"</span><span class="p">,</span><span class="w"> 
+       </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Gene count standard deviation (variance stabilised)"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">ggtitle</span><span class="p">(</span><span class="s2">"Mean - Standard deviation relationship\n(after variance stabilisation "</span><span class="p">)</span><span class="w">
+</span><span class="n">p_mean_sd_vst</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="../img/05-comparison-before-after-vst.png" width="800px" alt="comparison mean-sd relationship before and after variance stabilisation" /></p>
+
+<p>Now that the variance is more independent from the mean, we can compute our PCA analysis.</p>
+
+<h2 id="62-rna-seq-scree-plot">6.2 RNA-seq scree plot</h2>
+
+<p>To get an idea of how much variation can be explained by PC1, PC2, PC3, etc., a scree plot can be drawn.</p>
+
+<p>First, the PCA is computed using the <code class="highlighter-rouge">mypca()</code> function. This returns a list with three objects, the <code class="highlighter-rouge">scores</code>, <code class="highlighter-rouge">loadings</code> and <code class="highlighter-rouge">explained_var</code> dataframes.</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">pca_results</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">mypca</span><span class="p">(</span><span class="n">variance_stabilised_counts</span><span class="p">,</span><span class="w"> 
+                     </span><span class="n">center</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span><span class="w"> 
+                     </span><span class="n">scale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Then the explained variance dataframe is used to make the scree plot.</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># make the plot</span><span class="w">
+</span><span class="n">ggplot</span><span class="p">(</span><span class="n">pca_results</span><span class="o">$</span><span class="n">explained_var</span><span class="p">,</span><span class="w"> 
+         </span><span class="n">aes</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">seq</span><span class="p">(</span><span class="n">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">nrow</span><span class="p">(</span><span class="n">pca_results</span><span class="o">$</span><span class="n">explained_var</span><span class="p">)),</span><span class="w"> 
+             </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">exp_var</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">ylab</span><span class="p">(</span><span class="s1">'explained variance (%)'</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> 
+  </span><span class="n">ggtitle</span><span class="p">(</span><span class="s1">'Explained variance per component'</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> 
+  </span><span class="n">geom_bar</span><span class="p">(</span><span class="n">stat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"identity"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">labs</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Principal Component number"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">scale_x_continuous</span><span class="p">(</span><span class="n">breaks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">seq</span><span class="p">(</span><span class="w">
+    </span><span class="n">from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="w"> 
+    </span><span class="n">to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">nrow</span><span class="p">(</span><span class="n">pca_results</span><span class="o">$</span><span class="n">explained_var</span><span class="p">)))</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="../img/05-screeplot-rnaseq.png" width="600px" alt="RNA-seq screen plot" /></p>
+
+<blockquote class="challenge">
+  <h2 id="question-1">Question</h2>
+  <p>Using the <code class="highlighter-rouge">cumsum()</code> function, can you determine:</p>
+  <ol>
+    <li>How much percentage of the total variance are “caught” by PC1 and PC2?</li>
+    <li>How many PCs are necessary to get 50% of the total variance?</li>
+  </ol>
+
+  <blockquote class="solution">
+    <h2 id="solution-1">Solution</h2>
+    <ol>
+      <li><code class="highlighter-rouge">cumsum(pca_results$explained_var)[2,1]</code> shows you that 28.8% of the varaince are explained by PC1 and PC2.</li>
+      <li>You need to go up to PC7 to catch 51% of the variance.</li>
+    </ol>
+
+    <div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">cumsum</span><span class="p">(</span><span class="n">pca_results</span><span class="o">$</span><span class="n">explained_var</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">as.data.frame</span><span class="p">()</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">filter</span><span class="p">(</span><span class="n">exp_var</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">50</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">head</span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">)</span><span class="w">
+</span></code></pre></div>    </div>
+  </blockquote>
+</blockquote>
+
+<h2 id="63-infected-versus-mock-score-plot">6.3 Infected versus mock score plot</h2>
+
+<p>Let’s first see how our <em>P. syringae</em> infection condition is reflected at the PCA level.</p>
+
+<p>After computing the PCA itself, scores are extracted.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">pca_results</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">mypca</span><span class="p">(</span><span class="n">variance_stabilised_counts</span><span class="p">,</span><span class="w"> 
+                     </span><span class="n">center</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span><span class="w"> 
+                     </span><span class="n">scale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">)</span><span class="w">
+</span><span class="n">scores</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">pca_results</span><span class="o">$</span><span class="n">scores</span><span class="w">
+
+</span><span class="c1"># first 5 rows and columns</span><span class="w">
+</span><span class="n">scores</span><span class="p">[</span><span class="m">1</span><span class="o">:</span><span class="m">5</span><span class="p">,</span><span class="m">1</span><span class="o">:</span><span class="m">5</span><span class="p">]</span><span class="w">
+</span></code></pre></div></div>
+
+<p>The score matrix contains the samples in rows with their new coordinates on the different PCs.</p>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>      sample       PC1       PC2        PC3       PC4
+1 ERR1406259 -81.06199 -47.68192  21.968178 -13.88833
+2 ERR1406271 -67.24881 -33.81534  15.751014 -72.50003
+3 ERR1406282 -69.68432 -38.30649  28.871388  24.28975
+4 ERR1406294 -78.25228 -50.63736  -7.439196  15.96702
+5 ERR1406305 -23.26519 -18.76106 -74.047134 -43.41103
+</code></pre></div></div>
+
+<p>Before we can create the score plot, we need to add the experimental factors of interest to this dataframe. 
+We are going to do this using the <code class="highlighter-rouge">left_join</code> function from the <code class="highlighter-rouge">dplyr</code> package.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">scores_with_conditions</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> 
+  </span><span class="n">scores</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">rownames_to_column</span><span class="p">(</span><span class="s2">"sample"</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span><span class="c1"># to prepare to join on the "sample" column</span><span class="w">
+  </span><span class="n">left_join</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">.</span><span class="p">,</span><span class="w">                 </span><span class="c1"># this means that we are passing the 'scores' dataframe </span><span class="w">
+            </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xp_design</span><span class="p">,</span><span class="w">         </span><span class="c1"># this dataframe contains the sample to condition correspondence</span><span class="w">
+            </span><span class="n">by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"sample"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p>We now have a score dataframe that also have a “sample” column as well as the three experimental factors columns: “seed”, “infected” and “dpi”.</p>
+
+<p>If you show the first</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># shows the first 5 rows and the last 4 columns  </span><span class="w">
+</span><span class="n">scores_with_conditions</span><span class="p">[</span><span class="m">1</span><span class="o">:</span><span class="m">5</span><span class="p">,</span><span class="w"> </span><span class="m">48</span><span class="o">:</span><span class="m">52</span><span class="p">]</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Now we have the 3 experimental conditions in our score dataframe.</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="w">       </span><span class="n">PC47</span><span class="w">         </span><span class="n">PC48</span><span class="w">  </span><span class="n">seed</span><span class="w"> </span><span class="n">infected</span><span class="w"> </span><span class="n">dpi</span><span class="w">
+</span><span class="m">1</span><span class="w"> </span><span class="m">-0.106006</span><span class="w"> </span><span class="m">-7.40634e-13</span><span class="w"> </span><span class="n">MgCl2</span><span class="w">     </span><span class="n">mock</span><span class="w">   </span><span class="m">2</span><span class="w">
+</span><span class="m">2</span><span class="w"> </span><span class="m">-1.450006</span><span class="w"> </span><span class="m">-7.40634e-13</span><span class="w"> </span><span class="n">MgCl2</span><span class="w">     </span><span class="n">mock</span><span class="w">   </span><span class="m">2</span><span class="w">
+</span><span class="m">3</span><span class="w">  </span><span class="m">9.076943</span><span class="w"> </span><span class="m">-7.40634e-13</span><span class="w"> </span><span class="n">MgCl2</span><span class="w">     </span><span class="n">mock</span><span class="w">   </span><span class="m">2</span><span class="w">
+</span><span class="m">4</span><span class="w">  </span><span class="m">3.491862</span><span class="w"> </span><span class="m">-7.40634e-13</span><span class="w"> </span><span class="n">MgCl2</span><span class="w">     </span><span class="n">mock</span><span class="w">   </span><span class="m">2</span><span class="w">
+</span><span class="m">5</span><span class="w">  </span><span class="m">7.905262</span><span class="w"> </span><span class="m">-7.40634e-13</span><span class="w"> </span><span class="n">MgCl2</span><span class="w">     </span><span class="n">mock</span><span class="w">   </span><span class="m">7</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Let’s create the plot now using <code class="highlighter-rouge">ggplot2</code>.</p>
+
+<p>If we do not overlay the “infected” experimental condition on the sample positions, we have a very bare score plot. It only shows the position of the different samples in the new PC coordinate system.</p>
+
+<p><img src="../img/05-bare-score-plot.png" width="600px" alt="bare PCA score plot" /></p>
+
+<blockquote class="challenge">
+  <h2 id="question-2">Question</h2>
+  <p>Do you find this score plot informative? If yes why? If not why?</p>
+
+  <blockquote class="solution">
+    <h2 id="solution-2">Solution</h2>
+    <p>This score plot does not show how the sample scores related to the different experimental conditions of interest. 
+One need to add the experimental condition of interest as a new layer (color, shape).</p>
+  </blockquote>
+</blockquote>
+
+<p>Let’s make this plot a little bit more informative. First, the explained variance per PC is pulled out from the <code class="highlighter-rouge">pca_results</code> R object. This will be used to label the X and Y plot axis.</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># explained variance</span><span class="w">
+</span><span class="c1"># one % variance value per PC</span><span class="w">
+</span><span class="n">explained_variance</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> 
+  </span><span class="n">pca_results</span><span class="o">$</span><span class="n">explained_var</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">pull</span><span class="p">(</span><span class="s2">"exp_var"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Now it is finally plotting time!</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">ggplot</span><span class="p">(</span><span class="n">scores_with_conditions</span><span class="p">,</span><span class="w"> 
+       </span><span class="n">aes</span><span class="p">(</span><span class="n">PC1</span><span class="p">,</span><span class="w"> </span><span class="n">PC2</span><span class="p">,</span><span class="w"> </span><span class="n">color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">infected</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">geom_point</span><span class="p">(</span><span class="n">size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">4</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">xlab</span><span class="p">(</span><span class="n">paste0</span><span class="p">(</span><span class="s2">"PC1: "</span><span class="p">,</span><span class="n">explained_variance</span><span class="p">[</span><span class="m">1</span><span class="p">],</span><span class="s2">"% variance"</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">ylab</span><span class="p">(</span><span class="n">paste0</span><span class="p">(</span><span class="s2">"PC2: "</span><span class="p">,</span><span class="n">explained_variance</span><span class="p">[</span><span class="m">2</span><span class="p">],</span><span class="s2">"% variance"</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w"> 
+  </span><span class="n">coord_fixed</span><span class="p">(</span><span class="n">ratio</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">ggtitle</span><span class="p">(</span><span class="s2">"PCA score plot with the infection condition overlaid"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="../img/05-infection-score-plot.png" width="800px" alt="infection score plot" /></p>
+
+<p>It seems that the infection plays a role in PC1 but the two groups are still overlapping a lot on the left hand side.</p>
+
+<h2 id="64-seed-inoculation-score-plot">6.4 Seed inoculation score plot</h2>
+
+<p>Perhaps another experimental condition would better explain the sample distribution.</p>
+
+<p>Have a look at this new PCA plot with the <em>seed</em> condition superimposed.</p>
+
+<p><img src="../img/05-seed-score-plot.png" width="800px" alt="PCA with seed inoculation conditions overlaied" /></p>
+
+<p>You can see that the sample positions have not changed on the plot. But the colors have since we wanted to color samples by their seed inoculation level (“MgCl2”, “Fr1” or “PA1”).</p>
+
+<p>This plot seems to show that PC2 separates the Fr1 seed inoculation from the MgCl2 or PA1 seed treatment.</p>
+
+<blockquote class="challenge">
+  <h2 id="challenge">Challenge</h2>
+  <p>Can you create this plot?</p>
+</blockquote>
+
+<h2 id="65-time-after-infection-score-plot">6.5 Time after infection score plot</h2>
+
+<p>Last but not least, the time after <em>Pseudomonas syringae</em> DC3000 infection can be overlaid too.</p>
+
+<p><img src="../../img/05-dpi-score-plot.png" width="800px" alt="PCA with dpi overlaid" /></p>
+
+<p>Wait, this score plot resembles very much to the “infection score plot” that we have obtained in section 6.3. 
+Let’s plot them side by side:</p>
+
+<p><img src="../img/05-infection-dpi-comparison.png" width="100%" alt="comparison of infection and dpi score plots" /></p>
+
+<p>Wooh wait. These plots are almost alike. This suggests that, perhaps, the infection by <em>P. syringae</em> already separates the samples after 2 days.</p>
+
+<h1 id="7-bonus-home-made-deseq-normalization-function">7. Bonus: home-made DESeq normalization function</h1>
+
+<p>Please consult the step-by-step R code to normalize the DESeq2 way <a href="../median_of_ratios_manual_normalization/index.html">here</a>.</p>
+
+<h1 id="8-references">8. References</h1>
+
+<h2 id="useful-links">Useful links</h2>
+<ol>
+  <li><a href="https://rpubs.com/gabrielmartos/ClusterAnalysis">Gabriel Martos cluster analysis</a></li>
+  <li><a href="https://uc-r.github.io/hc_clustering">Bradley Boehmke</a></li>
+  <li>Love et al. (2014) <a href="https://link.springer.com/article/10.1186/s13059-014-0550-8">Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2. <em>Genome Biology</em>, 15:550</a>.</li>
+  <li><a href="https://www.youtube.com/watch?v=UFB993xufUU">Statquest</a></li>
+  <li><a href="https://hbctraining.github.io/DGE_workshop/lessons/02_DGE_count_normalization.html">Harvard Bioinformatic Core Training program</a></li>
+</ol>
+
+<h2 id="photo-credits">Photo credits</h2>
+<p><a style="background-color:black;color:white;text-decoration:none;padding:4px 6px;font-family:-apple-system, BlinkMacSystemFont, &quot;San Francisco&quot;, &quot;Helvetica Neue&quot;, Helvetica, Ubuntu, Roboto, Noto, &quot;Segoe UI&quot;, Arial, sans-serif;font-size:12px;font-weight:bold;line-height:1.2;display:inline-block;border-radius:3px" href="https://unsplash.com/@markusspiske?utm_medium=referral&amp;utm_campaign=photographer-credit&amp;utm_content=creditBadge" target="_blank" rel="noopener noreferrer" title="Download free do whatever you want high-resolution photos from Markus Spiske"><span style="display:inline-block;padding:2px 3px"><svg xmlns="http://www.w3.org/2000/svg" style="height:12px;width:auto;position:relative;vertical-align:middle;top:-2px;fill:white" viewBox="0 0 32 32"><title>unsplash-logo</title><path d="M10 9V0h12v9H10zm12 5h10v18H0V14h10v9h12v-9z"></path></svg></span><span style="display:inline-block;padding:2px 3px">Markus Spiske</span></a></p>
+
+:ET

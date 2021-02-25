@@ -1,0 +1,266 @@
+I"ï³
+<h2 id="complete-r-script">Complete R script</h2>
+<p>The complete R script is available <a href="../r_workspace/rnaseq_lesson_r_script.R">here</a> and below:</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">suppressPackageStartupMessages</span><span class="p">(</span><span class="n">library</span><span class="p">(</span><span class="n">DESeq2</span><span class="p">))</span><span class="w">
+</span><span class="n">suppressPackageStartupMessages</span><span class="p">(</span><span class="n">library</span><span class="p">(</span><span class="n">tidyverse</span><span class="p">))</span><span class="w">
+</span><span class="n">suppressPackageStartupMessages</span><span class="p">(</span><span class="n">library</span><span class="p">(</span><span class="n">EnhancedVolcano</span><span class="p">))</span><span class="w">
+</span><span class="n">suppressPackageStartupMessages</span><span class="p">(</span><span class="n">library</span><span class="p">(</span><span class="n">pheatmap</span><span class="p">))</span><span class="w">
+
+
+</span><span class="c1">###############################</span><span class="w">
+</span><span class="c1"># Episode 05: descriptive plots</span><span class="w">
+</span><span class="c1">###############################</span><span class="w">
+
+</span><span class="c1">## Data import</span><span class="w">
+</span><span class="n">counts</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">read.delim</span><span class="p">(</span><span class="s2">"counts.txt"</span><span class="p">,</span><span class="w"> </span><span class="n">header</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">T</span><span class="p">,</span><span class="w"> </span><span class="n">stringsAsFactors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">F</span><span class="p">)</span><span class="w">
+</span><span class="n">genes</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">counts</span><span class="p">[,</span><span class="m">1</span><span class="p">]</span><span class="w">
+</span><span class="n">counts</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">counts</span><span class="p">[,</span><span class="m">-1</span><span class="p">]</span><span class="w">
+</span><span class="n">row.names</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">genes</span><span class="w">
+</span><span class="n">xp_design</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">read.delim</span><span class="p">(</span><span class="s2">"experimental_design_modified.txt"</span><span class="p">,</span><span class="w"> </span><span class="n">header</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">T</span><span class="p">,</span><span class="w"> </span><span class="n">stringsAsFactors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">F</span><span class="p">,</span><span class="w"> </span><span class="n">colClasses</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">rep</span><span class="p">(</span><span class="s2">"character"</span><span class="p">,</span><span class="m">4</span><span class="p">))</span><span class="w">
+
+</span><span class="c1"># change col names</span><span class="w">
+</span><span class="n">colnames</span><span class="p">(</span><span class="n">xp_design</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s2">"sample"</span><span class="p">,</span><span class="w"> </span><span class="s2">"seed"</span><span class="p">,</span><span class="w"> </span><span class="s2">"infected"</span><span class="p">,</span><span class="w"> </span><span class="s2">"dpi"</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># reorder counts columns according to the experimental design file</span><span class="w">
+</span><span class="n">counts</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">counts</span><span class="p">[,</span><span class="n">xp_design</span><span class="o">$</span><span class="n">sample</span><span class="p">]</span><span class="w">
+
+</span><span class="c1">## Creation of the DESeqDataSet object</span><span class="w">
+</span><span class="n">dds</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">DESeqDataSetFromMatrix</span><span class="p">(</span><span class="n">countData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">counts</span><span class="p">,</span><span class="w"> 
+                              </span><span class="n">colData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xp_design</span><span class="p">,</span><span class="w"> 
+                              </span><span class="n">design</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">~</span><span class="w"> </span><span class="n">seed</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">infected</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">dpi</span><span class="p">)</span><span class="w">
+
+
+</span><span class="c1">#################################</span><span class="w">
+</span><span class="c1">## Size factors and normalisation</span><span class="w">
+</span><span class="c1">#################################</span><span class="w">
+</span><span class="c1"># normalised counts</span><span class="w">
+</span><span class="n">dds</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">estimateSizeFactors</span><span class="p">(</span><span class="n">dds</span><span class="p">)</span><span class="w">
+
+</span><span class="n">size_factors_df</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">data.frame</span><span class="p">(</span><span class="n">sample</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">names</span><span class="p">(</span><span class="n">sizeFactors</span><span class="p">(</span><span class="n">dds</span><span class="p">)),</span><span class="w"> 
+                              </span><span class="n">size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sizeFactors</span><span class="p">(</span><span class="n">dds</span><span class="p">))</span><span class="w">
+
+</span><span class="c1"># add the experimental condition of interest for plot labelling</span><span class="w">
+</span><span class="n">size_factors_df</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">left_join</span><span class="p">(</span><span class="n">size_factors_df</span><span class="p">,</span><span class="w"> </span><span class="n">xp_design</span><span class="p">,</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"sample"</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># sort by seed condition and by infected condition</span><span class="w">
+</span><span class="n">size_factors_df</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">size_factors_df</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">arrange</span><span class="p">(</span><span class="n">seed</span><span class="p">,</span><span class="w"> </span><span class="n">infected</span><span class="p">)</span><span class="w">
+
+</span><span class="n">size_factors_df</span><span class="o">$</span><span class="n">sample</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">factor</span><span class="p">(</span><span class="n">size_factors_df</span><span class="o">$</span><span class="n">sample</span><span class="p">,</span><span class="w"> </span><span class="n">levels</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">size_factors_df</span><span class="o">$</span><span class="n">sample</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># plot</span><span class="w">
+</span><span class="n">ggplot</span><span class="p">(</span><span class="n">size_factors_df</span><span class="p">,</span><span class="w"> </span><span class="n">aes</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sample</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">size</span><span class="p">,</span><span class="w"> </span><span class="n">colour</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">seed</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w"> 
+  </span><span class="n">geom_segment</span><span class="p">(</span><span class="n">aes</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sample</span><span class="p">,</span><span class="w"> </span><span class="n">xend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sample</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="p">,</span><span class="w"> </span><span class="n">yend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">size</span><span class="p">),</span><span class="w"> </span><span class="n">color</span><span class="o">=</span><span class="s2">"grey"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">geom_point</span><span class="p">(</span><span class="n">size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">4</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> 
+  </span><span class="n">coord_flip</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">theme_grey</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">facet_wrap</span><span class="p">(</span><span class="o">~</span><span class="w"> </span><span class="n">infected</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">scale_y_continuous</span><span class="p">(</span><span class="n">limits</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">2</span><span class="p">))</span><span class="w">
+
+</span><span class="c1"># extract normalised counts</span><span class="w">
+</span><span class="n">counts_normalised</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">counts</span><span class="p">(</span><span class="n">dds</span><span class="p">,</span><span class="w"> </span><span class="n">normalized</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">)</span><span class="w">
+
+</span><span class="c1">####################</span><span class="w">
+</span><span class="c1">## sample correlations</span><span class="w">
+</span><span class="c1">####################</span><span class="w">
+
+</span><span class="c1"># self correlation</span><span class="w">
+</span><span class="n">pairs</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">counts_normalised</span><span class="p">[,</span><span class="nf">c</span><span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">)],</span><span class="n">pch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">19</span><span class="p">,</span><span class="w"> </span><span class="n">log</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"xy"</span><span class="p">)</span><span class="w">
+</span><span class="n">cor</span><span class="p">(</span><span class="n">counts_normalised</span><span class="p">[,</span><span class="nf">c</span><span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="m">1</span><span class="p">)])</span><span class="w">
+
+</span><span class="c1"># correlation between biological replicates</span><span class="w">
+</span><span class="n">pairs</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">counts_normalised</span><span class="p">[,</span><span class="m">1</span><span class="o">:</span><span class="m">4</span><span class="p">],</span><span class="n">pch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">19</span><span class="p">,</span><span class="w"> </span><span class="n">log</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"xy"</span><span class="p">)</span><span class="w">
+</span><span class="n">cor</span><span class="p">(</span><span class="n">counts_normalised</span><span class="p">[,</span><span class="nf">c</span><span class="p">(</span><span class="m">1</span><span class="o">:</span><span class="m">4</span><span class="p">)])</span><span class="w">
+
+</span><span class="c1"># weakly correlated samples </span><span class="w">
+</span><span class="n">pairs</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">counts_normalised</span><span class="p">[,</span><span class="nf">c</span><span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="m">9</span><span class="p">,</span><span class="m">17</span><span class="p">,</span><span class="m">25</span><span class="p">)],</span><span class="n">pch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">19</span><span class="p">,</span><span class="w"> </span><span class="n">log</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"xy"</span><span class="p">)</span><span class="w">
+</span><span class="n">cor</span><span class="p">(</span><span class="n">counts_normalised</span><span class="p">[,</span><span class="nf">c</span><span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="m">9</span><span class="p">,</span><span class="m">17</span><span class="p">,</span><span class="m">25</span><span class="p">)])</span><span class="w">
+
+</span><span class="c1">##########</span><span class="w">
+</span><span class="c1"># PCA plot</span><span class="w">
+</span><span class="c1">##########</span><span class="w">
+
+</span><span class="c1"># PCA using the plotPCA function</span><span class="w">
+</span><span class="c1"># variance-stabilizing transformation</span><span class="w">
+</span><span class="n">vst_dds</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">vst</span><span class="p">(</span><span class="n">dds</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># customised PCA plot</span><span class="w">
+</span><span class="n">pcaData</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">plotPCA</span><span class="p">(</span><span class="n">vst_dds</span><span class="p">,</span><span class="w"> </span><span class="n">intgroup</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s2">"seed"</span><span class="p">,</span><span class="w"> </span><span class="s2">"infected"</span><span class="p">,</span><span class="w"> </span><span class="s2">"dpi"</span><span class="p">),</span><span class="w"> </span><span class="n">returnData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">)</span><span class="w">
+
+</span><span class="n">percentVar</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">round</span><span class="p">(</span><span class="m">100</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nf">attr</span><span class="p">(</span><span class="n">pcaData</span><span class="p">,</span><span class="w"> </span><span class="s2">"percentVar"</span><span class="p">))</span><span class="w">
+
+</span><span class="n">ggplot</span><span class="p">(</span><span class="n">pcaData</span><span class="p">,</span><span class="w"> </span><span class="n">aes</span><span class="p">(</span><span class="n">PC1</span><span class="p">,</span><span class="w"> </span><span class="n">PC2</span><span class="p">,</span><span class="w"> </span><span class="n">color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">seed</span><span class="p">,</span><span class="w"> </span><span class="n">shape</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">infected</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dpi</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">geom_point</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">xlab</span><span class="p">(</span><span class="n">paste0</span><span class="p">(</span><span class="s2">"PC1: "</span><span class="p">,</span><span class="n">percentVar</span><span class="p">[</span><span class="m">1</span><span class="p">],</span><span class="s2">"% variance"</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">ylab</span><span class="p">(</span><span class="n">paste0</span><span class="p">(</span><span class="s2">"PC2: "</span><span class="p">,</span><span class="n">percentVar</span><span class="p">[</span><span class="m">2</span><span class="p">],</span><span class="s2">"% variance"</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w"> 
+  </span><span class="n">coord_fixed</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">ggtitle</span><span class="p">(</span><span class="s2">"PCA plot"</span><span class="p">)</span><span class="w">
+
+
+</span><span class="c1">#####################################</span><span class="w">
+</span><span class="c1"># Episode 06: differential expression</span><span class="w">
+</span><span class="c1">#####################################</span><span class="w">
+
+</span><span class="c1">##################</span><span class="w">
+</span><span class="c1"># diff expression</span><span class="w">
+</span><span class="c1">#################</span><span class="w">
+</span><span class="c1"># Filter design file: keep only mock versus infected</span><span class="w">
+</span><span class="n">xp_design_mock_vs_infected</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xp_design</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span><span class="n">filter</span><span class="p">(</span><span class="n">seed</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">"MgCl2"</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">dpi</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">"7"</span><span class="p">)</span><span class="w"> 
+
+</span><span class="c1"># Filter count file accordingly (so the rows correspond to the columns of the filtered xp_design file)</span><span class="w">
+</span><span class="n">counts_filtered</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">counts</span><span class="p">[,</span><span class="w"> </span><span class="n">colnames</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span><span class="w"> </span><span class="o">%in%</span><span class="w"> </span><span class="n">xp_design_mock_vs_infected</span><span class="o">$</span><span class="n">sample</span><span class="p">]</span><span class="w">
+
+</span><span class="c1">## Creation of the DESeqDataSet object</span><span class="w">
+</span><span class="n">dds2</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">DESeqDataSetFromMatrix</span><span class="p">(</span><span class="n">countData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">counts_filtered</span><span class="p">,</span><span class="w"> 
+                              </span><span class="n">colData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xp_design_mock_vs_infected</span><span class="p">,</span><span class="w"> 
+                              </span><span class="n">design</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">~</span><span class="w"> </span><span class="n">infected</span><span class="p">)</span><span class="w">
+
+
+
+</span><span class="n">dds2</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">DESeq</span><span class="p">(</span><span class="n">dds2</span><span class="p">)</span><span class="w">
+</span><span class="n">res</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">results</span><span class="p">(</span><span class="n">dds2</span><span class="p">,</span><span class="w"> </span><span class="n">contrast</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s2">"infected"</span><span class="p">,</span><span class="w">                        </span><span class="c1"># name of the factor</span><span class="w">
+                                  </span><span class="s2">"Pseudomonas_syringae_DC3000"</span><span class="p">,</span><span class="w">     </span><span class="c1"># name of the numerator level for fold change</span><span class="w">
+                                  </span><span class="s2">"mock"</span><span class="p">))</span><span class="w">                           </span><span class="c1"># name of the denominator level </span><span class="w">
+
+
+</span><span class="c1"># how many genes differentially regulated ?</span><span class="w">
+</span><span class="c1"># threshold of p = 0.01</span><span class="w">
+</span><span class="n">res</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">as.data.frame</span><span class="p">()</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">filter</span><span class="p">(</span><span class="n">padj</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="m">0.01</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="nf">dim</span><span class="p">()</span><span class="w">
+
+</span><span class="c1"># threshold of p = 0.001</span><span class="w">
+</span><span class="n">res</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">as.data.frame</span><span class="p">()</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">filter</span><span class="p">(</span><span class="n">padj</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="m">0.001</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="nf">dim</span><span class="p">()</span><span class="w">
+
+
+</span><span class="c1"># one can also see the impact of false discovery rate method</span><span class="w">
+</span><span class="n">hist</span><span class="p">(</span><span class="n">res</span><span class="o">$</span><span class="n">pvalue</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="o">=</span><span class="s2">"grey"</span><span class="p">,</span><span class="w"> </span><span class="n">main</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Non-adjusted p-value distribution"</span><span class="p">)</span><span class="w">
+</span><span class="n">hist</span><span class="p">(</span><span class="n">res</span><span class="o">$</span><span class="n">padj</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="o">=</span><span class="s2">"lightblue"</span><span class="p">,</span><span class="w"> </span><span class="n">main</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Adjusted p-value distribution"</span><span class="p">)</span><span class="w">
+
+
+
+</span><span class="c1">#########</span><span class="w">
+</span><span class="c1"># MA plot</span><span class="w">
+</span><span class="c1">#########</span><span class="w">
+</span><span class="c1"># MA plot</span><span class="w">
+</span><span class="n">plotMA</span><span class="p">(</span><span class="n">object</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dds2</span><span class="p">,</span><span class="w"> </span><span class="n">alpha</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.01</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># shrink effect size</span><span class="w">
+</span><span class="n">resLFC</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">lfcShrink</span><span class="p">(</span><span class="n">dds</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dds2</span><span class="p">,</span><span class="w"> 
+                  </span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">res</span><span class="p">,</span><span class="w">
+                  </span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"normal"</span><span class="p">,</span><span class="w">
+                  </span><span class="n">coef</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2</span><span class="p">)</span><span class="w"> </span><span class="c1"># corresponds to "infected_Pseudomonas_syringae_DC3000_vs_mock" comparison</span><span class="w">
+
+</span><span class="c1"># MA plot shrinked</span><span class="w">
+</span><span class="n">plotMA</span><span class="p">(</span><span class="n">object</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">resLFC</span><span class="p">,</span><span class="w"> </span><span class="n">alpha</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.01</span><span class="p">)</span><span class="w">
+
+
+</span><span class="c1">############## </span><span class="w">
+</span><span class="c1"># Volcano plot</span><span class="w">
+</span><span class="c1">#############</span><span class="w">
+
+</span><span class="n">EnhancedVolcano</span><span class="p">(</span><span class="n">toptable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">resLFC</span><span class="p">,</span><span class="w">
+                </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"log2FoldChange"</span><span class="p">,</span><span class="w">
+                </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"padj"</span><span class="p">,</span><span class="w">
+                </span><span class="n">lab</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rownames</span><span class="p">(</span><span class="n">resLFC</span><span class="p">)</span><span class="w">
+                </span><span class="p">)</span><span class="w">
+
+</span><span class="n">EnhancedVolcano</span><span class="p">(</span><span class="n">toptable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">resLFC</span><span class="p">,</span><span class="w">
+                </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"log2FoldChange"</span><span class="p">,</span><span class="w">
+                </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"padj"</span><span class="p">,</span><span class="w">
+                </span><span class="n">lab</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rownames</span><span class="p">(</span><span class="n">resLFC</span><span class="p">),</span><span class="w">
+                </span><span class="n">xlim</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="m">-10</span><span class="p">,</span><span class="w"> </span><span class="m">+10</span><span class="p">),</span><span class="w">
+                </span><span class="n">ylim</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">100</span><span class="p">),</span><span class="w">
+                </span><span class="n">pCutoff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1e-06</span><span class="p">,</span><span class="w">
+                </span><span class="n">transcriptPointSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2.0</span><span class="p">,</span><span class="w">
+                </span><span class="n">FCcutoff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2</span><span class="p">,</span><span class="w"> 
+                </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Pseudomonas syringae DC3000 versus mock \n (fold change cutoff = 2, p-value cutoff = 1e-06)"</span><span class="p">,</span><span class="w">
+                </span><span class="n">legend</span><span class="o">=</span><span class="nf">c</span><span class="p">(</span><span class="w">
+                  </span><span class="s1">'Not significant'</span><span class="p">,</span><span class="w">
+                  </span><span class="s1">'Log2 fold-change (but do not pass p-value cutoff)'</span><span class="p">,</span><span class="w">
+                  </span><span class="s1">'Pass p-value cutoff'</span><span class="p">,</span><span class="w">
+                  </span><span class="s1">'Pass both p-value &amp; Log2 fold change'</span><span class="p">)</span><span class="w">
+                </span><span class="p">)</span><span class="w">
+
+
+
+</span><span class="c1">######### </span><span class="w">
+</span><span class="c1"># Heatmap</span><span class="w">
+</span><span class="c1">#########</span><span class="w">
+</span><span class="c1">#counts_normalised_scaled = t(scale(t(counts_normalised), center = T, scale = F))</span><span class="w">
+
+</span><span class="c1"># not scaled</span><span class="w">
+</span><span class="n">pheatmap</span><span class="p">(</span><span class="n">counts_normalised</span><span class="p">[</span><span class="m">1</span><span class="o">:</span><span class="m">10</span><span class="p">,],</span><span class="w"> </span><span class="n">cluster_rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">F</span><span class="p">,</span><span class="w"> </span><span class="n">cluster_cols</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">F</span><span class="p">)</span><span class="w">
+</span><span class="n">pheatmap</span><span class="p">(</span><span class="n">counts_normalised</span><span class="p">[</span><span class="m">1</span><span class="o">:</span><span class="m">20</span><span class="p">,],</span><span class="w"> </span><span class="n">cluster_rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">F</span><span class="p">,</span><span class="w"> </span><span class="n">cluster_cols</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">F</span><span class="p">)</span><span class="w">
+</span><span class="n">pheatmap</span><span class="p">(</span><span class="n">counts_normalised</span><span class="p">[</span><span class="m">1</span><span class="o">:</span><span class="m">50</span><span class="p">,],</span><span class="w"> </span><span class="n">cluster_rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">F</span><span class="p">,</span><span class="w"> </span><span class="n">cluster_cols</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">F</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># scaled using a log2 transformation</span><span class="w">
+</span><span class="n">counts_normalised</span><span class="p">[</span><span class="n">counts_normalised</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="m">0</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="m">1</span><span class="w">
+
+</span><span class="n">pheatmap</span><span class="p">(</span><span class="n">log2</span><span class="p">(</span><span class="n">counts_normalised</span><span class="p">[</span><span class="m">1</span><span class="o">:</span><span class="m">50</span><span class="p">,]),</span><span class="w"> </span><span class="n">cluster_rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">F</span><span class="p">,</span><span class="w"> </span><span class="n">cluster_cols</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">F</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># clearer heatmaps by filtering out genes not differentially expressed</span><span class="w">
+</span><span class="n">genes_differential</span><span class="w"> </span><span class="o">=</span><span class="w"> 
+  </span><span class="n">res</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
+  </span><span class="n">as.data.frame</span><span class="p">()</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
+  </span><span class="n">mutate</span><span class="p">(</span><span class="n">gene</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">row.names</span><span class="p">(</span><span class="n">res</span><span class="p">))</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">filter</span><span class="p">(</span><span class="n">padj</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="m">0.001</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">select</span><span class="p">(</span><span class="n">gene</span><span class="p">)</span><span class="w"> 
+  
+</span><span class="c1"># use the genes names in res_only_diff to filter the counts_normalised matrix</span><span class="w">
+</span><span class="nf">dim</span><span class="p">(</span><span class="n">counts_normalised</span><span class="p">)</span><span class="w"> </span><span class="c1"># contains all gene info = 33,768 genes</span><span class="w">
+
+</span><span class="c1"># filter</span><span class="w">
+</span><span class="n">counts_normalised_only_diff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">counts_normalised</span><span class="p">[</span><span class="n">row.names</span><span class="p">(</span><span class="n">counts_normalised</span><span class="p">)</span><span class="w"> </span><span class="o">%in%</span><span class="w"> </span><span class="n">genes_differential</span><span class="o">$</span><span class="n">gene</span><span class="p">,</span><span class="w"> </span><span class="p">]</span><span class="w">
+</span><span class="nf">dim</span><span class="p">(</span><span class="n">counts_normalised_only_diff</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># no clustering</span><span class="w">
+</span><span class="n">pheatmap</span><span class="p">(</span><span class="n">log2</span><span class="p">(</span><span class="n">counts_normalised_only_diff</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">1</span><span class="p">),</span><span class="w"> 
+         </span><span class="n">cluster_rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">F</span><span class="p">,</span><span class="w"> 
+         </span><span class="n">cluster_cols</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">F</span><span class="p">,</span><span class="w"> 
+         </span><span class="n">show_rownames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">F</span><span class="p">,</span><span class="w"> 
+         </span><span class="n">show_colnames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">F</span><span class="p">,</span><span class="w">
+         </span><span class="n">main</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"No clustering"</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># cluster genes</span><span class="w">
+</span><span class="n">pheatmap</span><span class="p">(</span><span class="n">log2</span><span class="p">(</span><span class="n">counts_normalised_only_diff</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">1</span><span class="p">),</span><span class="w"> 
+         </span><span class="n">cluster_rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">T</span><span class="p">,</span><span class="w"> 
+         </span><span class="n">cluster_cols</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">F</span><span class="p">,</span><span class="w">
+         </span><span class="n">show_rownames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">F</span><span class="p">,</span><span class="w"> 
+         </span><span class="n">show_colnames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">F</span><span class="p">,</span><span class="w"> 
+         </span><span class="n">main</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Clustering of genes"</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># cluster genes and samples</span><span class="w">
+</span><span class="n">pheatmap</span><span class="p">(</span><span class="n">log2</span><span class="p">(</span><span class="n">counts_normalised_only_diff</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">1</span><span class="p">),</span><span class="w"> 
+         </span><span class="n">cluster_rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">T</span><span class="p">,</span><span class="w"> 
+         </span><span class="n">cluster_cols</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">T</span><span class="p">,</span><span class="w">
+         </span><span class="n">show_rownames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">F</span><span class="p">,</span><span class="w"> 
+         </span><span class="n">show_colnames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">F</span><span class="p">,</span><span class="w"> 
+         </span><span class="n">main</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Clustering of genes and samples"</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># even clearer heatmaps by filtering out genes not differentially expressed</span><span class="w">
+</span><span class="c1"># and genes with a high fold change</span><span class="w">
+</span><span class="n">genes_differential_fold</span><span class="w"> </span><span class="o">=</span><span class="w"> 
+  </span><span class="n">res</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
+  </span><span class="n">as.data.frame</span><span class="p">()</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
+  </span><span class="n">mutate</span><span class="p">(</span><span class="n">gene</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">row.names</span><span class="p">(</span><span class="n">res</span><span class="p">))</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">filter</span><span class="p">(</span><span class="n">padj</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="m">0.001</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">filter</span><span class="p">(</span><span class="n">log2FoldChange</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">4</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">select</span><span class="p">(</span><span class="n">gene</span><span class="p">)</span><span class="w"> 
+
+</span><span class="n">counts_normalised_only_diff_fold</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">counts_normalised</span><span class="p">[</span><span class="n">row.names</span><span class="p">(</span><span class="n">counts_normalised</span><span class="p">)</span><span class="w"> </span><span class="o">%in%</span><span class="w"> </span><span class="n">genes_differential_fold</span><span class="o">$</span><span class="n">gene</span><span class="p">,</span><span class="w"> </span><span class="p">]</span><span class="w">
+
+</span><span class="c1"># cluster genes and samples</span><span class="w">
+</span><span class="n">pheatmap</span><span class="p">(</span><span class="n">log2</span><span class="p">(</span><span class="n">counts_normalised_only_diff_fold</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">1</span><span class="p">),</span><span class="w"> 
+         </span><span class="n">cluster_rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">T</span><span class="p">,</span><span class="w"> 
+         </span><span class="n">cluster_cols</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">T</span><span class="p">,</span><span class="w">
+         </span><span class="n">show_rownames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">F</span><span class="p">,</span><span class="w"> 
+         </span><span class="n">show_colnames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">F</span><span class="p">,</span><span class="w"> 
+         </span><span class="n">main</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Clustering of genes and samples"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+:ET

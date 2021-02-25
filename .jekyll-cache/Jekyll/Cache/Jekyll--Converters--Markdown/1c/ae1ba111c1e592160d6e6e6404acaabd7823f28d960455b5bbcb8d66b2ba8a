@@ -1,0 +1,261 @@
+I";j<p>A huge thanks to <a href="https://github.com/jszkodon">Jolanta Szkodon</a> for her custom function to reproduce DESeq2 normalization.</p>
+
+<p>The median of ratios method is a normalization method used to account for sequencing differences in library size and RNA composition of samples. This makes it a suitable method to use when comparing between samples. It does not account for differences in gene length, making it unsuitable for within sample comparisons.</p>
+
+<p>The median of ratios method is applied in the DESeq2 package, used for differential expression testing. In the DESeq2 package, normalization is conducted easily with a function. Although this is convenient, it is useful to understand the step-by-step breakdown of the median of ratios method.</p>
+
+<p>Sample expression count data was taken from the <a href="https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE49110">GSE49110 dataset</a> and cut to create a manageable dataset for the tutorial.</p>
+
+<p>In <a href="#section-1-step-by-step-procedure">Section 1</a>, steps of the median of ratios method are shown.<br />
+In <a href="#section-two-a-function-to-normalize-the-deseq2-way">Section 2</a>, a function including all steps is shown. <br />
+In <a href="#section-3-sanity-check">Section 3</a>, the normalized counts are compared with the DESeq2 method to ensure the results are the same. References used are listed at the end.</p>
+
+<h1 id="table-of-contents">Table of Contents</h1>
+
+<!-- MarkdownTOC autolink="True" levels="1,2" -->
+
+<ul>
+  <li><a href="#section-1-step-by-step-procedure">Section 1: step-by-step procedure</a>
+    <ul>
+      <li><a href="#step-1-upload-data">Step 1: Upload data</a></li>
+      <li><a href="#step-2-take-the-log-of-all-values">Step 2: Take the log of all values</a></li>
+      <li><a href="#step-3-take-the-average-of-each-row">Step 3: Take the average of each row</a></li>
+      <li><a href="#step-4-filter-out-all-of-the-genes-with--inf-as-their-average">Step 4: Filter out all of the genes with -Inf as their average</a></li>
+      <li><a href="#step-5-subtract-the-gene-pseudo-references-from-log-counts">Step 5: Subtract the gene pseudo-references from log counts</a></li>
+      <li><a href="#step-6-find-the-median-of-the-ratios-for-each-sample">Step 6: Find the median of the ratios for each sample</a></li>
+      <li><a href="#step-7-convert-medians-to-scaling-factors">Step 7: Convert medians to scaling factors</a></li>
+      <li><a href="#step-8-divide-the-original-counts-not-log-version-by-the-scaling-factors">Step 8: Divide the original counts (not log version) by the scaling factors</a></li>
+    </ul>
+  </li>
+  <li><a href="#section-two-a-function-to-normalize-the-deseq2-way">Section two: a function to normalize the DESeq2 way</a></li>
+  <li><a href="#section-3-sanity-check">Section 3: sanity check</a></li>
+  <li><a href="#references">References</a></li>
+</ul>
+
+<!-- /MarkdownTOC -->
+
+<h1 id="section-1-step-by-step-procedure">Section 1: step-by-step procedure</h1>
+
+<h2 id="step-1-upload-data">Step 1: Upload data</h2>
+<p>Rows (genes) and columns (samples) are seen below.</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">read.csv</span><span class="p">(</span><span class="s2">"sample_count_data.csv"</span><span class="p">,</span><span class="w"> </span><span class="n">row.names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">)</span><span class="w">
+</span><span class="n">head</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>          siC1 siC2 siE11 siE12 siE21 siE22 siE31 siE32
+12SBSRNA4    0    2     3     3     2     4     6     2
+A1BG        50   52    86    80    66    94    67    83
+A1BG-AS1     7    9    12    10    11    18     7     8
+A1CF         2    1     4     7     7     1     1     7
+A2LD1       58   76    57    52    67    97   101    98
+A2M          0    1     0     1     1     0     0     0
+</code></pre></div></div>
+
+<p>The following few steps are used to create a pseudo-reference sample for each gene. To do this, we need to calculate the geometric mean for each gene.</p>
+
+<h2 id="step-2-take-the-log-of-all-values">Step 2: Take the log of all values</h2>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">log_data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">log</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="w">
+</span><span class="n">head</span><span class="p">(</span><span class="n">log_data</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>               siC1      siC2    siE11    siE12     siE21    siE22    siE31     siE32
+12SBSRNA4      -Inf 0.6931472 1.098612 1.098612 0.6931472 1.386294 1.791759 0.6931472
+A1BG      3.9120230 3.9512437 4.454347 4.382027 4.1896547 4.543295 4.204693 4.4188406
+A1BG-AS1  1.9459101 2.1972246 2.484907 2.302585 2.3978953 2.890372 1.945910 2.0794415
+A1CF      0.6931472 0.0000000 1.386294 1.945910 1.9459101 0.000000 0.000000 1.9459101
+A2LD1     4.0604430 4.3307333 4.043051 3.951244 4.2046926 4.574711 4.615121 4.5849675
+A2M            -Inf 0.0000000     -Inf 0.000000 0.0000000     -Inf     -Inf      -Inf
+</code></pre></div></div>
+
+<h2 id="step-3-take-the-average-of-each-row">Step 3: Take the average of each row</h2>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">library</span><span class="p">(</span><span class="n">dplyr</span><span class="p">)</span><span class="w">
+</span><span class="n">library</span><span class="p">(</span><span class="n">tibble</span><span class="p">)</span><span class="w">
+
+</span><span class="n">log_data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">log_data</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+             </span><span class="n">rownames_to_column</span><span class="p">(</span><span class="s1">'gene'</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+             </span><span class="n">mutate</span><span class="w"> </span><span class="p">(</span><span class="n">pseudo_reference</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rowMeans</span><span class="p">(</span><span class="n">log_data</span><span class="p">))</span><span class="w">
+
+</span><span class="n">head</span><span class="p">(</span><span class="n">log_data</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>       gene      siC1      siC2    siE11    siE12     siE21    siE22    siE31     siE32 pseudo_reference
+1 12SBSRNA4      -Inf 0.6931472 1.098612 1.098612 0.6931472 1.386294 1.791759 0.6931472             -Inf
+2      A1BG 3.9120230 3.9512437 4.454347 4.382027 4.1896547 4.543295 4.204693 4.4188406        4.2570154
+3  A1BG-AS1 1.9459101 2.1972246 2.484907 2.302585 2.3978953 2.890372 1.945910 2.0794415        2.2805306
+4      A1CF 0.6931472 0.0000000 1.386294 1.945910 1.9459101 0.000000 0.000000 1.9459101        0.9896465
+5     A2LD1 4.0604430 4.3307333 4.043051 3.951244 4.2046926 4.574711 4.615121 4.5849675        4.2956204
+6       A2M      -Inf 0.0000000     -Inf 0.000000 0.0000000     -Inf     -Inf      -Inf             -Inf
+
+</code></pre></div></div>
+
+<h2 id="step-4-filter-out-all-of-the-genes-with--inf-as-their-average">Step 4: Filter out all of the genes with -Inf as their average</h2>
+<p>They will not be used to calculate the median.</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">filtered_log_data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">log_data</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span><span class="n">filter</span><span class="p">(</span><span class="n">pseudo_reference</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="s2">"-Inf"</span><span class="p">)</span><span class="w">
+</span><span class="n">head</span><span class="p">(</span><span class="n">filtered_log_data</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>      gene      siC1     siC2    siE11    siE12    siE21    siE22     siE31    siE32 pseudo_reference
+1     A1BG 3.9120230 3.951244 4.454347 4.382027 4.189655 4.543295 4.2046926 4.418841        4.2570154
+2 A1BG-AS1 1.9459101 2.197225 2.484907 2.302585 2.397895 2.890372 1.9459101 2.079442        2.2805306
+3     A1CF 0.6931472 0.000000 1.386294 1.945910 1.945910 0.000000 0.0000000 1.945910        0.9896465
+4    A2LD1 4.0604430 4.330733 4.043051 3.951244 4.204693 4.574711 4.6151205 4.584967        4.2956204
+5   A4GALT 6.1506028 6.100319 6.270988 6.565265 6.335054 6.428105 6.3952616 6.171701        6.3021621
+6    A4GNT 0.6931472 0.000000 0.000000 1.609438 1.945910 1.098612 0.6931472 0.000000        0.7550318
+</code></pre></div></div>
+
+<h2 id="step-5-subtract-the-gene-pseudo-references-from-log-counts">Step 5: Subtract the gene pseudo-references from log counts</h2>
+<p>In this step, you are subtracting the average of the logs from the log of the original data. Log(x/y) is a ratio.</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">ratio_data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sweep</span><span class="p">(</span><span class="n">filtered_log_data</span><span class="p">[,</span><span class="m">2</span><span class="o">:</span><span class="m">9</span><span class="p">],</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="n">filtered_log_data</span><span class="p">[,</span><span class="m">10</span><span class="p">],</span><span class="w"> </span><span class="s2">"-"</span><span class="p">)</span><span class="w">
+</span><span class="n">head</span><span class="p">(</span><span class="n">ratio_data</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>         siC1        siC2       siE11       siE12       siE21      siE22       siE31      siE32
+1 -0.34499242 -0.30577171  0.19733187  0.12501121 -0.06736068  0.2862794 -0.05232281  0.1618252
+2 -0.33462050 -0.08330607  0.20437600  0.02205444  0.11736462  0.6098411 -0.33462050 -0.2010891
+3 -0.29649932 -0.98964650  0.39664786  0.95626365  0.95626365 -0.9896465 -0.98964650  0.9562637
+4 -0.23517736  0.03511297 -0.25256910 -0.34437665 -0.09092775  0.2790906  0.31950015  0.2893471
+5 -0.15155934 -0.20184315 -0.03117367  0.26310286  0.03289215  0.1259432  0.09309949 -0.1304615
+6 -0.06188466 -0.75503184 -0.75503184  0.85440607  1.19087831  0.3435804 -0.06188466 -0.7550318
+</code></pre></div></div>
+
+<h2 id="step-6-find-the-median-of-the-ratios-for-each-sample">Step 6: Find the median of the ratios for each sample</h2>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">sample_medians</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">apply</span><span class="p">(</span><span class="n">ratio_data</span><span class="p">,</span><span class="w"> </span><span class="m">2</span><span class="p">,</span><span class="w"> </span><span class="n">median</span><span class="p">)</span><span class="w">
+</span><span class="n">sample_medians</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>       siC1        siC2       siE11       siE12       siE21       siE22       siE31       siE32 
+-0.02605145 -0.04549215 -0.07749397  0.12030642  0.06268842  0.05039392 -0.06025587  0.03220589 
+</code></pre></div></div>
+
+<h2 id="step-7-convert-medians-to-scaling-factors">Step 7: Convert medians to scaling factors</h2>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># scaling factor = e^median</span><span class="w">
+</span><span class="n">scaling_factors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">exp</span><span class="p">(</span><span class="n">sample_medians</span><span class="p">)</span><span class="w">
+</span><span class="n">scaling_factors</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>     siC1      siC2     siE11     siE12     siE21     siE22     siE31     siE32 
+0.9742850 0.9555271 0.9254326 1.1278424 1.0646951 1.0516853 0.9415236 1.0327301 
+</code></pre></div></div>
+
+<h2 id="step-8-divide-the-original-counts-not-log-version-by-the-scaling-factors">Step 8: Divide the original counts (not log version) by the scaling factors</h2>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">manually_normalized</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sweep</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="m">2</span><span class="p">,</span><span class="w"> </span><span class="n">scaling_factors</span><span class="p">,</span><span class="w"> </span><span class="s2">"/"</span><span class="p">)</span><span class="w">
+</span><span class="n">head</span><span class="p">(</span><span class="n">manually_normalized</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>               siC1      siC2     siE11      siE12      siE21      siE22      siE31     siE32
+12SBSRNA4  0.000000  2.093086  3.241727  2.6599461  1.8784721  3.8034192   6.372650  1.936614
+A1BG      51.319688 54.420225 92.929511 70.9318970 61.9895807 89.3803503  71.161255 80.369498
+A1BG-AS1   7.184756  9.418885 12.966909  8.8664871 10.3315968 17.1153862   7.434758  7.746458
+A1CF       2.052788  1.046543  4.322303  6.2065410  6.5746525  0.9508548   1.062108  6.778150
+A2LD1     59.530838 79.537252 61.592816 46.1057330 62.9288167 92.2329146 107.272936 94.894106
+A2M        0.000000  1.046543  0.000000  0.8866487  0.9392361  0.0000000   0.000000  0.000000
+</code></pre></div></div>
+
+<h1 id="section-two-a-function-to-normalize-the-deseq2-way">Section two: a function to normalize the DESeq2 way</h1>
+<p>Below is one function to “manually” normalize data with the median of ratios method. Import data before using the function.</p>
+
+<p><strong>mor</strong> stands for “median of ratios”.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">mor_normalization</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">function</span><span class="p">(</span><span class="n">data</span><span class="p">){</span><span class="w">
+  </span><span class="n">library</span><span class="p">(</span><span class="n">dplyr</span><span class="p">)</span><span class="w">
+  </span><span class="n">library</span><span class="p">(</span><span class="n">tibble</span><span class="p">)</span><span class="w">
+
+  </span><span class="c1"># take the log</span><span class="w">
+  </span><span class="n">log_data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">log</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="w"> 
+  
+  </span><span class="c1"># find the psuedo-references per sample by taking the geometric mean</span><span class="w">
+  </span><span class="n">log_data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">log_data</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+               </span><span class="n">rownames_to_column</span><span class="p">(</span><span class="s1">'gene'</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+               </span><span class="n">mutate</span><span class="w"> </span><span class="p">(</span><span class="n">gene_averages</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rowMeans</span><span class="p">(</span><span class="n">log_data</span><span class="p">))</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+               </span><span class="n">filter</span><span class="p">(</span><span class="n">gene_averages</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="s2">"-Inf"</span><span class="p">)</span><span class="w">
+  
+  </span><span class="c1"># the last columns is the pseudo-reference column </span><span class="w">
+  </span><span class="n">pseudo_column</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ncol</span><span class="p">(</span><span class="n">log_data</span><span class="p">)</span><span class="w">
+  
+  </span><span class="c1"># where to stop before the pseudo column </span><span class="w">
+  </span><span class="n">before_pseduo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pseudo_column</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="m">1</span><span class="w">
+  
+  </span><span class="c1"># find the ratio of the log data to the pseudo-reference</span><span class="w">
+  </span><span class="n">ratios</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sweep</span><span class="p">(</span><span class="n">log_data</span><span class="p">[,</span><span class="m">2</span><span class="o">:</span><span class="n">before_pseduo</span><span class="p">],</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="n">log_data</span><span class="p">[,</span><span class="n">pseudo_column</span><span class="p">],</span><span class="w"> </span><span class="s2">"-"</span><span class="p">)</span><span class="w">
+  
+  </span><span class="c1"># find the median of the ratios</span><span class="w">
+  </span><span class="n">sample_medians</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">apply</span><span class="p">(</span><span class="n">ratios</span><span class="p">,</span><span class="w"> </span><span class="m">2</span><span class="p">,</span><span class="w"> </span><span class="n">median</span><span class="p">)</span><span class="w">
+  
+  </span><span class="c1"># convert the median to a scaling factor</span><span class="w">
+  </span><span class="n">scaling_factors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">exp</span><span class="p">(</span><span class="n">sample_medians</span><span class="p">)</span><span class="w">
+  
+  </span><span class="c1"># use scaling factors to scale the original data</span><span class="w">
+  </span><span class="n">manually_normalized</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sweep</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="m">2</span><span class="p">,</span><span class="w"> </span><span class="n">scaling_factors</span><span class="p">,</span><span class="w"> </span><span class="s2">"/"</span><span class="p">)</span><span class="w">
+  </span><span class="nf">return</span><span class="p">(</span><span class="n">manually_normalized</span><span class="p">)</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>You can check that this function returns the same result as the step-by-step procedure above :arrow_up: .</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">mor_normalization</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">manually_normalized</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>          siC1 siC2 siE11 siE12 siE21 siE22 siE31 siE32
+12SBSRNA4 TRUE TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE
+A1BG      TRUE TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE
+A1BG-AS1  TRUE TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE
+A1CF      TRUE TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE
+A2LD1     TRUE TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE
+... (more lines) ...
+</code></pre></div></div>
+
+<h1 id="section-3-sanity-check">Section 3: sanity check</h1>
+
+<p>A sanity check to see if the normalization within DESeq2 is identical to our manually normalized data.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">library</span><span class="p">(</span><span class="n">DESeq2</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># samples (columns names) of the data should be named</span><span class="w">
+</span><span class="n">samples</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">as.data.frame</span><span class="p">(</span><span class="n">colnames</span><span class="p">(</span><span class="n">data</span><span class="p">))</span><span class="w">
+
+</span><span class="c1"># create a DESeqDataSet object. The design can be altered based on experimental design. A design of 1 means no design. </span><span class="w">
+</span><span class="n">dds</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DESeqDataSetFromMatrix</span><span class="p">(</span><span class="n">countData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">colData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">samples</span><span class="p">,</span><span class="w"> </span><span class="n">design</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">~</span><span class="m">1</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># this function generates the size factors</span><span class="w">
+</span><span class="n">dds</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">estimateSizeFactors</span><span class="p">(</span><span class="n">dds</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p>We can compare the scaling factors that were found manually vs. the scaling factors (termed, “size factors”) from DESeq2.</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># scaling_factors were manually computed using our mor_normalization function</span><span class="w">
+</span><span class="c1"># sizeFactors(dds) is used to find the scaling factors from DESeq2</span><span class="w">
+</span><span class="n">scaling_factors</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">sizeFactors</span><span class="p">(</span><span class="n">dds</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code> siC1  siC2 siE11 siE12 siE21 siE22 siE31 siE32 
+ TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE 
+</code></pre></div></div>
+
+<p>Lastly, we can use <code class="highlighter-rouge">counts()</code> to normalize the original data in <code class="highlighter-rouge">DESeq2</code>. When <code class="highlighter-rouge">counts()</code> is used with the <code class="highlighter-rouge">normalized = TRUE</code> arguments, the counts will be normalized. When you do not use this argument, counts(dds) returns the original counts.</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">normalized_deseq2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">counts</span><span class="p">(</span><span class="n">dds</span><span class="p">,</span><span class="w"> </span><span class="n">normalized</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p>The normalized counts are identical between DESeq2 and the manual method.</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">normalized_deseq2</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">manually_normalized</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>          siC1 siC2 siE11 siE12 siE21 siE22 siE31 siE32
+12SBSRNA4 TRUE TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE
+A1BG      TRUE TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE
+A1BG-AS1  TRUE TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE
+A1CF      TRUE TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE
+A2LD1     TRUE TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE
+A2M       TRUE TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE
+A2ML1     TRUE TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE
+A2MP1     TRUE TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE
+... (more lines) ...
+</code></pre></div></div>
+
+<h1 id="references">References</h1>
+<ol>
+  <li>Love et al. (2014) Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2. Genome Biology, 15:550. <a href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-014-0550-8">doi:10.1186/s13059-014-0550-8</a>.</li>
+  <li><a href="https://www.youtube.com/watch?v=UFB993xufUU">Statquest</a></li>
+  <li><a href="https://hbctraining.github.io/DGE_workshop/lessons/02_DGE_count_normalization.html">DGE count normalization</a></li>
+</ol>
+
+:ET

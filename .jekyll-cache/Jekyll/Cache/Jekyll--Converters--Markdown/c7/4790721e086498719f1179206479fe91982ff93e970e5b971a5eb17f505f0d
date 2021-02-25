@@ -1,0 +1,196 @@
+I"^G<h1 id="table-of-contents">Table of Contents</h1>
+<!-- MarkdownTOC autolink="True" levels="1,2" -->
+
+<ul>
+  <li><a href="#1-introduction">1. Introduction</a>
+    <ul>
+      <li><a href="#12-setup">1.2 Setup</a></li>
+    </ul>
+  </li>
+  <li><a href="#2-ipath-webtool">2. iPath webtool</a>
+    <ul>
+      <li><a href="#21-tool-presentation">2.1 Tool presentation</a></li>
+      <li><a href="#22-retrieving-uniprot-identifiers">2.2 Retrieving Uniprot identifiers</a></li>
+      <li><a href="#52-mapman">5.2 MapMan</a></li>
+    </ul>
+  </li>
+  <li><a href="#6-other-data-mining-tools">6. Other data mining tools</a>
+    <ul>
+      <li><a href="#61-thaleminer">6.1 ThaleMiner</a></li>
+      <li><a href="#62-expression-atlas">6.2 Expression atlas</a></li>
+      <li><a href="#63-bar">6.3 BAR</a></li>
+      <li><a href="#64-coexprviz">6.4 CoExprViz</a></li>
+    </ul>
+  </li>
+  <li><a href="#7-troubleshooting">7. Troubleshooting</a></li>
+  <li><a href="#8-going-further">8. Going further</a>
+    <ul>
+      <li><a href="#81-useful-links">8.1 Useful links</a></li>
+      <li><a href="#82-references">8.2. References</a></li>
+    </ul>
+  </li>
+</ul>
+
+<!-- /MarkdownTOC -->
+
+<p><img src="../img/07-workflow-overview.png" width="500px" alt="workflow overview" /></p>
+
+<h1 id="1-introduction">1. Introduction</h1>
+
+<h2 id="12-setup">1.2 Setup</h2>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="w">
+</span></code></pre></div></div>
+
+<h1 id="2-ipath-webtool">2. iPath webtool</h1>
+
+<h2 id="21-tool-presentation">2.1 Tool presentation</h2>
+<p>So far, we have only been mostly looking at our transcriptomic results alone. Yet, KEGG has started to give us some insight into metabolism. Let’s dig further with two tools: <strong>iPath</strong> and  <strong>MapMan</strong>.</p>
+
+<p>From the <a href="https://pathways.embl.de/">Interactive Pathways Explorer v3 home page</a>:</p>
+<blockquote>
+  <p>Interactive Pathways Explorer (iPath) is a web-based tool for the visualization, analysis and customization of various pathway maps.<br />
+iPath provides extensive map customization and data mapping capablities. Colors, width and opacity of any map element can be changed using various types of data (for example KEGG KOs, COGs or EC numbers).</p>
+</blockquote>
+
+<p>We will use this webtool to map our genes on metabolic pathways to provide some contextual information.</p>
+
+<p><img src="../img/07-ipath-1.png" alt="home page of iPath 3 web interface" height="400px" /></p>
+
+<h2 id="22-retrieving-uniprot-identifiers">2.2 Retrieving Uniprot identifiers</h2>
+
+<p>From our list of differential genes
+We are going to generate a list of Uniprot identifiers since these are usable to visualise with iPath3 from our list of differential genes.</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">diff_arabidopsis_genes_annotated</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">filter</span><span class="p">(</span><span class="n">uniprotswissprot</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="s2">""</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">                                       </span><span class="c1"># to remove genes with no matching Uniprot entries</span><span class="w">
+  </span><span class="n">unique</span><span class="p">()</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">mutate</span><span class="p">(</span><span class="n">id_for_ipath</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">paste</span><span class="p">(</span><span class="s2">"UNIPROT"</span><span class="p">,</span><span class="n">uniprotswissprot</span><span class="p">,</span><span class="n">sep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">":"</span><span class="p">))</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">   </span><span class="c1"># to create an ID that iPath can use</span><span class="w">
+  </span><span class="n">dplyr</span><span class="o">::</span><span class="n">select</span><span class="p">(</span><span class="n">id_for_ipath</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">                                          </span><span class="c1"># we keep only the relevant ID for further copy-pasting </span><span class="w">
+  </span><span class="n">write.table</span><span class="p">(</span><span class="n">.</span><span class="p">,</span><span class="w"> 
+    </span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"diff_genes_swissprot.tsv"</span><span class="p">,</span><span class="w"> 
+    </span><span class="n">row.names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">,</span><span class="w"> 
+    </span><span class="n">quote</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p>If you open the <code class="highlighter-rouge">diff_genes_swissprot.tsv</code> file in a text editor, this is what you should see.</p>
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>id_for_ipath
+UNIPROT:Q9MAN1
+UNIPROT:Q5XEZ0
+UNIPROT:O24457
+UNIPROT:Q9MAM1
+UNIPROT:Q9LNJ9
+UNIPROT:Q06402
+... more lines ....
+</code></pre></div></div>
+
+<p>We can copy-paste this list in the box to the right.</p>
+
+<p><img src="../img/07-ipath-3.png" height="400px" /></p>
+
+<p>If you then click on the “Submit data” button, you should see the following reactions highlighted.</p>
+
+<p><img src="../img/07-ipath-2.png" alt="first metabolic pathway map" height="400px" /></p>
+
+<p>Ok, there is a lot of information there and possibly too much. Let’s filter out some genes based on their <script type="math/tex">\log_{2}</script> fold change.</p>
+
+<p>We can calculate the median, 75th percentile and the 90th percentile of our fold changes.</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">diff_genes</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">filter</span><span class="p">(</span><span class="n">log2FoldChange</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">0</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">with</span><span class="p">(</span><span class="n">.</span><span class="p">,</span><span class="n">quantile</span><span class="p">(</span><span class="n">log2FoldChange</span><span class="p">,</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="m">0.5</span><span class="p">,</span><span class="m">0.75</span><span class="p">,</span><span class="m">0.9</span><span class="p">)))</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>50%       75%       90% 
+0.8695469 1.6819535 3.2561618 
+</code></pre></div></div>
+<p>Since 75% of the genes with a positive <script type="math/tex">\log_{2}</script> fold change have a value lower than 1.68, we are going to keep the genes with a higher fold change.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">diff_genes_filtered</span><span class="w"> </span><span class="o">=</span><span class="w"> 
+  </span><span class="n">diff_genes</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">filter</span><span class="p">(</span><span class="n">log2FoldChange</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">quantile</span><span class="p">(</span><span class="n">log2FoldChange</span><span class="p">,</span><span class="w"> </span><span class="m">0.75</span><span class="p">))</span><span class="w"> 
+
+</span><span class="c1"># we query Ensembl again to retrieve the attributes</span><span class="w">
+</span><span class="c1"># attributes_to_retrieve = c("tair_symbol", "uniprotswissprot","entrezgene_id")</span><span class="w">
+</span><span class="n">diff_arabidopsis_genes_annotated_2</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">biomartr</span><span class="o">::</span><span class="n">biomart</span><span class="p">(</span><span class="n">genes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">diff_genes_filtered</span><span class="o">$</span><span class="n">genes</span><span class="p">,</span><span class="w">
+                                                      </span><span class="n">mart</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="s2">"plants_mart"</span><span class="p">,</span><span class="w">                 
+                                                      </span><span class="n">dataset</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="s2">"athaliana_eg_gene"</span><span class="p">,</span><span class="w">           
+                                                      </span><span class="n">attributes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">attributes_to_retrieve</span><span class="p">,</span><span class="w">        
+                                                      </span><span class="n">filters</span><span class="w"> </span><span class="o">=</span><span class="w">     </span><span class="s2">"ensembl_gene_id"</span><span class="w"> </span><span class="p">)</span><span class="w">  
+
+</span><span class="n">diff_arabidopsis_genes_annotated_2</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">filter</span><span class="p">(</span><span class="n">uniprotswissprot</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="s2">""</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">unique</span><span class="p">()</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">mutate</span><span class="p">(</span><span class="n">id_for_ipath</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">paste</span><span class="p">(</span><span class="s2">"UNIPROT"</span><span class="p">,</span><span class="n">uniprotswissprot</span><span class="p">,</span><span class="n">sep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">":"</span><span class="p">))</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">dplyr</span><span class="o">::</span><span class="n">select</span><span class="p">(</span><span class="n">id_for_ipath</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">write.table</span><span class="p">(</span><span class="n">.</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"diff_genes_swissprot_2.tsv"</span><span class="p">,</span><span class="w"> </span><span class="n">row.names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">,</span><span class="w"> </span><span class="n">quote</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p>In your <code class="highlighter-rouge">diff_genes_swissprot_2.tsv</code> file, you should have less entries now which will make the map slightly clearer.</p>
+
+<p><img src="../img/07-ipath-4.png" alt="simplified ipath metabolic map" height="400px" /></p>
+
+<h2 id="52-mapman">5.2 MapMan</h2>
+
+<p>MapMan is a standalone software that you can install on your laptop to create insightful metabolic visualisation of transcriptomic, proteomic and/or metabolic data.</p>
+
+<p>From <a href="https://doi.org/10.1016/j.molp.2019.01.003">Schwacke et al., 2019</a>:</p>
+<blockquote>
+  <p>The MapMan framework was developed specifically for plants with the design goal to facilitate the visualization of omicsdata on plant pathways (Thimm et al., 2004). 
+MapMan uses a simple hierarchical tree structure of terms referred to as ‘‘bins,’’ which describe biological contexts/concepts. <br />
+Major biological processes (e.g., photosynthesis) are encompassed in top-level bins, and each child bin represents a more narrowly focused subprocess or component 
+within the context of the parent bin. Assignment of proteins to the lowest-level (i.e., leaf) bins was preferred in order to make the annotation as precise as possible, although assignment to abstract higher-level bins was supported. <br />
+Proteins were mostly assigned to a single bin, but for some proteins with functions in diverse biological processes it wasnecessary to correspondingly assign to multiple bins.</p>
+</blockquote>
+
+<h3 id="521-requirements">5.2.1 Requirements</h3>
+<p>You will need to create an account first and download the proper MapMan installation for your OS <a href="https://mapman.gabipd.org/mapman-download">here</a>. I’d recommend to download the latest stable version (not the “release candidate”).</p>
+
+<p>You will then have to download the so-called “mapping file” which is an ontology relating genes to functional bins. You can also generate your own classification for your species of interest with the <a href="https://www.plabipd.de/portal/mercator4">Mercator webtool</a>. You’ll need to supply a fasta file containing your transcripts or your protein of interest.</p>
+
+<p>The latest list of available mappings is <a href="https://mapman.gabipd.org/mapmanstore?p_p_id=MapManDataDownload_WAR_MapManDataDownloadportlet_INSTANCE_4Yx5&amp;p_p_lifecycle=0&amp;p_p_state=normal&amp;p_p_mode=view&amp;p_p_col_id=column-1&amp;p_p_col_pos=1&amp;p_p_col_count=2">here</a>.</p>
+
+<h3 id="522-pathway-visualisation">5.2.2 Pathway visualisation</h3>
+<p>One of the most used visualisation is the global overview of the metabolism. Up-regulated genes are shown in red and genes down-regulated in blue.</p>
+
+<p><img src="../img/07-mapman-1.jpeg" alt="mapman visualisation" height="400px" /></p>
+
+<h1 id="6-other-data-mining-tools">6. Other data mining tools</h1>
+
+<h2 id="61-thaleminer">6.1 ThaleMiner</h2>
+<p><a href="https://bar.utoronto.ca/thalemine/begin.do">https://bar.utoronto.ca/thalemine/begin.do</a></p>
+
+<h2 id="62-expression-atlas">6.2 Expression atlas</h2>
+<p><a href="https://www.ebi.ac.uk/gxa/home">https://www.ebi.ac.uk/gxa/home</a></p>
+
+<h2 id="63-bar">6.3 BAR</h2>
+<p><a href="http://www.bar.utoronto.ca/">http://www.bar.utoronto.ca/</a></p>
+
+<h2 id="64-coexprviz">6.4 CoExprViz</h2>
+<p><a href="http://bioinformatics.psb.ugent.be/webtools/coexpr/">http://bioinformatics.psb.ugent.be/webtools/coexpr/</a></p>
+
+<h1 id="7-troubleshooting">7. Troubleshooting</h1>
+<p>If biomart refuses to query Ensembl again, run this command:</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">biomaRt</span><span class="o">::</span><span class="n">biomartCacheClear</span><span class="p">()</span><span class="w"> </span><span class="c1"># to solve a known bug https://github.com/BioinformaticsFMRP/TCGAbiolinks/issues/335</span><span class="w">
+</span></code></pre></div></div>
+
+<p>This will clean the cache memory and allow to perform the Ensembl query again.</p>
+<h1 id="8-going-further">8. Going further</h1>
+
+<h2 id="81-useful-links">8.1 Useful links</h2>
+<ul>
+  <li><a href="https://docs.ropensci.org/biomartr/">BiomartR</a></li>
+  <li><a href="https://www.arabidopsis.org/portals/expression/microarray/microarrayExpressionV2.jsp">Arabidopsis.org (TAIR) list of data mining tools</a></li>
+  <li><a href="https://www.researchgate.net/post/How_can_I_analyze_a_set_of_DEGs_differentially_expressed_genes_to_obtain_information_from_them">ResearchGate related question</a></li>
+</ul>
+
+<h2 id="82-references">8.2. References</h2>
+<ul>
+  <li><a href="https://yulab-smu.github.io/clusterProfiler-book/chapter2.html">The Cluster Profiler companion book, a great place to start</a></li>
+  <li>Zhou et al. (2019). Metascape provides a biologist-oriented resource for the analysis of systems-level datasets. Nat Commun 10, 1523 (2019). <a href="https://doi.org/10.1038/s41467-019-09234-6">link</a></li>
+  <li>Yates et al. (2020) Ensembl 2020, Nucleic Acids Research, Volume 48, Issue D1, 08 January 2020, Pages D682–D688, <a href="https://doi.org/10.1093/nar/gkz966">Link</a></li>
+  <li>Tian et al. (2017) agriGO v2.0: a GO analysis toolkit for the agricultural community. <em>Nucleic Acids Research</em>, Volume 45, Issue W1, Pages W122–W129.<a href="https://doi.org/10.1093/nar/gkx382">Link</a></li>
+  <li>MapMan: <a href="https://doi.org/10.1016/j.molp.2019.01.003">MapMan4: A Refined Protein Classification and Annotation Framework Applicable to Multi-Omics Data Analysis. Schwacke et al. <em>Molecular Plant</em>, 12(6):879-892</a></li>
+  <li>Drost et al. (2017) Biomartr: genomic data retrieval with R. <em>Bioinformatics</em> 33(8): 1216-1217. <a href="https://academic.oup.com/bioinformatics/article/33/8/1216/2931816">doi:10.1093/bioinformatics/btw821</a>.</li>
+  <li>Darzi et al. (2018) iPath3.0: interactive pathways explorer v3. <em>Nucleic Acids Research</em>, Volume 46, Issue W1, 2 July 2018, Pages W510–W513, <a href="https://doi.org/10.1093/nar/gky299">link</a></li>
+</ul>
+
+:ET

@@ -1,0 +1,55 @@
+I"�<h2 id="welcome">Welcome!</h2>
+
+<p>In this training you will learn the basics of a typical RNA-Sequencing experiment. It is going to be fun and empowering! You will discover how total RNA are converted to short sequences called “reads” that can in turn be used to get insights into gene expression. Through careful experimental design, these gene expression information can yield new research avenues and answer crucial questions.</p>
+
+<p>We will use mostly R and its companion RStudio to perform our RNA-Seq analyses and visualisations.</p>
+
+<p>Depending on the level of participants, the bioinformatic part might be performed (QC of fastq files, genome alignment, counting, etc.)</p>
+
+<p>Before you begin, be sure you are all set up (see below). For complete information, see the Setup section.</p>
+
+<p>We will use mostly R and its companion RStudio to perform our RNA-Seq analyses and visualisations.</p>
+
+<p>Depending on the level of participants, the bioinformatic part might be performed (QC of fastq files, genome alignment, counting, etc.)</p>
+
+<p>This lesson will introduce you to the basics of gene expression analysis using RNA-Seq (short for RNA sequencing). Due to the considerable progress and constant decreasing costs of RNA-Seq, this technique has became a standard</p>
+
+<h2 id="main-learning-objectives">Main learning objectives</h2>
+<p>After completing this lesson, you should be able to:</p>
+<ul>
+  <li>Indicate the reasons for doing an RNA-Seq experiment.</li>
+  <li>Identify good practices when designing a RNA-Seq experiment.</li>
+  <li>Memorize the steps of a complete RNA-Seq experiment: from sequencing to analysis.</li>
+  <li>Assess the quality of RNA-seq sequencing data (“reads”) using the command-line instructions in the cloud (Linux).</li>
+  <li>Align RNA-seq reads to a reference genome using a splice-aware aligner (e.g. STAR).</li>
+  <li>Generate a count matrix from the RNA-seq data alignment</li>
+  <li>Perform a QC of your experiment through Principal Component Analysis (PCA) and sample clustering.</li>
+  <li>Execute a differential gene expression analysis using R and the <code class="highlighter-rouge">DESeq2</code> package.</li>
+  <li>Be able to create key plots: volcano plot, heatmap and clustering of differentially expressed genes.</li>
+  <li>Provide a biological interpretation to differentially expressed genes through ORA/GSEA analyses and data integration.</li>
+</ul>
+
+<blockquote class="prereq">
+  <h2 id="before-you-start">Before you start</h2>
+
+  <p>Before the training, please make sure you have done the following:</p>
+
+  <ol>
+    <li>Consult what you need to do in the lesson <a href="https://scienceparkstudygroup.github.io/rna-seq-lesson/setup.html">Setup</a>.</li>
+    <li>Read the workshop <a href="https://docs.carpentries.org/topic_folders/policies/code-of-conduct.html">Code of Conduct</a> to make sure this workshop stays welcoming for everybody.</li>
+    <li>Get comfortable: if you’re not in a physical workshop, be set up with two screens if possible. You will be following along in RStudio on your own computer while also following this tutorial on your own.
+More instructions are available on the workshop website in the <strong>Setup</strong> section.</li>
+  </ol>
+</blockquote>
+
+<h2 id="citation">Citation</h2>
+<p>If you make use of this material in some way (teaching, vocational training, research), please cite us:
+“Bliek Tijs, Frans van der Kloet and Marc Galland” (eds): “RNA-seq lesson.”  Version 2020.04.
+https://github.com/ScienceParkStudyGroup/rnaseq-lesson</p>
+
+<h2 id="credits">Credits</h2>
+<p>This lesson is heavily based on teaching materials from the <a href="https://hbctraining.github.io/In-depth-NGS-Data-Analysis-Course/">Harvard Chan Bioinformatics Core (HBC) in-depth NGS data analysis course</a>. Materials have been adapted and some exercises created to comply with the <a href="https://carpentries.github.io/instructor-training/">Carpentries Foundation teaching requirements</a>.</p>
+
+<hr />
+
+:ET

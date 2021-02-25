@@ -1,0 +1,658 @@
+I"1*<h1 id="table-of-contents">Table of Contents</h1>
+
+<!-- MarkdownTOC autolink="True" levels="1,2,3" -->
+
+<ul>
+  <li><a href="#1-introduction">1. Introduction</a></li>
+  <li><a href="#2-differential-expression-analysis">2. Differential expression analysis</a>
+    <ul>
+      <li><a href="#21-creating-the-deseqdataset-object">2.1 Creating the DESeqDataSet object</a></li>
+      <li><a href="#22-running-the-de-analysis">2.2 Running the DE analysis</a></li>
+      <li><a href="#23-extracting-the-table-of-differential-genes">2.3 Extracting the table of differential genes</a></li>
+      <li><a href="#24-false-discovery-rates">2.4 False discovery rates</a></li>
+      <li><a href="#extracting-the-table-of-differential-genes">Extracting the table of differential genes</a></li>
+    </ul>
+  </li>
+  <li><a href="#3-volcano-plot">3. Volcano plot</a></li>
+  <li><a href="#4-heatmap">4. Heatmap</a>
+    <ul>
+      <li><a href="#41-filtering-steps">4.1 Filtering steps</a></li>
+      <li><a href="#42-first-version">4.2 First version</a></li>
+      <li><a href="#42-second-version-with-scaling">4.2 Second version with scaling</a></li>
+      <li><a href="#43-third-version-with-genes-and-samples-grouped-by-profiles">4.3 Third version with genes and samples grouped by profiles</a></li>
+      <li><a href="#44-fourth-version-of-our-heatmap-with-the-8-samples-being-investigated">4.4. Fourth version of our heatmap with the 8 samples being investigated</a></li>
+    </ul>
+  </li>
+  <li><a href="#bonus-ma-plots">Bonus: MA plots</a></li>
+  <li><a href="#references">References</a></li>
+</ul>
+
+<!-- /MarkdownTOC -->
+
+<p><img src="../img/06-workflow-overview.png" width="500px" /></p>
+
+<h1 id="1-introduction">1. Introduction</h1>
+
+<p>Differential expression analysis is the process of determining which of the genes are significantly affected by my experimental design. In the example study that we use, Arabidopsis plants were infected or not by a pathogenic bacteria called <em>Pseudomonas syringae</em> DC3000. One comparison of interest could be to determine which of the Arabidopsis leaf genes are transcriptionally affected by the infection with this pathogenic bacteria.</p>
+
+<p>In this episode, we will see how to perform a simple one-condition experimental comparison with <code class="highlighter-rouge">DESeq2</code>. We will compare the transcriptome of Arabidopsis in response to infection by the leaf pathogenic bacteria <em>Pseudomonas syringae</em> DC3000 after 7 days (7 dpi).</p>
+
+<p>This will yield a table containing genes <script type="math/tex">log_{2}</script> fold change and their corrected p-values. We will also see how to create a few typical representations classically used to display RNA-seq results such as volcano plots and heatmaps.</p>
+
+<blockquote class="callout">
+  <h2 id="important-note">Important note</h2>
+  <p>For differential expression analysis, you should use the <strong>raw</strong> counts and <strong>not</strong> the scaled counts. 
+As the DESeq2 model fit requires raw counts (integers), make sure that you use the <code class="highlighter-rouge">counts.txt</code> file.</p>
+</blockquote>
+
+<h1 id="2-differential-expression-analysis">2. Differential expression analysis</h1>
+
+<h2 id="21-creating-the-deseqdataset-object">2.1 Creating the DESeqDataSet object</h2>
+
+<p>Since we do not want to work on all comparisons, we will filter out the samples and conditions that we do not need. Only the mock growth and the <em>P. syringae</em> infected condition will remain.</p>
+
+<p>You should still have the <code class="highlighter-rouge">counts</code> and <code class="highlighter-rouge">xp_design</code> objects in your R environment. If not, please run the following code.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># read the xp design file if not available in your environment </span><span class="w">
+</span><span class="n">xp_design</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">read.delim</span><span class="p">(</span><span class="s2">"experimental_design_modified.txt"</span><span class="p">,</span><span class="w"> 
+                        </span><span class="n">header</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">T</span><span class="p">,</span><span class="w"> 
+                        </span><span class="n">stringsAsFactors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">F</span><span class="p">,</span><span class="w"> 
+                        </span><span class="n">colClasses</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">rep</span><span class="p">(</span><span class="s2">"character"</span><span class="p">,</span><span class="m">4</span><span class="p">))</span><span class="w">
+</span><span class="c1"># change col names</span><span class="w">
+</span><span class="n">colnames</span><span class="p">(</span><span class="n">xp_design</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s2">"sample"</span><span class="p">,</span><span class="w"> </span><span class="s2">"seed"</span><span class="p">,</span><span class="w"> </span><span class="s2">"infected"</span><span class="p">,</span><span class="w"> </span><span class="s2">"dpi"</span><span class="p">)</span><span class="w">
+
+
+</span><span class="n">counts</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">read.delim</span><span class="p">(</span><span class="s2">"counts.txt"</span><span class="p">,</span><span class="w"> </span><span class="n">header</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">T</span><span class="p">,</span><span class="w"> </span><span class="n">stringsAsFactors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">F</span><span class="p">)</span><span class="w">
+</span><span class="n">genes</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">counts</span><span class="p">[,</span><span class="m">1</span><span class="p">]</span><span class="w">
+</span><span class="n">counts</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">counts</span><span class="p">[,</span><span class="m">-1</span><span class="p">]</span><span class="w">
+</span><span class="n">row.names</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">genes</span><span class="w">
+
+</span><span class="c1"># reorder counts columns according to the experimental design file</span><span class="w">
+</span><span class="n">counts</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">counts</span><span class="p">[,</span><span class="w"> </span><span class="n">xp_design</span><span class="o">$</span><span class="n">sample</span><span class="p">]</span><span class="w">
+</span></code></pre></div></div>
+
+<p>We will now filter both the <code class="highlighter-rouge">counts</code> and <code class="highlighter-rouge">xp_design</code> objects to keep a one-factor comparison and investigate the leaf transcriptome
+of Arabidopsis plants whose seeds were MgCl2 treated and whose plants were infected or not with Pseudomonas syringae DC3000 at 7dpi.</p>
+
+<p>The corresponding code is available below.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">library</span><span class="p">(</span><span class="n">DESeq2</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># filter design file (mock versus P. syringae at 7 dpi)</span><span class="w">
+</span><span class="n">xp_design_mock_vs_infected</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xp_design</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span><span class="n">filter</span><span class="p">(</span><span class="n">seed</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">"MgCl2"</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">dpi</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">"7"</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># Filter count file accordingly (to keep only samples present in the filtered xp_design file)</span><span class="w">
+</span><span class="n">counts_filtered</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">counts</span><span class="p">[,</span><span class="w"> </span><span class="n">colnames</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span><span class="w"> </span><span class="o">%in%</span><span class="w"> </span><span class="n">xp_design_mock_vs_infected</span><span class="o">$</span><span class="n">sample</span><span class="p">]</span><span class="w">
+
+</span><span class="c1">## Creation of the DESeqDataSet</span><span class="w">
+</span><span class="n">dds2</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">DESeqDataSetFromMatrix</span><span class="p">(</span><span class="n">countData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">counts_filtered</span><span class="p">,</span><span class="w"> 
+                              </span><span class="n">colData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xp_design_mock_vs_infected</span><span class="p">,</span><span class="w"> 
+                              </span><span class="n">design</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">~</span><span class="w"> </span><span class="n">infected</span><span class="p">)</span><span class="w">
+
+</span></code></pre></div></div>
+
+<p>It is important to make sure that levels are properly ordered so we are indeed using the <em>mock</em> group as our reference level. A positive gene fold change will for instance signify that the gene is upregulated in the <em>P. syringae</em> condition relatively to the <em>mock</em> condition.</p>
+
+<p>Please consult <a href="http://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#factorlevels">the dedicated section of the DESeq2 vignette</a> on factor levels.</p>
+
+<p>One way to see how levels are interpreted within the DESeqDataSet object is to display the factor levels.</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">dds2</span><span class="o">$</span><span class="n">infected</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[1] mock  mock  mock  mock  Pseudomonas_syringae_DC3000
+[6] Pseudomonas_syringae_DC3000 Pseudomonas_syringae_DC3000 Pseudomonas_syringae_DC3000
+Levels: mock Pseudomonas_syringae_DC3000
+</code></pre></div></div>
+
+<p>This shows that the <em>mock</em> level comes first before the <em>Pseudomonas_syringae_DC3000</em> level. If this is not correct, you can change it following <a href="http://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#factorlevels">the dedicated section of the DESeq2 vignette</a> on factor levels.</p>
+
+<h2 id="22-running-the-de-analysis">2.2 Running the DE analysis</h2>
+
+<p>Differential gene expression analysis will consist of simply two lines of code:</p>
+<ol>
+  <li>The first will call the <code class="highlighter-rouge">DESeq</code> function on a <code class="highlighter-rouge">DESeqDataSet</code> object that you’ve just created under the name <code class="highlighter-rouge">dds</code>. It will be returned under the same <code class="highlighter-rouge">R</code> object name <code class="highlighter-rouge">dds</code>.</li>
+  <li>Then, results are extracted using the <code class="highlighter-rouge">results</code> function on the <code class="highlighter-rouge">dds</code> object and results will be extracted as a table under the name <code class="highlighter-rouge">res</code> (short for results).</li>
+</ol>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">dds2</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">DESeq</span><span class="p">(</span><span class="n">dds2</span><span class="p">)</span><span class="w">
+</span><span class="n">res</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">results</span><span class="p">(</span><span class="n">dds2</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># have a peek at the DESeqResults object </span><span class="w">
+</span><span class="n">res</span><span class="w">
+</span></code></pre></div></div>
+
+<p>The theory beyond DESeq2 differential gene expression analysis is beyond this course but nicely explained <a href="http://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#theory">within the DESeq2 vignette</a>.</p>
+
+<blockquote class="challenge">
+  <h2 id="beware-of-factor-levels">Beware of factor levels</h2>
+
+  <p>If you do not supply any values to the contrast argument of the <code class="highlighter-rouge">DESeq</code> function, it will use the first value of the design variable from the design file.</p>
+
+  <p>In our case, we will perform a differential expression analysis between <code class="highlighter-rouge">mock</code> and <code class="highlighter-rouge">Pseudomonas_syringae_DC3000</code>.</p>
+  <ol>
+    <li>Which of these two is going to be used as the reference level?</li>
+    <li>How would you interpret a positive log2 fold change for a given gene?</li>
+  </ol>
+
+  <blockquote class="solution">
+    <h2 id="solution">Solution</h2>
+    <ol>
+      <li>The <code class="highlighter-rouge">mock</code> condition is going to be used as the reference level since <em>m</em> from <code class="highlighter-rouge">mock</code> comes before <code class="highlighter-rouge">P</code> from <code class="highlighter-rouge">Pseudomonas_syringae_DC3000</code>.</li>
+      <li>A positive log2 fold change for a gene would mean that this gene is more abundant in <code class="highlighter-rouge">Pseudomonas_syringae_DC3000</code> than in the <code class="highlighter-rouge">mock</code> condition.</li>
+    </ol>
+  </blockquote>
+</blockquote>
+
+<p>The complete explanation comes from the <a href="http://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#differential-expression-analysis">DESeq2 vignette</a>:</p>
+<blockquote>
+  <p>Results tables are generated using the function results, which extracts a results table with log2 fold changes, p values and adjusted p values. With no additional arguments to results, the log2 fold change and Wald test p value will be for the last variable in the design formula, and if this is a factor, the comparison will be the last level of this variable over the reference level (see previous note on factor levels). However, the order of the variables of the design do not matter so long as the user specifies the comparison to build a results table for, using the name or contrast arguments of results.</p>
+</blockquote>
+
+<p>A possible preferred way is to specify the comparison of interest explicitly. We are going to name this new result object <code class="highlighter-rouge">res2</code> and compare it with the previous one called <code class="highlighter-rouge">res</code>.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">res2</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">results</span><span class="p">(</span><span class="n">dds2</span><span class="p">,</span><span class="w"> </span><span class="n">contrast</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s2">"infected"</span><span class="p">,</span><span class="w">                      </span><span class="c1"># name of the factor</span><span class="w">
+                                  </span><span class="s2">"Pseudomonas_syringae_DC3000"</span><span class="p">,</span><span class="w">    </span><span class="c1"># name of the numerator level for fold change</span><span class="w">
+                                  </span><span class="s2">"mock"</span><span class="p">))</span><span class="w">                          </span><span class="c1"># name of the denominator level    </span><span class="w">
+
+</span></code></pre></div></div>
+
+<p>If we now compare the <code class="highlighter-rouge">res</code> and <code class="highlighter-rouge">res2</code> DESeqResults objects, they should be exactly the same and return a <code class="highlighter-rouge">TRUE</code> value.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">all_equal</span><span class="p">(</span><span class="n">res</span><span class="p">,</span><span class="w"> </span><span class="n">res2</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="23-extracting-the-table-of-differential-genes">2.3 Extracting the table of differential genes</h2>
+
+<p>We can now have a look at the result table that contains all information necessary to explore the results.</p>
+
+<p>Let’s take a peek at the first lines.</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">res</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>log2 fold change (MLE): infected Pseudomonas_syringae_DC3000 vs mock 
+Wald test p-value: infected Pseudomonas syringae DC3000 vs mock 
+DataFrame with 33768 rows and 6 columns
+                   baseMean     log2FoldChange             lfcSE              stat               pvalue                 padj
+                  &lt;numeric&gt;          &lt;numeric&gt;         &lt;numeric&gt;         &lt;numeric&gt;            &lt;numeric&gt;            &lt;numeric&gt;
+AT1G01010  87.4202637575253 -0.367280333820308 0.211701693868572 -1.73489558401135   0.0827593014886041    0.187224259459075
+AT1G01020  477.153016520262 -0.266372165020665 0.107897663309171 -2.46874822726606     0.01355865776731   0.0457278114202934
+AT1G03987  14.6179093243162  -1.47071320232473 0.462672694746205 -3.17873351729018   0.0014792001454695  0.00740168146185112
+AT1G01030  194.095081900871 -0.916622750549647 0.276959201424051 -3.30959486392441 0.000934310992084711   0.0050664498722226
+AT1G03993  175.982458997999  0.108469082280126 0.142106475509239 0.763294437438034    0.445287818744395    0.614000180781882
+...                     ...                ...               ...               ...                  ...                  ...
+ATMG01370  83.9769196075523 -0.825187944843753 0.216251457067068 -3.81587229993937 0.000135702676638565 0.000983812944421723
+ATMG01380  57.1084095053476 -0.589800569274135 0.260988059519601 -2.25987568304764   0.0238289675115254   0.0709844754284016
+ATMG01390  1085.66028395293  0.429149247175392 0.443108924164171 0.968496059935803    0.332796685814142    0.507053899330804
+ATMG01400 0.254714460748876 -0.411354295725567   3.5338115409304 -0.11640527259619    0.907331356876165                   NA
+ATMG01410  7.79228297186529 -0.957658947213795 0.619376215569985 -1.54616680967076    0.122064287011553      0.2498275349753
+</code></pre></div></div>
+
+<p><br /></p>
+
+<blockquote class="challenge">
+  <h2 id="question">Question</h2>
+  <ol>
+    <li>What is the biological meaning of a <script type="math/tex">log2</script> fold change equal to 1 for gene X?</li>
+    <li>What is the biological meaning of a <script type="math/tex">log2</script> fold change equal to -1?</li>
+    <li>In R, compute the <script type="math/tex">log2</script> fold change (“treated vs untreated”) of a gene that has:
+      <ul>
+        <li>A gene expression equal to 230 in the “untreated” condition.</li>
+        <li>A gene expression equal to 750 in the “treated” condition.</li>
+      </ul>
+    </li>
+  </ol>
+
+  <blockquote class="solution">
+    <h2 id="solution-1">Solution</h2>
+    <ol>
+      <li>A <script type="math/tex">log2</script> equal to 1 means that gene X has a higher expression (x2, two-fold) in the DC3000 infected condition compared to the mock condition.</li>
+      <li>A <script type="math/tex">log2</script> equal to -1 means that gene X has a smaller expression (<script type="math/tex">\frac{1}{2}</script>) in the DC3000 infected condition.</li>
+    </ol>
+
+    <div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">untreated</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">230</span><span class="w">
+</span><span class="n">treated</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">750</span><span class="w">
+</span><span class="n">log2</span><span class="p">(</span><span class="n">treated</span><span class="o">/</span><span class="n">untreated</span><span class="p">)</span><span class="w"> </span><span class="c1"># equals 1.705257</span><span class="w">
+</span></code></pre></div>    </div>
+  </blockquote>
+</blockquote>
+
+<p><br /></p>
+
+<p>Some explanations about this output:</p>
+<blockquote>
+  <p>The results table when printed will provide the information about the comparison, e.g. “log2 fold change (MAP): condition treated vs untreated”, meaning that the estimates are of log2(treated / untreated), as would be returned by contrast=c(“condition”,”treated”,”untreated”).</p>
+</blockquote>
+
+<p>So in our case, since we specified <code class="highlighter-rouge">contrast = c("infected", "Pseudomonas_syringae_DC3000", "mock")</code>, the <code class="highlighter-rouge">log2FoldChange</code> will return the <script type="math/tex">log2(Pseudomonas \space syringae \space DC3000 \space / \space mock)</script>.</p>
+
+<p>Additional information on the DESeqResult columns is available using the <code class="highlighter-rouge">mcols</code> function.</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">mcols</span><span class="p">(</span><span class="n">res</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p>This will indicate a few useful <em>metadata</em> information about our results:</p>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>DataFrame with 6 rows and 2 columns
+                       type                                                          description
+                &lt;character&gt;                                                          &lt;character&gt;
+baseMean       intermediate                            mean of normalized counts for all samples
+log2FoldChange      results log2 fold change (MLE): infected Pseudomonas_syringae_DC3000 vs mock
+lfcSE               results         standard error: infected Pseudomonas syringae DC3000 vs mock
+stat                results         Wald statistic: infected Pseudomonas syringae DC3000 vs mock
+pvalue              results      Wald test p-value: infected Pseudomonas syringae DC3000 vs mock
+padj                results                                                 BH adjusted p-values
+
+</code></pre></div></div>
+
+<h2 id="24-false-discovery-rates">2.4 False discovery rates</h2>
+<p>The selected <script type="math/tex">\alpha</script> threshold controls for type I error rate: rejecting the <em>null</em> hypothesis (H<sub>0</sub> no difference) and therefore affirming that there is a gene expression difference between conditions while there aren’t any. This <script type="math/tex">\alpha</script> value is often set at 
+at <script type="math/tex">\alpha</script> = 0.01 (1%) or <script type="math/tex">\alpha</script> = 0.001 (0.1%) in RNA-seq analyses.</p>
+
+<p>When you perform thousands of statistical tests (one for each gene), you will by chance call genes differentially expressed while they are not (false positives). You can control for this by applying certain statistical procedures called <em>multiple hypothesis test correction</em>.</p>
+
+<p>We can count the number of genes that are differentially regulated at a certain <script type="math/tex">\alpha</script> level.</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">library</span><span class="p">(</span><span class="n">dplyr</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># threshold of p = 0.01</span><span class="w">
+</span><span class="n">res</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">as.data.frame</span><span class="p">()</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">filter</span><span class="p">(</span><span class="n">padj</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="m">0.01</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="nf">dim</span><span class="p">()</span><span class="w">
+
+</span><span class="c1"># threshold of p = 0.001</span><span class="w">
+</span><span class="n">res</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">as.data.frame</span><span class="p">()</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">filter</span><span class="p">(</span><span class="n">padj</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="m">0.001</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="nf">dim</span><span class="p">()</span><span class="w">
+</span></code></pre></div></div>
+
+<p>You should obtain 4979 differentially expressed genes at 1% and 3249 at 0.1% which are quite important numbers: indeed, it corresponds to respectively ~15% and ~10% of the whole number transcriptome (total number of mRNA is 33,768).</p>
+
+<p>Histogram p-values
+This <a href="http://varianceexplained.org/statistics/interpreting-pvalue-histogram/">blog post</a> explains in detail what you can expect from each p-value distribution profile.</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># distribution of adjusted p-values</span><span class="w">
+</span><span class="n">hist</span><span class="p">(</span><span class="n">res</span><span class="o">$</span><span class="n">padj</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="o">=</span><span class="s2">"lightblue"</span><span class="p">,</span><span class="w"> </span><span class="n">main</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Adjusted p-value distribution"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="../img/p_values_adjusted.png" width="800px" alt="p-values distribution (corrected for false discovery rate)" /></p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># distribution of non-adjusted p-values</span><span class="w">
+</span><span class="n">hist</span><span class="p">(</span><span class="n">res</span><span class="o">$</span><span class="n">pvalue</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="o">=</span><span class="s2">"grey"</span><span class="p">,</span><span class="w"> </span><span class="n">main</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Non-adjusted p-value distribution"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="../img/p_values_uncorrected.png" width="800px" alt="p-values distribution (no false discovery rate correction)" /></p>
+
+<p>As you can see, the distribution of p-values was already quite similar suggesting that a good proportion of the tests have a significant p-value (inferior to <script type="math/tex">\alpha</script> = 0.01 for instance). This
+suggests that a good proportion of these will be true positives (genes truly differentially regulated).</p>
+
+<h2 id="extracting-the-table-of-differential-genes">Extracting the table of differential genes</h2>
+<p>Ok, here’s the moment you’ve been waiting for. How can I extract a nicely filtered final table of differential genes? Here it is!</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">diff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">res</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">as.data.frame</span><span class="p">()</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">rownames_to_column</span><span class="p">(</span><span class="s2">"genes"</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">filter</span><span class="p">(</span><span class="n">padj</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="m">0.01</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">arrange</span><span class="p">(</span><span class="n">desc</span><span class="p">(</span><span class="n">log2FoldChange</span><span class="p">),</span><span class="w"> 
+          </span><span class="n">desc</span><span class="p">(</span><span class="n">padj</span><span class="p">))</span><span class="w">
+</span><span class="n">head</span><span class="p">(</span><span class="n">diff</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p>You could write this file on your disk with <code class="highlighter-rouge">write.csv()</code> for instance to save a comma-separated text file containing your results. 
+<br /></p>
+
+<h1 id="3-volcano-plot">3. Volcano plot</h1>
+<p>For each gene, this plot shows the gene fold change on the x-axis against the p-value plotted on the y-axis.</p>
+
+<p>Here, we make use of a library called <em>EnhancedVolcano</em> which is available through <a href="http://bioconductor.org/packages/release/bioc/html/EnhancedVolcano.html">Bioconductor</a> and described extensively on its <a href="https://github.com/kevinblighe/EnhancedVolcano">own GitHub page</a>.</p>
+
+<p>First, we are going to “shrink” the <script type="math/tex">\log2</script> fold changes to remove the noise associated with fold changes coming from genes with low count levels. Shrinkage of effect size (LFC estimates) is useful for visualization and ranking of genes. This helps to get more meaningful log2 fold changes for all genes independently of their expression level.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">resLFC</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">lfcShrink</span><span class="p">(</span><span class="n">dds</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dds2</span><span class="p">,</span><span class="w"> 
+                  </span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">res</span><span class="p">,</span><span class="w">
+                  </span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"normal"</span><span class="p">,</span><span class="w">
+                  </span><span class="n">coef</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2</span><span class="p">)</span><span class="w"> </span><span class="c1"># corresponds to "infected_Pseudomonas_syringae_DC3000_vs_mock" comparison</span><span class="w">
+</span></code></pre></div></div>
+
+<p>We can build the Volcano plot rapidly without much customization.</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># load the library if not done yet</span><span class="w">
+</span><span class="n">library</span><span class="p">(</span><span class="s2">"EnhancedVolcano"</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># The main function is named after the package</span><span class="w">
+</span><span class="n">EnhancedVolcano</span><span class="p">(</span><span class="n">toptable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">resLFC</span><span class="p">,</span><span class="w">              </span><span class="c1"># We use the shrunken log2 fold change as noise associated with low count genes is removed </span><span class="w">
+                </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"log2FoldChange"</span><span class="p">,</span><span class="w">           </span><span class="c1"># Name of the column in resLFC that contains the log2 fold changes</span><span class="w">
+                </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"padj"</span><span class="p">,</span><span class="w">                     </span><span class="c1"># Name of the column in resLFC that contains the p-value</span><span class="w">
+                </span><span class="n">lab</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rownames</span><span class="p">(</span><span class="n">resLFC</span><span class="p">)</span><span class="w">
+                </span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="../img/volcano_plot_default.png" width="600px" alt="default volcano plot" /></p>
+
+<p>Alternatively, the plot can be heavily customized to become a publication-grade figure.</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">EnhancedVolcano</span><span class="p">(</span><span class="n">toptable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">resLFC</span><span class="p">,</span><span class="w">
+                </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"log2FoldChange"</span><span class="p">,</span><span class="w">
+                </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"padj"</span><span class="p">,</span><span class="w">
+                </span><span class="n">lab</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rownames</span><span class="p">(</span><span class="n">resLFC</span><span class="p">),</span><span class="w">
+                </span><span class="n">xlim</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="m">-10</span><span class="p">,</span><span class="w"> </span><span class="m">+10</span><span class="p">),</span><span class="w">
+                </span><span class="n">ylim</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="m">100</span><span class="p">),</span><span class="w">
+                </span><span class="n">pCutoff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1e-06</span><span class="p">,</span><span class="w">
+                </span><span class="n">transcriptPointSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2.0</span><span class="p">,</span><span class="w">
+                </span><span class="n">FCcutoff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2</span><span class="p">,</span><span class="w"> 
+                </span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Pseudomonas syringae DC3000 versus mock \n (fold change cutoff = 2, p-value cutoff = 1e-06)"</span><span class="p">,</span><span class="w">
+                </span><span class="n">legend</span><span class="o">=</span><span class="nf">c</span><span class="p">(</span><span class="w">
+                  </span><span class="s1">'Not significant'</span><span class="p">,</span><span class="w">
+                  </span><span class="s1">'Log2 fold-change (but do not pass p-value cutoff)'</span><span class="p">,</span><span class="w">
+                  </span><span class="s1">'Pass p-value cutoff'</span><span class="p">,</span><span class="w">
+                  </span><span class="s1">'Pass both p-value &amp; Log2 fold change'</span><span class="p">)</span><span class="w">
+                </span><span class="p">)</span><span class="w">
+
+
+</span></code></pre></div></div>
+<p><img src="../img/volcano_plot.png" width="600px" alt="customized volcano plot" /></p>
+
+<h1 id="4-heatmap">4. Heatmap</h1>
+<p>Heatmap is a representation where values are represented on a color scale. It is usually one of the classic figures part of a transcriptomic study. 
+One can also cluster samples and genes to identify groups of genes that show a coordinated behaviour. Let’s build a nice looking heatmap to display our differential genes one step at a time.</p>
+
+<p>We are going to make use of a library called <code class="highlighter-rouge">pheatmap</code>. Here is a minimal example (<code class="highlighter-rouge">mtcars</code> is a dataset that comes included with R).</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">scale</span><span class="p">(</span><span class="n">mtcars</span><span class="p">)</span><span class="w">
+</span><span class="n">pheatmap</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="../img/06-basic-heatmap.png" alt="basic heatmap" height="400px" /></p>
+
+<blockquote class="callout">
+  <h2 id="troubleshooting">Troubleshooting</h2>
+  <p>If you have issues where your heatmap plot is not being shown, run <code class="highlighter-rouge">dev.off()</code> and try to plot again. It should solve your issue.</p>
+</blockquote>
+
+<h2 id="41-filtering-steps">4.1 Filtering steps</h2>
+
+<p>Let’s work on the global <code class="highlighter-rouge">counts</code> object that contains the <em>unscaled</em> counts for our genes. We will first normalize it using a custom function that mimics DESeq2 normalization procedure in one line.</p>
+
+<p>When using the Docker image (see <a href="../setup.html">Setup</a>), the function is already in the working space ready to be imported. 
+Otherwise, navigate to <a href="http://0.0.0.0:4000/median_of_ratios_manual_normalization/index.html#section-two-a-function-to-normalize-the-deseq2-way">the median_of_ratios_manual_normalization page</a>, copy-paste it into the R console, it is then ready to use.</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># import custom function</span><span class="w">
+</span><span class="n">source</span><span class="p">(</span><span class="s2">"normalization_function.R"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="42-first-version">4.2 First version</h2>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">counts_normalised_only_diff_genes</span><span class="w"> </span><span class="o">=</span><span class="w"> 
+  </span><span class="n">mor_normalization</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">                 </span><span class="c1"># normalize the counts using our custom function</span><span class="w">
+  </span><span class="n">rownames_to_column</span><span class="p">(</span><span class="s2">"genes"</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">               
+  </span><span class="n">pivot_longer</span><span class="p">(</span><span class="o">-</span><span class="w"> </span><span class="n">genes</span><span class="p">,</span><span class="w">                         </span><span class="c1"># pivot_longer() is an update version of gather() since tidyr version 1.0</span><span class="w">
+               </span><span class="n">names_to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"sample"</span><span class="p">,</span><span class="w"> 
+               </span><span class="n">values_to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"counts"</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">filter</span><span class="p">(</span><span class="n">genes</span><span class="w"> </span><span class="o">%in%</span><span class="w"> </span><span class="n">diff</span><span class="o">$</span><span class="n">genes</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">             
+  </span><span class="n">pivot_wider</span><span class="p">(</span><span class="n">names_from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"sample"</span><span class="p">,</span><span class="w">            </span><span class="c1"># pivot_wider() is an updated approach to spread()</span><span class="w">
+              </span><span class="n">values_from</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"counts"</span><span class="p">)</span><span class="w">  </span><span class="o">%&gt;%</span><span class="w">      
+  </span><span class="n">column_to_rownames</span><span class="p">(</span><span class="s2">"genes"</span><span class="p">)</span><span class="w">                   </span><span class="c1"># the gene column is converted back to row names to create a matrix usable with pheatmap</span><span class="w">
+
+</span><span class="nf">dim</span><span class="p">(</span><span class="n">counts_normalised_only_diff_genes</span><span class="p">)</span><span class="w">          </span><span class="c1"># check that you have the expected number of rows and columns</span><span class="w">
+</span></code></pre></div></div>
+
+<p>We indeed find that we have <strong>4979 genes</strong> (rows, p &lt; 0.01) and <strong>48 samples</strong> (columns) which corresponds to the number of differential genes identified previously between Mock and DC3000 infected conditions at 7 dpi and with a MgCl2 seed coating. You can also use <code class="highlighter-rouge">head()</code> to show the first lines of this table.</p>
+
+<p>Let’s plot our first version of the heatmap.</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">pheatmap</span><span class="p">(</span><span class="n">counts_normalised_only_diff_genes</span><span class="p">,</span><span class="w"> 
+         </span><span class="n">cluster_rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">,</span><span class="w"> 
+         </span><span class="n">cluster_cols</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">,</span><span class="w"> 
+         </span><span class="n">scale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"none"</span><span class="p">,</span><span class="w">
+         </span><span class="n">show_rownames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">,</span><span class="w"> 
+         </span><span class="n">show_colnames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p>We have removed the genes names with <code class="highlighter-rouge">show_rownames = FALSE</code> since they are not readable anymore for such a high number of genes.</p>
+
+<p><img src="../img/06-heatmap-1.png" alt="first heatmap version" height="400px" /></p>
+
+<p>Well….not very useful right?</p>
+
+<blockquote class="challenge">
+  <h2 id="question-1">Question</h2>
+  <p>Do you have an idea of how to improve this heatmap?<br />
+Hint: run the code below to show the distribution of values in the <code class="highlighter-rouge">counts_normalised_only_diff_genes</code> table:</p>
+  <div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">counts_normalised_only_diff_genes</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+    </span><span class="n">rownames_to_column</span><span class="p">(</span><span class="s2">"genes"</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+    </span><span class="n">pivot_longer</span><span class="p">(</span><span class="o">-</span><span class="w"> </span><span class="n">genes</span><span class="p">,</span><span class="w"> </span><span class="n">names_to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"sample"</span><span class="p">,</span><span class="w"> </span><span class="n">values_to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"counts"</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+    </span><span class="n">with</span><span class="p">(</span><span class="n">.</span><span class="p">,</span><span class="w"> </span><span class="n">hist</span><span class="p">(</span><span class="n">counts</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"dodgerblue"</span><span class="p">))</span><span class="w">
+</span></code></pre></div>  </div>
+  <blockquote class="solution">
+    <h2 id="solution-2">Solution</h2>
+    <p>The scale on which gene counts are represented is the (main) issue here. <br />
+There are a lot of genes for which the number of counts are very low. If you <script type="math/tex">\log2</script> transform the counts, you get a nice distribution again where all gene frequency become visible again.</p>
+    <div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">counts_normalised_only_diff_genes</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+    </span><span class="n">rownames_to_column</span><span class="p">(</span><span class="s2">"genes"</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+    </span><span class="n">pivot_longer</span><span class="p">(</span><span class="o">-</span><span class="w"> </span><span class="n">genes</span><span class="p">,</span><span class="n">names_to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"sample"</span><span class="p">,</span><span class="w"> </span><span class="n">values_to</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"counts"</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+      </span><span class="n">with</span><span class="p">(</span><span class="n">.</span><span class="p">,</span><span class="w"> </span><span class="n">hist</span><span class="p">(</span><span class="n">log2</span><span class="p">(</span><span class="n">counts</span><span class="p">),</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"dodgerblue"</span><span class="p">))</span><span class="w">
+</span></code></pre></div>    </div>
+    <p>If you re-run the code for the first heatmap with a log2 transformation, you will get a simple way to display different gene count levels. We add <code class="highlighter-rouge">+ 1</code> to account for genes with count values equal to 0.</p>
+    <div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">pheatmap</span><span class="p">(</span><span class="n">log2</span><span class="p">(</span><span class="n">counts_normalised_only_diff_genes</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">1</span><span class="p">),</span><span class="w"> 
+         </span><span class="n">cluster_rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">,</span><span class="w"> 
+         </span><span class="n">cluster_cols</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">,</span><span class="w"> 
+         </span><span class="n">scale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"none"</span><span class="p">,</span><span class="w">
+         </span><span class="n">show_rownames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">,</span><span class="w"> 
+         </span><span class="n">show_colnames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">)</span><span class="w">
+</span></code></pre></div>    </div>
+  </blockquote>
+</blockquote>
+
+<p>Although the scaling has been slightly improved it is still not really an optimal heatmap.</p>
+
+<h2 id="42-second-version-with-scaling">4.2 Second version with scaling</h2>
+
+<p>When creating a heatmap, it is vital to control how scaling is performed. A possible solution is to specify <code class="highlighter-rouge">scale = "row"</code> to the <code class="highlighter-rouge">pheatmap()</code> function to perform row scaling since gene expression levels will become comparable. Instead, I’d recommend to do it “manually” to understand and control the scaling procedure.</p>
+
+<p>We can perform a Z-score calculation for each gene so that <script type="math/tex">Z = {x - \mu \over \sigma}</script>   where <script type="math/tex">x</script> is an individual gene count inside a given sample, <script type="math/tex">\mu</script> the row mean of for that gene across all samples and <script type="math/tex">\sigma</script> its standard deviation.<br />
+Check background and R code instructions <a href="https://www.datatechnotes.com/2018/02/z-score-with-r.html">here</a>.</p>
+
+<p>For each gene, the row-wise mean should be close to 0 while the row-wise standard deviation should be close to 1. We are going to use the R <code class="highlighter-rouge">scale()</code> function to do this and check that our scaling procedure worked out.</p>
+
+<p>Here is a simple example to understand how <code class="highlighter-rouge">scale()</code> works.</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">set.seed</span><span class="p">(</span><span class="m">1</span><span class="p">)</span><span class="w">
+</span><span class="n">x</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">runif</span><span class="p">(</span><span class="m">7</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># Manually scaling</span><span class="w">
+</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">mean</span><span class="p">(</span><span class="n">x</span><span class="p">))</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">sd</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># With scale function</span><span class="w">
+</span><span class="n">scale</span><span class="p">(</span><span class="n">x</span><span class="p">)[,</span><span class="m">1</span><span class="p">]</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code># (x - mean(x)) / sd(x)
+-1.01951259 -0.68940037 -0.06788275  0.97047346 -1.21713898  0.94007371  1.08338753
+ 
+# scale(x)[,1]
+-1.01951259 -0.68940037 -0.06788275  0.97047346 -1.21713898  0.94007371  1.08338753
+</code></pre></div></div>
+
+<p>The two outputs are identical. Let’s do it for our dataset.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">counts_scaled</span><span class="w"> </span><span class="o">=</span><span class="w"> 
+  </span><span class="n">counts_normalised_only_diff_genes</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">t</span><span class="p">(</span><span class="n">.</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">                              </span><span class="c1"># transpose to have the genes in columns </span><span class="w">
+  </span><span class="n">scale</span><span class="p">()</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">                           </span><span class="c1"># scale(x, center = TRUE, scale = TRUE) </span><span class="w">
+  </span><span class="n">t</span><span class="p">(</span><span class="n">.</span><span class="p">)</span><span class="w">                                  </span><span class="c1"># back in original shape</span><span class="w">
+
+</span><span class="c1"># sanity check</span><span class="w">
+</span><span class="c1"># the majority of the values should be around zero</span><span class="w">
+</span><span class="n">apply</span><span class="p">(</span><span class="n">counts_scaled</span><span class="p">,</span><span class="w"> </span><span class="n">MARGIN</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="n">mean</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">                          </span><span class="c1"># calculate the mean per row</span><span class="w">
+  </span><span class="n">hist</span><span class="p">(</span><span class="n">.</span><span class="p">,</span><span class="w"> </span><span class="n">main</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">""</span><span class="p">,</span><span class="w"> </span><span class="n">xlab</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Z-score values"</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"dodgerblue2"</span><span class="p">)</span><span class="w">  
+</span></code></pre></div></div>
+
+<p>You can verify that it went well.</p>
+
+<p><img src="../img/06-hist-zscores.png" alt="histogram of Z-score values" height="400px" /></p>
+
+<p>Does this scaling improves our heatmap?</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">pheatmap</span><span class="p">(</span><span class="n">counts_scaled</span><span class="p">,</span><span class="w"> 
+         </span><span class="n">cluster_rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">,</span><span class="w"> 
+         </span><span class="n">cluster_cols</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">,</span><span class="w"> 
+         </span><span class="n">show_rownames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">,</span><span class="w"> 
+         </span><span class="n">scale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"none"</span><span class="p">,</span><span class="w">            </span><span class="c1"># already done "manually"</span><span class="w">
+         </span><span class="n">show_colnames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p>After applying the scaling procedure, the gene expression levels become more comparable. Still, this heatmap isn’t really useful so far.</p>
+
+<p><img src="../img/06-heatmap-2.png" width="400px" alt="second heatmap (scaled)" /></p>
+
+<p>This is the original heatmap.</p>
+
+<p><img src="../img/06-heatmap-1.png" alt="first heatmap version" width="400px" /></p>
+
+<blockquote class="callout">
+  <h2 id="notice">Notice</h2>
+  <p>Have you noticed the two different color scales?</p>
+</blockquote>
+
+<h2 id="43-third-version-with-genes-and-samples-grouped-by-profiles">4.3 Third version with genes and samples grouped by profiles</h2>
+<p>One interesting feature of the heatmap visualisation is the ability to group genes and samples by their expression profile. 
+Similarly to the hierarchical clustering procedure that we have seen in <a href="../05-descriptive-plots/index.html#4-sample-clustering">episode 05</a>.</p>
+
+<p>Let’s compare how it looks with both gene and sample clustering.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">pheatmap</span><span class="p">(</span><span class="n">counts_scaled</span><span class="p">,</span><span class="w"> 
+         </span><span class="n">cluster_rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span><span class="w">                      
+         </span><span class="n">cluster_cols</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span><span class="w"> 
+         </span><span class="n">show_rownames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">,</span><span class="w"> 
+         </span><span class="n">show_colnames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span><span class="w">
+         </span><span class="n">main</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Clustering on"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="../img/06-heatmap-3.png" alt="third heatmap version (clustered)" height="400px" /></p>
+
+<p>This is getting easier to read. Genes with similar profiles that distinguish different samples can be easily visualised.</p>
+
+<blockquote class="challenge">
+  <h2 id="question-2">Question</h2>
+  <p>Do you know how this gene and sample clustering was done? How can you find this out?</p>
+  <blockquote class="solution">
+    <h2 id="solution-3">Solution</h2>
+    <p>Check in the help page related to the <code class="highlighter-rouge">pheatmap</code> function (type <code class="highlighter-rouge">?pheatmap</code>) inside R. 
+By default, the clustering distance is <strong>euclidean</strong> for both rows (genes) and columns (samples). The clustering_method is <strong>complete</strong>.</p>
+  </blockquote>
+</blockquote>
+
+<p>You can change this default behavion easily and try other clustering methods (see <code class="highlighter-rouge">?hclust</code> for supported methods).</p>
+
+<blockquote class="discussion">
+  <h2 id="discussion">Discussion</h2>
+  <p>The gene clusters do not seem to be pretty clear cut though. Do you have an idea why? <br />
+<strong>Hint:</strong> we still have 48 samples under investigation but we are working on 4979 genes (differential genes between what?)</p>
+</blockquote>
+
+<h2 id="44-fourth-version-of-our-heatmap-with-the-8-samples-being-investigated">4.4. Fourth version of our heatmap with the 8 samples being investigated</h2>
+
+<p>But there’s even a better and clearer heatmap that can be generated. 
+Since we have “noise” coming from samples that were not under investigation in our comparison (DC3000 vs Mock at 7dpi from seeds treated with MgCl2), we can remove the other samples.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">counts_scaled_filtered</span><span class="w"> </span><span class="o">=</span><span class="w"> 
+  </span><span class="n">counts_scaled</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+  </span><span class="n">as.data.frame</span><span class="p">()</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
+  </span><span class="n">dplyr</span><span class="o">::</span><span class="n">select</span><span class="p">(</span><span class="n">xp_design_mock_vs_infected</span><span class="o">$</span><span class="n">sample</span><span class="p">)</span><span class="w"> </span><span class="c1"># keep the 8 samples</span><span class="w">
+
+</span><span class="n">head</span><span class="p">(</span><span class="n">counts_scaled_filtered</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p>We have 8 columns corresponding to the 8 samples of the <code class="highlighter-rouge">xp_design_mock_vs_infected</code></p>
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>          ERR1406305 ERR1406306 ERR1406307 ERR1406308 ERR1406263 ERR1406264 ERR1406265 ERR1406266
+AT1G03987  1.0180949 -0.9829355 -1.0528013 -0.8749123 -0.1335497  0.3532129  0.8894350  0.9141185
+AT1G01030  0.7162352 -0.3755511 -0.3030387 -0.5679942 -0.2309550  1.9855405  0.1097865 -0.1723323
+AT1G01070  1.2165825  0.8911530 -0.7450666  0.4269940 -0.8461231 -1.2118873 -0.5492743 -0.1102044
+AT1G01090  1.5878272 -0.1729820  0.1100879 -0.4092894 -1.1956279 -1.0801598 -0.7522270 -1.6680298
+AT1G01140  0.8173825 -0.9641882 -1.0527670 -0.5562761 -0.9205368  1.9342977  0.8982700 -0.3926340
+AT1G04013  1.3337848 -0.7437722 -0.0368491  1.6373360  0.1065829  1.0947369 -0.3180643 -0.3775848
+</code></pre></div></div>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">anno_col_info</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xp_design_mock_vs_infected</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span><span class="n">column_to_rownames</span><span class="p">(</span><span class="s2">"sample"</span><span class="p">)</span><span class="w">
+
+</span><span class="n">anno_info_colors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">list</span><span class="p">(</span><span class="w">
+  </span><span class="n">seed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="n">MgCl2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"#d8b365"</span><span class="p">),</span><span class="w">
+  </span><span class="n">infected</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="n">mock</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"lightgrey"</span><span class="p">,</span><span class="w"> 
+               </span><span class="n">Pseudomonas_syringae_DC3000</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"black"</span><span class="p">),</span><span class="w">
+  </span><span class="n">dpi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s2">"7"</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"dodgerblue4"</span><span class="p">)</span><span class="w">
+</span><span class="p">)</span><span class="w">
+
+</span><span class="n">pheatmap</span><span class="p">(</span><span class="n">counts_scaled_filtered</span><span class="p">,</span><span class="w"> 
+         </span><span class="n">cluster_rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span><span class="w">                       
+         </span><span class="n">cluster_cols</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span><span class="w"> 
+         </span><span class="n">show_rownames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">,</span><span class="w"> 
+         </span><span class="n">show_colnames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span><span class="w">
+         </span><span class="n">annotation_col</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">anno_col_info</span><span class="p">,</span><span class="w">
+         </span><span class="n">annotation_colors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">anno_info_colors</span><span class="p">,</span><span class="w">
+         </span><span class="n">main</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Clustering with ward method"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="../img/06-heatmap-4.png" alt="final heatmap" height="600px" /></p>
+
+<blockquote class="challenge">
+  <h2 id="challenge-if-time-allows">Challenge (if time allows)</h2>
+  <p>Can you can generate a heatmap from differential genes with a fold change higher than 4 (positive) ?</p>
+  <blockquote class="solution">
+    <h2 id="solution-4">Solution</h2>
+
+    <p>For this, we can keep the differentially expressed genes that have a strong <script type="math/tex">log_{2}</script> fold change (e.g. &gt; 4)</p>
+    <div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">genes_differential_fold</span><span class="w"> </span><span class="o">=</span><span class="w"> 
+ </span><span class="n">res</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
+ </span><span class="n">as.data.frame</span><span class="p">()</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
+ </span><span class="n">rownames_to_column</span><span class="p">(</span><span class="s2">"gene"</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">  
+ </span><span class="n">filter</span><span class="p">(</span><span class="n">log2FoldChange</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">4</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> 
+ </span><span class="n">select</span><span class="p">(</span><span class="n">gene</span><span class="p">)</span><span class="w"> 
+
+</span><span class="n">counts_scaled_filtered_high_fold_change</span><span class="w"> </span><span class="o">=</span><span class="w"> 
+ </span><span class="n">counts_scaled_filtered</span><span class="p">[</span><span class="n">row.names</span><span class="p">(</span><span class="n">counts_scaled_filtered</span><span class="p">)</span><span class="w"> </span><span class="o">%in%</span><span class="w"> </span><span class="n">genes_differential_fold</span><span class="o">$</span><span class="n">gene</span><span class="p">,</span><span class="w"> </span><span class="p">]</span><span class="w">
+
+</span><span class="c1"># cluster genes and samples</span><span class="w">
+</span><span class="n">pheatmap</span><span class="p">(</span><span class="n">counts_scaled_filtered_high_fold_change</span><span class="p">,</span><span class="w"> 
+        </span><span class="n">cluster_rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span><span class="w"> 
+        </span><span class="n">cluster_cols</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span><span class="w">
+        </span><span class="n">show_rownames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">,</span><span class="w"> 
+        </span><span class="n">show_colnames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span><span class="w"> 
+       </span><span class="n">annotation_col</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">anno_col_info</span><span class="p">,</span><span class="w">
+        </span><span class="n">clustering_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"average"</span><span class="p">,</span><span class="w">
+        </span><span class="n">annotation_colors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">anno_info_colors</span><span class="p">,</span><span class="w">
+        </span><span class="n">main</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Clustering of genes and samples (high fold only)"</span><span class="p">)</span><span class="w">
+</span></code></pre></div>    </div>
+  </blockquote>
+</blockquote>
+
+<p>If you managed to do this exercise, here is what you should see. Surprinsingly, one of the “infected” sample is clustered together with the “mock”  samples. If you look closer though, it is rather poorly clustered with the rest of the control samples and more of an intermediate sample between control and infected samples. Perhaps a sample for which the infection process did not work very efficiently?<br />
+<img src="../img/06-heatmap-5.png" height="600px" alt="heatmap genes and samples clustered on genes with a high fold change" /></p>
+
+<h1 id="bonus-ma-plots">Bonus: MA plots</h1>
+<p>We don’t cover MA plots in this lesson but if you are interested, you can have a look at it here.</p>
+
+<p>The MA plot originally comes from microarray studies that compared two conditions. From the DESeq2 vignette:</p>
+<blockquote>
+  <p>In DESeq2, the function <code class="highlighter-rouge">plotMA</code> shows the log2 fold changes attributable to a given variable over the mean of normalized counts for all the samples in the DESeqDataSet. 
+Points will be colored red if the adjusted p value is less than 0.1. Points which fall out of the window are plotted as open triangles pointing either up or down.</p>
+</blockquote>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">plotMA</span><span class="p">(</span><span class="n">dds2</span><span class="p">,</span><span class="w"> </span><span class="n">alpha</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.01</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="../img/MA_plot_raw.png" width="800px" alt="MA plot" /></p>
+
+<p>Shrinkage of effect size (LFC estimates) is useful for visualization and ranking of genes. It is more useful visualize the MA-plot for the shrunken log2 fold changes, which remove the noise associated with log2 fold changes from low count genes without requiring arbitrary filtering thresholds. This helps to get more meaningful log2 fold changes for all genes independently of their expression level.</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">resLFC</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">lfcShrink</span><span class="p">(</span><span class="n">dds</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dds2</span><span class="p">,</span><span class="w"> 
+                  </span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">res</span><span class="p">,</span><span class="w">
+                  </span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"normal"</span><span class="p">,</span><span class="w">
+                  </span><span class="n">coef</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2</span><span class="p">)</span><span class="w"> </span><span class="c1"># corresponds to "infected_Pseudomonas_syringae_DC3000_vs_mock" comparison</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">plotMA</span><span class="p">(</span><span class="n">resLFC</span><span class="p">,</span><span class="w"> </span><span class="n">alpha</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.01</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p>You can see that genes with low counts are now shrinked.</p>
+
+<p><img src="../img/MA_plot_shrinked.png" width="800px" alt="MA plot" /></p>
+
+<h1 id="references">References</h1>
+<ul>
+  <li><a href="https://slowkow.com/notes/pheatmap-tutorial/">Kamil Slowikoski blog post about heatmap</a></li>
+  <li>Z-score calculations: <a href="https://www.statisticshowto.datasciencecentral.com/probability-and-statistics/z-score/">link 1</a> and <a href="https://www.datatechnotes.com/2018/02/z-score-with-r.html">link 2</a>.</li>
+  <li><a href="https://www.ncbi.nlm.nih.gov/pubmed/28637422">Type I and type II error rates in gene expression studies</a></li>
+  <li><a href="http://varianceexplained.org/statistics/interpreting-pvalue-histogram/">p-value histograms explained</a></li>
+</ul>
+
+:ET

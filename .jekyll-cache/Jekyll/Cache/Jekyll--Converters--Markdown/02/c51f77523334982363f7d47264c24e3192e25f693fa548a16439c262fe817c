@@ -1,0 +1,64 @@
+I"�<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+  <li><a href="#overview">Overview</a></li>
+  <li><a href="#what-you-will-learn">What you will learn</a></li>
+  <li><a href="#dataset-used">Dataset used</a></li>
+</ol>
+
+<h2 id="what-you-will-learn">What you will learn</h2>
+
+<ol>
+  <li><strong>What are the important things to know before doing an RNA-Seq experiment</strong>
+    <ul>
+      <li>When should you perform a RNA-Seq experiment?</li>
+      <li>RNA-Seq experiments have to comply with good experimental design practices just like any experiment.</li>
+      <li>What are biological replicates and why are they important?</li>
+    </ul>
+  </li>
+  <li><strong>How can I assess the quality of my RNA-Seq sequencing results?</strong>
+    <ul>
+      <li>FastQC.</li>
+      <li>PCA plot.</li>
+      <li>Sample clustering.</li>
+    </ul>
+  </li>
+  <li><strong>How do I perform a differential expression analysis on RNA-Seq results using R?</strong>
+    <ul>
+      <li>Raw and scaled counts: why do you need to scale counts between samples?</li>
+      <li>What are the gene expression units I need to know: RPKM, FPKM, TPM.</li>
+      <li>What are robust scaling/normalisation methods?</li>
+      <li>How does the DESeq method works?</li>
+    </ul>
+  </li>
+  <li><strong>What are the plots that I can make from the differential analysis results?</strong>
+    <ul>
+      <li>Heatmap coupled with gene and sample clustering.</li>
+      <li>Volcano plot.</li>
+    </ul>
+  </li>
+</ol>
+
+<h2 id="dataset-used">Dataset used</h2>
+
+<p>We will make use of a published experimental dataset from a study made on the small model plant <em>Arabidopsis thaliana</em> by <a href="https://doi.org/10.1111/nph.14036">Vogel et al. (2016)</a>. This study compares the response of 4 weeks old plantlets to different bacteria that live on the leaves of different plant species:</p>
+<ul>
+  <li>A known foliar pathogen called <em>Pseudomonas syringae</em> strain DC3000.</li>
+  <li>A commensal (“neutral”) bacteria called <em>Methylobacterium extorquens</em> strain PA1.</li>
+  <li>A commensal (“neutral”) bacteria called <em>Sphingomonas melonis</em> strain Fr1.</li>
+</ul>
+
+<p><img src="../img/experimental_design.png" width="600px" alt="experimental design" /></p>
+
+<p>The original sequencing files can be found on the <a href="https://www.ebi.ac.uk/arrayexpress">Array Express database of the European Bioinformatic Institute</a> by searching for the dataset accession number <strong>E‐MTAB‐4683</strong>.</p>
+
+<h2 id="credits">Credits</h2>
+
+<h3 id="dataset">Dataset</h3>
+<p>The original RNA-Seq dataset used comes from Vogel et al. 2016:  https://doi.org/10.1111/nph.14036.</p>
+
+<h3 id="teaching-materials">Teaching materials</h3>
+<p>This lesson has been formatted according to the <a href="https://carpentries.org/">Carpentries Foundation</a> lesson template and following their recommendations on how to teach researchers good practices in programming and data analysis.</p>
+
+<p>This material builds from a lot of fantastic materials developed by others in the open data science community. Most of the content derives from the <a href="https://github.com/hbctraining">Harvard Chan Bioinformatics Core</a> which are greatly acknowledge for the quality of their teaching materials.</p>
+
+:ET
