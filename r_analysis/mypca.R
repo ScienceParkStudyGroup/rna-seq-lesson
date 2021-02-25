@@ -1,3 +1,4 @@
+# define a custom R function called "mypca()""
 mypca <- function(x, center = TRUE, scale = TRUE){
   
   # This checks that the samples/individuals are in rows

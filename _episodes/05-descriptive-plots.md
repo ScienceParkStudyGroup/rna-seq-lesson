@@ -6,14 +6,14 @@ questions:
 - "How are gene expression levels distributed within a RNA-seq experiment?"
 - "Why do I need to scale/normalize read counts?"
 - "How do I know that my RNA-seq experiment has worked according to my experimental design?"
-- "How informative is PCA and sample clustering for RNA-seq quality checks?"
+- "How informative is PCA and sample clustering for sample-level RNA-seq quality checks?"
 objectives:
 - "Be able to calculate size factors and normalize counts using `DESeq2`."
 - "Be able to create PCA and sample clustering plots to explore RNA-seq count results."
 - "Be able to interpret a PCA plot and discuss its relationship with the experimental design."
 keypoints:
 - "Several biaises including sequencing depth can result in analysis artifacts and must be corrected trough scaling/normalisation."
-- "RNA-seq results in a multivariate output that can be explored through data reduction methods (e.g. PCA)."
+- "Sample-level RNA-seq results in a multivariate output that can be explored through data reduction methods (e.g. PCA)."
 - "Sample clustering and PCA should indicate whether the observed experimental variability can be explained by the experimental design."
 ---
 
@@ -551,14 +551,14 @@ You can test your understanding by answering these few questions:
 > 4. Given a dataframe with 10 samples and 40 variables, what is the maximum number of Principal Components (PCs) that you can compute?
 > 5. If you center the data, do you change the distances between the different samples? 
 > 6. How would you measure the accuracy of the 2D graph with only PC1 and PC2?
-> 7. How is called the graph that has individual PCs as the x-axis and the percentage of explained variance as the y-axis?
+> 7. How is called the graph that orders the eigenvalues or percentage of explained variance on the y-axis and the PC number on the x-axis?
 > 8. How are the "gene proportions used to build PC1 and PC2" called? What is the proper term? Think about the cocktail recipe. 
 > 9. (Extra hard) Can you define in simple terms the _eigenvector_ of PC1 and _eigenvalue_ of PC2?
 > 10. How many times is "BAM!" pronounced by Josh Starmer during the video?
 >
 >> ## Answers
->> 1. PCA allows to plot information from 4 genes on a human-readable 2D plot (2 dimensions, x-axis + y-axis). 
->> 2. SVD stands for Single Value Decomposition.
+>> 1. PCA allows to plot information from 4 genes on a human-readable 2D plot (2 dimensions, x-axis + y-axis). It therefore help to visualise complex multivariate data in a much simpler way. 
+>> 2. SVD stands for Singular Value Decomposition.
 >> 3. Yes, by looking at the loading scores of the genes from each PC, it is possible to relate individual genes to the different PCs. If PC1 separates nicely the different sample groups, then the gene with the highest loading score on PC1 is the most interesting to explain that separation.
 >> 4. The maximum number of PCs is the minimum of samples and variables. So here a maximum of n = 10 PCs.
 >> 5. No, data centering does not change the distance between samples. It centers the cloud of data so that its center is the origin (0,0) on both PC1 and PC2.  
@@ -653,17 +653,13 @@ The summary of the iris data set display the content of the data. In this case t
 
 For convenience we use a very rudimentary (own) implementation implementation of PCA. Copy-paste this code into R to load this function into your environment and use it later on.
 
+
 ~~~
 # define a custom R function called "mypca()""
 mypca <- function(x, center = TRUE, scale = TRUE){
-  
-  # This checks that the samples/individuals are in rows
-  # If samples in columns, then the matrix is transposed
-  if(nrow(x)>ncol(x))
-  {
-    x = t(x)
-  }
-  
+  # Samples should be in columns
+  # Variables in the rows
+
   # remove constant variables
   constant_val = apply(x,2,'sd')
   x_reduced = x[,constant_val>0]
@@ -697,12 +693,18 @@ Since the four first principal components catch most if not all
 
 ~~~
 # perform the PCA analysis on only the first 4 variables (skip the Species variable)
-pca <- mypca(iris[,1:4], scale = FALSE)
+pca <- mypca(iris[,1:4], scale = TRUE)
 scores = as.data.frame(pca$scores[,1:2])
 scores['Species'] = iris$Species
 explained_var = pca$explained_var$exp_var
 ~~~
 {: .language-r}
+
+> ## Important note
+> To have the sample scores in the `scores` R object, samples should be in columns in the matrix used for the PCA.
+> In turn, this requires the variables to be in rows so that the `loadings` R object contains the loadings of the variables.
+{: .callout}
+
 
 In order to have an idea of how effective the 'compression' or variable reduction of the PCA algorithm was on our data set, we make a so-called 'scree' plot in which the explained variance is expressed as a function of the number of principal components.
 
@@ -721,9 +723,9 @@ scree_plot
 ~~~
 {: .language-r}
 
-<img src="../img/pca_iris_exp_var.png" width="600px" alt="pca_iris_exp_var PCA">
+<img src="../img/05-pca_iris_scree_plot.png" width="600px" alt="pca_iris_exp_var PCA">
 
-It is clear that the PCA really reduces our data to almost 1 variable (component) which explains over 90% of all the variance of the data. The second component only explains 5.3%. The third and fourth even less.
+It is clear that the PCA really reduces our data to almost 1 variable (component) which explains over 73% of all the variance of the data. The second component explains 23% suggesting that important information is also present on PC2. The third and fourth explain very little of the total variance.
 
 The whole idea behind the analysis is to visualize the high-dimensional data (e.g. a score plot) in a smaller dimensional space (e.g. 2D space). In R we can do that with the following lines of code
 
@@ -738,14 +740,36 @@ p
 ~~~
 {: .language-r}
 
-<img src="../img/pca_iris_new.png" width="600px" alt="pca_iris_new">
+<img src="../img/05-iris-score-plot.png" width="600px" alt="Iris score plot">
 
 From the score plot it is clear that the Setosa flowers are clearly different from the Versicolor/Virginica flowers. Versicolor and Virginica cannot be separated on PC1 and/or PC2. Looking at the PC1 vs PC3 however, the two groups can be separated better. It is very important to understand that even if a principal component explains a low amount of variance it still can contain interesting (biological) information. 
 
-<img src="../img/pca_iris_1_3.png" width="600px" alt="pca_iris_1_3">
+> ## Exercise
+> Can you create the score plot with PC1 on the x-axis and PC3 on the y-axis?  
+> __Hint:__ you will have to re-compute the pca results with `mypca(iris[,1:4], center = TRUE, scale = TRUE)` since 
+> the `scores` dataframe only contains sample scores for PC1 and PC2.   
+> __Question:__ can you better separate the samples on PC1 and PC3?
+> 
+> > ## Solution
+> > ~~~
+> > pca <- mypca(iris[,1:4], center = TRUE, scale = TRUE)
+> > scores = as.data.frame(pca$scores[,1:3])
+> > scores['Species'] = iris$Species
+> > iris_score_plot_pc1_pc3 <- ggplot(scores) + 
+> >          geom_point(aes(x = PC1, y = PC3, shape = Species, col = Species), size = 2) + 
+> >   xlab(paste0('PC1(',explained_var[1],'%)')) + 
+> >   ylab(paste0('PC2(',explained_var[3],'%)')) + 
+> >   ggtitle('PCA score plot: PC1 - PC3')
+> > iris_score_plot_pc1_pc3
+> > ~~
+> > {: .language-r}
+> > <img src="../">
+> > Answer: no, not really. The versicolor and virginica species are still pretty much overlapping.
+> {: .solution }
+{: .challenge}
+
 
 The scores are indicative of how the objects in the data set score in the new component space, correspondingly the loadings indicate how the variables score in the component space. The score plots above for example show a separation on PC1 between the 3 groups. If we would like to know which variables are important for this separation we can try to interpret our data.
-
 
 
 ~~~
@@ -753,25 +777,36 @@ library(reshape2) # to access the melt() function
 
 # reformat the loading data
 loadings <- melt(pca$loadings)
+
 # rename the columns
 colnames(loadings)<-c("Component","Value")
+
 # add the 'original' variable names
 loadings['Variable']=as.factor(rep(colnames(iris)[-5],4))
+
 # plot the loading values per components
-p <- ggplot(loadings,aes(x=Variable,y=Value)) +  geom_bar(stat='identity') + facet_wrap(~Component)
-p
+loadings_plot <- ggplot(loadings,
+                        aes(x=Variable,y=Value)) +  
+  geom_bar(stat='identity') + 
+  facet_wrap(~Component)
+loadings_plot
 ~~~
 {: .language-r}
 
 
-<img src="../img/pca_iris_loadings.png" width="600px" alt="Iris loadings">
+<img src="../img/05-pca_iris_loadings.png" width="600px" alt="Iris loadings">
 
 
-From the loading plot for PC1 it is clear that `Petal.Length` is the most important factor while `Sepal.Width` is the one which is least important. Because PC1 explains 92.5 % of the total variance we can conclude that `Petal.Length` is the most important factor that separates the three groups of flowers.   
+From the loading plot for PC1 it is clear that `Petal.Length`, `Petal.Width` and `Sepal.Length` are the most important factors while `Sepal.Width` is the least important. Because PC1 explains 73% of the total variance we can conclude that these 3 factors are the most important factors that separates the three groups of flowers.   
+
+If we plot the values of these variables per species, we can indeed see that the _I. setosa_ species has indeed smaller `Petal.Length`, `Petal.Width` or `Sepal.Length` values than the two other species. 
+
+<img src="../img/05-variables-iris.png" alt="Values of variables" width="600px">
+
 There are many more things to learn on PCA (e.g. scaling, filtering) but that is out of the scope of these exercises. 
 
 > ## Maximum number of Principal Components
-> The maximum number of PC is always equal to the minimum of (_n_ samples, _p_ variables). 
+> The maximum number of PC is always equal to the minimum of (_n_ samples, _p_ variables).   
 > Here, the number of samples is equal to $$n = 48$$ and the number of variables to $$p = 33,768$$.
 > Therefore, the maximum number of PCs is equal to 48.    
 {: .callout}
@@ -810,7 +845,7 @@ p_mean_sd_scaled
 
 <img src="../img/05-mean-sd-gene-before-vst.png" width="600px" alt="mean - sd relationship (before vst)">
 
-One can clearly visualise the "heteroscedasticity" of these data: the mean is not independent from the variance. Therefore, we cannot compute the related PCA directly. We need to stabilise the variance so that the mean becomes independent from the variance. 
+One can clearly visualise the "heteroscedasticity" of these data: the mean is not independent from the variance. We need to stabilise the variance so that the mean becomes independent from the variance. 
 
 ~~~
 # Variance stabilisation
