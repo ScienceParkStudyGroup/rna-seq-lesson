@@ -91,66 +91,48 @@ p_raw + p_scaled
 # PCA: iris dataset
 ###################
 
-# # Loadings refer to parameters like sepal length or petal width
-# # Scores refer to observations (individual flowers)
-# dim(iris) # 150 observations, 4 variables
-# 
-# 
-# 
-# # perform the PCA analysis on only the first 4 variables (skip the Species variable)
-# pca <- mypca(iris[,1:4], center = TRUE, scale = TRUE)
-# scores = as.data.frame(pca$scores[,1:2])
-# scores['Species'] = iris$Species
-# explained_var = pca$explained_var$exp_var
-# 
-# # add a convenient column number for the bar plot to display
-# dfev <- data.frame(PC = c(1,2,3,4), exp_var  = pca$explained_var)
-# 
-# # make the plot
-# scree_plot <- ggplot(dfev, aes(x = PC, y = exp_var)) +
-#   ylab('explained variance (%)') + 
-#   ggtitle('explained variance per component') + 
-#   geom_bar(stat = "identity")
-# 
-# # display it
-# scree_plot
-# ggsave(filename = "../img/05-pca_iris_scree_plot.png", plot = scree_plot)
-# 
-# 
-# # plot the scores of the first 2 components
-# iris_score_plot <- ggplot(scores) + 
-#   geom_point(aes(x = PC1, y = PC2, shape = Species, col = Species), size = 2) + 
-#   xlab(paste0('PC1(',explained_var[1],'%)')) + 
-#   ylab(paste0('PC2(',explained_var[2],'%)')) + 
-#   ggtitle('PCA score plot: PC1 vs PC2')
-# iris_score_plot
-# ggsave(filename = "../img/05-iris-score-plot.png", plot = iris_score_plot)
-# 
-# 
-# # Exercise
-# # plot the scores of PC1 and PC3
-# pca <- mypca(iris[,1:4], center = TRUE, scale = TRUE)
-# scores = as.data.frame(pca$scores[,1:3])
-# scores['Species'] = iris$Species
-# iris_score_plot_pc1_pc3 <- ggplot(scores) + 
-#   geom_point(aes(x = PC1, y = PC3, shape = Species, col = Species), size = 2) + 
-#   xlab(paste0('PC1(',explained_var[1],'%)')) + 
-#   ylab(paste0('PC2(',explained_var[3],'%)')) + 
-#   ggtitle('PCA score plot: PC1 vs PC3')
-# iris_score_plot_pc1_pc3
-# ggsave(filename = "../img/05-iris-score-plot-pc3.png", plot = iris_score_plot_pc1_pc3)
-# 
-# # 
-# # iris_score_plot_pc2_pc3 <- ggplot(scores) + 
-# #   geom_point(aes(x = PC2, y = PC3, shape = Species, col = Species), size = 2) + 
-# #   xlab(paste0('PC2(',explained_var[2],'%)')) + 
-# #   ylab(paste0('PC2(',explained_var[3],'%)')) + 
-# #   ggtitle('PCA score plot: PC2 vs PC3')
-# # iris_score_plot_pc2_pc3
-# 
+# Loadings refer to parameters like sepal length or petal width
+# Scores refer to observations (individual flowers)
+dim(iris) # 150 observations, 4 variables
+
+
+
+# perform the PCA analysis on only the first 4 variables (skip the Species variable)
+iris = t(iris[,1:4]) # transpose the matrix without species character col
+pca <- mypca(iris[,1:4], center = TRUE, scale = TRUE)
+scores = as.data.frame(pca$scores[,1:2])
+scores['Species'] = iris$Species
+explained_var = pca$explained_var$exp_var
+
+
+
+# plot the scores of the first 2 components
+iris_score_plot <- ggplot(scores) +
+  geom_point(aes(x = PC1, y = PC2, shape = Species, col = Species), size = 2) +
+  xlab(paste0('PC1(',explained_var[1],'%)')) +
+  ylab(paste0('PC2(',explained_var[2],'%)')) +
+  ggtitle('PCA score plot: PC1 vs PC2')
+iris_score_plot
+ggsave(filename = "../img/05-iris-score-plot.png", plot = iris_score_plot)
+
+
+# Exercise
+# plot the scores of PC1 and PC3
+pca <- mypca(iris[,1:4], center = TRUE, scale = TRUE)
+scores = as.data.frame(pca$scores[,1:3])
+scores['Species'] = iris$Species
+iris_score_plot_pc1_pc3 <- ggplot(scores) +
+  geom_point(aes(x = PC1, y = PC3, shape = Species, col = Species), size = 2) +
+  xlab(paste0('PC1(',explained_var[1],'%)')) +
+  ylab(paste0('PC2(',explained_var[3],'%)')) +
+  ggtitle('PCA score plot: PC1 vs PC3')
+iris_score_plot_pc1_pc3
+ggsave(filename = "../img/05-iris-score-plot-pc3.png", plot = iris_score_plot_pc1_pc3)
+
+
 # library(reshape2) # to access the melt() function
-# 
-# # reformat the loading data
+#
+ # reformat the loading data
 # loadings <- melt(pca$loadings)
 # # rename the columns
 # colnames(loadings)<-c("Component","Value")
@@ -158,16 +140,16 @@ p_raw + p_scaled
 # loadings['Variable']=as.factor(rep(colnames(iris)[-5],4))
 # # plot the loading values per components
 # loadings_plot <- ggplot(loadings,
-#                         aes(x=Variable,y=Value)) +  
-#   geom_bar(stat='identity') + 
+#                         aes(x=Variable,y=Value)) +
+#   geom_bar(stat='identity') +
 #   facet_wrap(~Component)
 # loadings_plot
 # ggsave(filename = "../img/05-pca_iris_loadings.png", plot = loadings_plot)
-# 
+#
 # # Plot the first 3 variables with high loading on PC1
-# plot_iris_variables <- 
-#   iris %>% 
-#   pivot_longer(- Species, names_to = "measurement") %>% 
+# plot_iris_variables <-
+#   iris %>%
+#   pivot_longer(- Species, names_to = "measurement") %>%
 #   ggplot(., aes(x = Species, y = value, fill = Species)) +
 #   geom_histogram(stat = "identity") +
 #   facet_wrap(~ measurement)

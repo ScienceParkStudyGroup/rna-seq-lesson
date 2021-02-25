@@ -1057,7 +1057,7 @@ This plot seems to show that PC2 separates the Fr1 seed inoculation from the MgC
 
 Last but not least, the time after _Pseudomonas syringae_ DC3000 infection can be overlaid too.
 
-<img src="../../img/05-dpi-score-plot.png" width="800px" alt="PCA with dpi overlaid">
+<img src="../img/05-dpi-score-plot.png" width="800px" alt="PCA with dpi overlaid">
 
 Wait, this score plot resembles very much to the "infection score plot" that we have obtained in section 6.3. 
 Let's plot them side by side:
