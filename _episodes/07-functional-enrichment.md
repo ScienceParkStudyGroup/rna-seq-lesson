@@ -1,6 +1,6 @@
 ---
 title: "Functional enrichment analysis"
-teaching: 45
+teaching: 60
 exercises: 15 
 questions:
 - "Given a list of differentially expressed genes, how do I search for enriched functions?"
@@ -19,20 +19,25 @@ keypoints:
 <!-- MarkdownTOC autolink="True" levels="1,2" -->
 
 - [1. Introduction: functional enrichment](#1-introduction-functional-enrichment)
+  - [1.1 The Gene Ontology \(GO\) resource](#11-the-gene-ontology-go-resource)
+  - [1.2 The Kyoto Encyclopedia of Genes and Genomes \(KEGG\) database](#12-the-kyoto-encyclopedia-of-genes-and-genomes-kegg-database)
+  - [1.3 Introduction](#13-introduction)
 - [2. Annotating your DE genes](#2-annotating-your-de-genes)
   - [2.1 Load the table of differential genes](#21-load-the-table-of-differential-genes)
   - [2.2 Ensembl databases](#22-ensembl-databases)
   - [2.3 Querying Ensembl databases using biomartr](#23-querying-ensembl-databases-using-biomartr)
-- [3. Gene Ontology Over Representation Analysis \(ORA\)](#3-gene-ontology-over-representation-analysis-ora)
-  - [3.1 ClusterProfiler \(R code\)](#31-clusterprofiler-r-code)
-  - [3.2 AgriGO v2.0 \(webtool\)](#32-agrigo-v20-webtool)
+- [3. Over Representation Analysis with ClusterProfiler \(R code\)](#3-over-representation-analysis-with-clusterprofiler-r-code)
+  - [3.1 Gene Ontology ORA](#31-gene-ontology-ora)
+  - [3.3.1 KEGG ORA](#331-kegg-ora)
+  - [3.4 KEGG Modules ORA](#34-kegg-modules-ora)
+- [4.Gene Ontology Over Representation Analysis with AgriGO \(webtool\)](#4gene-ontology-over-representation-analysis-with-agrigo-webtool)
+  - [4.1 Single Enrichment Analysis](#41-single-enrichment-analysis)
+  - [4.2 Parametric Analysis of Gene Set Enrichment](#42-parametric-analysis-of-gene-set-enrichment)
   - [3.3 Metascape \(webtool\)](#33-metascape-webtool)
   - [3.4 Gene Set Enrichment Analysis \(GSEA\)](#34-gene-set-enrichment-analysis-gsea)
-- [4. KEGG Over Representation Analysis \(ORA\)](#4-kegg-over-representation-analysis-ora)
-  - [4.1 KEGG ORA](#41-kegg-ora)
-  - [4.2 KEGG Modules ORA](#42-kegg-modules-ora)
-- [5. Troubleshooting](#5-troubleshooting)
-- [6. Going further](#6-going-further)
+- [5. Gene Set Enrichment Analysis \(GSEA\) with ClusterProfiler](#5-gene-set-enrichment-analysis-gsea-with-clusterprofiler)
+- [6. Troubleshooting](#6-troubleshooting)
+- [7. Going further](#7-going-further)
   - [6.1 Useful links](#61-useful-links)
   - [6.2. References](#62-references)
 
@@ -54,8 +59,87 @@ One important goal is to gain a higher view and not only deal with individual ge
 
 Once we obtain a list of genes, we have multiple analysis to perform to go beyond a simple list of genes:
 - Annotating our list of genes with cross-databases identifiers and descriptions (Entrezid, Uniprot, KEGG, etc.).
-- Performing Enrichment and Gene Set Enrichment Analysis (GSEA) analyses using R or webtools.
-- Integrate transcriptomic results in the context of metabolic pathways (data integration).
+- Performing Over-Representation Analysis (ORA) and Gene Set Enrichment Analysis (GSEA) using R or webtools.
+- Interpreting the results. 
+
+These ORA and GSEA analysis require the use of external resources to assign functions to genes. Two resources are of particular importance and will be examined in this tutorial. 
+
+
+## 1.1 The Gene Ontology (GO) resource
+
+The __Gene Ontology (GO)__ produces a bird's-eye view of biological systems by building a tree of terms related to biological functions. 
+This is particularly helpful when dealing with results from genome-wide experiments (e.g. transcriptomics) since classifying genes into groups of related functions can assist in the interpretation of results. Rather than focusing on each gene, one by one, the researcher gets access to metabolic pathways, functions related to development, etc.
+
+> ## Note
+> One could more also define the Gene Ontology as a series of relations between controlled vocabulary terms. 
+{: .callout}
+
+The GO resource is divided into 3 main subdomains:
+1. __Biological Process (BP)__: a series of molecular events with a defined beginning and end relevant for the function of an organism, a cell, etc. 
+2. __Cellular Component (CC)__: the part of a cell.
+3. __Molecular Function (MF)__: the enzymatic activites of a gene product. 
+
+[Source Wikipedia](https://en.wikipedia.org/wiki/Gene_ontology). 
+
+Let's take an example. The At3g53260 gene codes for a phenylalanine ammonia-lyase (PAL) that catalyses the following reaction and is one of the first step of cell wall synthesis, flavonoid synthesis, etc. ; L-phenylalanine ⇌ trans-cinnamic acid + $$NH_{3}$$
+
+This gene has several GO terms associated:
+
+<img src="../img/07-tair_pal_gene_ontology.png" height="600px" alt="AT3G53260 page on arabidopsis.org">
+
+Here are an example term associated with each GO subdomain:
+1. __BP:__ the "L-phenylalanine catabolic process" term with the GO:0006559 unique identifier.
+2. __CC__: the "cytoplasm" term with the GO:0005737 unique identifier. 
+3. __MF__: the "ammonia-lyase activity" term with the GO:0016841 unique identifier.    
+
+> ## Exercise
+> Go to the [AmiGO 2 website](http://amigo.geneontology.org/amigo/landing) and enter the term "GO:0006559" (L-phenylalanine catabolic process).   
+> 1. Can you find the number of genes in __ALL__ organisms that are associated with this term? 
+> 2. Can you find the number of genes __ONLY__ in _Arabidopsis thaliana_ associated with this term?
+> 
+> > ## Solution
+> > 1. There are __712__ genes in all organisms associated with this term (AmiGO 2 version 2.5.13). Hint: Using the free text filter field and "arabidopsis thaliana pal1", you rapidly find that PAL1 has the AT2G37040 gene identifier.   
+> > 2. There are __12__ genes associated with this term in _Arabidopsis thaliana_.  By clicking on "Organism" and filtering to keep only "Viridiplantae" species, one can see 12 genes next to Arabidopsis. 
+> {: .solution} 
+{: .challenge}
+
+## 1.2 The Kyoto Encyclopedia of Genes and Genomes (KEGG) database 
+
+KEGG stands for the "Kyoto Encyclopedia of Genes and Genomes". From the [KEGG website home page](https://www.genome.jp/kegg/):
+> KEGG is a database resource for understanding high-level functions and utilities of the biological system, such as the cell, the organism and the ecosystem, from molecular-level information, especially large-scale molecular datasets generated by genome sequencing and other high-throughput experimental technologies.
+
+Instead of using the Gene Ontology gene classification, one might be interested to use KEGG classification to view the
+transcriptomic response of an organism. KEGG is not restricted to metabolic functions but has a great deal of metabolic maps that can help you. 
+
+> ## Important note
+> While using a model organism such as _Arabidopsis thaliana_ makes ORA and GSEA analyses easier, it is noteworthy that the GO and KEGG resources are not restricted to model organisms but rather include a huge number of (plant) species.  
+{: .callout}
+
+## 1.3 Introduction
+
+Over Representation Analysis is searching for biological functions or pathways that are enriched in a list obtained through experimental studies compared to the complete list of functions/pathways.  
+
+Usually, ORA makes use of so-called gene ontologies (abbreviated GO) where each gene receives one or multiple layers of information on their function, cellular localization, etc.
+
+The ORA analysis rely on this mathematical equation to compute a p-value for a given gene set classified under a certain GO. 
+
+$$p = 1 - {\sum_{i=0}^{k-1} {M \choose i}{N - M \choose n - i} \over {N \choose n}}$$  
+
+In this formula: 
+- **N** is the total number of genes in the background distribution. Also called the "universe" of our transcriptome.
+- **M** is the number of genes within that distribution that are annotated (either directly or indirectly) to the gene set of interest.
+- **n** is the size of the list of genes of interest (the size of your "drawing").
+- **k** and k is the number of genes within that list which are annotated to the gene set. 
+
+The background distribution by default is by default all genes that have annotation. You can change it to your specific background if you have a good reason for that (only genes with a detectable expression in your expression for instance). Also, p-values should be adjusted for multiple comparison.
+
+Do you remember your math classes from high school? Now's the time to get them to work again!
+
+Binomial coefficient is defined as $${n \choose k}$$ and is equal to $$n! \over {k! (n-k)!}$$
+
+--------- drawing of balls from an urn ------
+
+See this [great chapter](https://yulab-smu.github.io/clusterProfiler-book/chapter2.html) from Prof. Guangchuang Yu (School of Basic Medical Sciences, Southern Medical University, China) for more info.
 
 
 # 2. Annotating your DE genes
@@ -65,10 +149,10 @@ Together, they will automate a lot of tedious and tiring steps when you want to 
 
 We are going to load the required library first. 
 ~~~
-library(biomartr)
-library(clusterProfiler)
-library(tidyverse)
-suppressPackageStartupMessages(library(org.At.tair.db))
+library("biomartr")
+library("clusterProfiler")
+library("tidyverse")
+suppressPackageStartupMessages(library("org.At.tair.db"))
 library("biomaRt")  # only use to remove cache bug
 ~~~
 {: .language-r}
@@ -98,8 +182,7 @@ What purpose serves `biomartr`? From the documentation:
 
 What is available for _Arabidopsis thaliana_ in Ensembl?
 ~~~
-library(biomartr)
-
+# library("biomartr") (if not loaded already)
 biomartr::organismBM(organism = "Arabidopsis thaliana")
 ~~~
 {: .language-r}
@@ -156,38 +239,23 @@ head(result_BM)
 ~~~
 {: .language-r}
 
+We now have our original gene identifiers (column `ensembl_gene_id`) with the retrieved TAIR symbols (`tair_symbol`) and NCBI Entrez Gene Id (`entrezgene_id`). 
+~~~
+  ensembl_gene_id  tair_symbol entrezgene_id
+1       AT1G01030         NGA3        839321
+2       AT1G01070                     839550
+3       AT1G01090 PDH-E1 ALPHA        839429
+4       AT1G01140        CIPK9        839349
+5       AT1G01220         FKGP        839420
+6       AT1G01225                     839358
+~~~
+{: .output}
+
 <br>
 
+# 3. Over Representation Analysis with ClusterProfiler (R code)
 
-# 3. Gene Ontology Over Representation Analysis (ORA) 
-
-Over Representation Analysis is searching for biological functions or pathways that are enriched in a list obtained through experimental studies compared to the complete list of functions/pathways.  
-
-Usually, ORA makes use of so-called gene ontologies (abbreviated GO) where each gene receives one or multiple layers of information on their function, cellular localization, etc.
-
-Perhaps the most famous is the [Gene Ontology](http://geneontology.org/) resource which we will use.    
-
-The ORA analysis rely on this mathematical equation to compute a p-value for a given gene set classified under a certain GO. 
-
-$$p = 1 - {\sum_{i=0}^{k-1} {M \choose i}{N - M \choose n - i} \over {N \choose n}}$$  
-
-In this formula: 
-- **N** is the total number of genes in the background distribution. Also called the "universe" of our transcriptome.
-- **M** is the number of genes within that distribution that are annotated (either directly or indirectly) to the gene set of interest.
-- **n** is the size of the list of genes of interest (the size of your "drawing").
-- **k** and k is the number of genes within that list which are annotated to the gene set. 
-
-The background distribution by default is by default all genes that have annotation. You can change it to your specific background if you have a good reason for that (only genes with a detectable expression in your expression for instance). Also, p-values should be adjusted for multiple comparison.
-
-Do you remember your math classes from high school? Now's the time to get them to work again!
-
-Binomial coefficient is defined as $${n \choose k}$$ and is equal to $$n! \over {k! (n-k)!}$$
-
---------- drawing of balls from an urn ------
-
-See this [great chapter](https://yulab-smu.github.io/clusterProfiler-book/chapter2.html) from Prof. Guangchuang Yu (School of Basic Medical Sciences, Southern Medical University, China) for more info.
-
-## 3.1 ClusterProfiler (R code)
+## 3.1 Gene Ontology ORA  
 
 To perform the ORA within R, we will use the [clusterProfiler Bioconductor package](https://bioconductor.org/packages/release/bioc/html/clusterProfiler.html) that has an [extensive documentation available here](https://yulab-smu.github.io/clusterProfiler-book/index.html). 
 
@@ -322,7 +390,89 @@ related to metabolism (upper left) and one related to jasmonic acid and wounding
 > Remember to perform the analysis for all GO categories: Biological Process (`ont = "BP"`), Cellular Component (`ont = "CC"`) and Molecular Function (`ont = "MF"`).     
 {: .callout}
 
-## 3.2 AgriGO v2.0 (webtool)
+
+
+ KEGG Over Representation Analysis (ORA) 
+
+KEGG stands for the "Kyoto Encyclopedia of Genes and Genomes". From the [KEGG website home page](https://www.genome.jp/kegg/):
+> KEGG is a database resource for understanding high-level functions and utilities of the biological system, such as the cell, the organism and the ecosystem, from molecular-level information, especially large-scale molecular datasets generated by genome sequencing and other high-throughput experimental technologies.
+
+Instead of using the Gene Ontology gene classification, one might be interested to use KEGG classification to view the
+transcriptomic response of an organism. KEGG is not restricted to metabolic functions but has a great deal of metabolic maps that can help you. 
+
+
+To see if your organism is referenced in the KEGG database, you can search this page: https://www.genome.jp/kegg/catalog/org_list.html
+In our case, _Arabidopsis thaliana_ is referenced as "ath" in the KEGG database. 
+ 
+You can also do this programmatically using R and the `clusterProfiler` package. 
+~~~
+search_kegg_organism('ath', by='kegg_code')
+search_kegg_organism('Arabidopsis thaliana', by='scientific_name')
+~~~
+{: .language-r}
+
+## 3.3.1 KEGG ORA
+
+~~~
+ora_analysis_kegg <- enrichKEGG(gene = diff_arabidopsis_genes_annotated$entrezgene_id,
+                                universe = all_arabidopsis_genes_annotated$entrezgene_id,
+                                organism = "ath",
+                                keyType = "ncbi-geneid",
+                                minGSSize = 10,
+                                maxGSSize = 500,
+                                pAdjustMethod = "BH",
+                                qvalueCutoff = 0.05,
+                                use_internal_data = FALSE) # force to query latest KEGG db
+                          
+
+# create a simple dotplot graph
+dotplot(ora_analysis_kegg, 
+    color = "qvalue", 
+    showCategory = 10, 
+    size = "Count")
+~~~
+{: .language-r}
+
+<img src="../img/07-dotplot-kegg.png" width="800px">
+
+## 3.4 KEGG Modules ORA
+
+[The KEGG MODULE datase](https://www.genome.jp/kegg/module.html) is more dedicated to metabolism and can help you to make sense of transcriptomic data using metabolic maps and modules. 
+
+The complete list of available modules is [available here](https://www.genome.jp/kegg-bin/get_htext).
+
+~~~
+ora_analysis_kegg_modules <- enrichMKEGG(gene = diff_arabidopsis_genes_annotated$entrezgene_id,
+                                         universe = all_arabidopsis_genes_annotated$entrezgene_id,
+                                         organism = "ath",
+                                         keyType = "ncbi-geneid",
+                                         minGSSize = 10,           # minimal size of genes annotated by Ontology term for testing.
+                                         maxGSSize = 500,          # maximal size of genes annotated for testing
+                                         pAdjustMethod = "BH",
+                                         qvalueCutoff = 0.05)
+
+
+# create a simple dotplot graph
+dotplot(ora_analysis_kegg_modules, 
+    color = "qvalue", 
+    showCategory = 10, 
+    size = "Count")
+~~~
+{: .language-r}
+
+<img src="../img/07-dotplot-kegg-modules.png" width="800px">
+
+
+> ## Discussion
+> Compare the two KEGG plots. Can you identify differences? Which metabolic functions have been grouped together?
+{: .discussion}
+
+
+
+
+
+# 4.Gene Ontology Over Representation Analysis with AgriGO (webtool)
+
 AgriGO v2.0 is a webtool [accessible here](http://systemsbiology.cau.edu.cn/agriGOv2/index.php) to perform gene ontology analyses. Two papers describe it extensively (see [8.2. References](#82-references)).
 
 From the AgriGO v2.0 home page:  
@@ -335,7 +485,8 @@ You can find an [extensive manual available here](http://systemsbiology.cau.edu.
 > There are two versions of AgriGO currently online, versions 1.x and version 2.0. Make sure you go to the [latest 2.0 version url](http://systemsbiology.cau.edu.cn/agriGOv2/index.php).
 {: .callout} 
 
-### 3.2.1 Single Enrichment Analysis
+## 4.1 Single Enrichment Analysis
+
 **We can perform a Single Enrichment Analysis (SEA) which is essentially similar to an ORA.** AgriGO supports species-specific analyses.   
 For _Arabidopsis thaliana_ [navigate here](http://systemsbiology.cau.edu.cn/agriGOv2/specises_analysis.php?SpeciseID=1&latin=Arabidopsis_thaliana).
 
@@ -369,7 +520,7 @@ If you have a long list, you might write your email address to collect your resu
 
 This DAG view gives a comprehensive overview of the GO terms and their relationships. 
 
-### 3.2.2 Parametric Analysis of Gene Set Enrichment
+## 4.2 Parametric Analysis of Gene Set Enrichment
 This analysis takes expression values also into account and could be an richer alternative to SEA. 
 
 ~~~
@@ -405,81 +556,11 @@ Please refer to [the following section](https://yulab-smu.github.io/clusterProfi
 <br>
 
 
-# 4. KEGG Over Representation Analysis (ORA) 
-KEGG stands for the "Kyoto Encyclopedia of Genes and Genomes". From the [KEGG website home page](https://www.genome.jp/kegg/):
-> KEGG is a database resource for understanding high-level functions and utilities of the biological system, such as the cell, the organism and the ecosystem, from molecular-level information, especially large-scale molecular datasets generated by genome sequencing and other high-throughput experimental technologies.
-
-Instead of using the Gene Ontology gene classification, one might be interested to use KEGG classification to view the
-transcriptomic response of an organism. KEGG is not restricted to metabolic functions but has a great deal of metabolic maps that can help you. 
+# 5. Gene Set Enrichment Analysis (GSEA) with ClusterProfiler
 
 
-To see if your organism is referenced in the KEGG database, you can search this page: https://www.genome.jp/kegg/catalog/org_list.html
-In our case, _Arabidopsis thaliana_ is referenced as "ath" in the KEGG database. 
- 
-You can also do this programmatically using R and the `clusterProfiler` package. 
-~~~
-search_kegg_organism('ath', by='kegg_code')
-search_kegg_organism('Arabidopsis thaliana', by='scientific_name')
-~~~
-{: .language-r}
 
-## 4.1 KEGG ORA
-
-~~~
-ora_analysis_kegg <- enrichKEGG(gene = diff_arabidopsis_genes_annotated$entrezgene_id,
-                                universe = all_arabidopsis_genes_annotated$entrezgene_id,
-                                organism = "ath",
-                                keyType = "ncbi-geneid",
-                                minGSSize = 10,
-                                maxGSSize = 500,
-                                pAdjustMethod = "BH",
-                                qvalueCutoff = 0.05,
-                                use_internal_data = FALSE) # force to query latest KEGG db
-                          
-
-# create a simple dotplot graph
-dotplot(ora_analysis_kegg, 
-    color = "qvalue", 
-    showCategory = 10, 
-    size = "Count")
-~~~
-{: .language-r}
-
-<img src="../img/07-dotplot-kegg.png" width="800px">
-
-## 4.2 KEGG Modules ORA
-
-[The KEGG MODULE datase](https://www.genome.jp/kegg/module.html) is more dedicated to metabolism and can help you to make sense of transcriptomic data using metabolic maps and modules. 
-
-The complete list of available modules is [available here](https://www.genome.jp/kegg-bin/get_htext).
-
-~~~
-ora_analysis_kegg_modules <- enrichMKEGG(gene = diff_arabidopsis_genes_annotated$entrezgene_id,
-                                         universe = all_arabidopsis_genes_annotated$entrezgene_id,
-                                         organism = "ath",
-                                         keyType = "ncbi-geneid",
-                                         minGSSize = 10,           # minimal size of genes annotated by Ontology term for testing.
-                                         maxGSSize = 500,          # maximal size of genes annotated for testing
-                                         pAdjustMethod = "BH",
-                                         qvalueCutoff = 0.05)
-
-
-# create a simple dotplot graph
-dotplot(ora_analysis_kegg_modules, 
-    color = "qvalue", 
-    showCategory = 10, 
-    size = "Count")
-~~~
-{: .language-r}
-
-<img src="../img/07-dotplot-kegg-modules.png" width="800px">
-
-
-> ## Discussion
-> Compare the two KEGG plots. Can you identify differences? Which metabolic functions have been grouped together?
-{: .discussion}
-
-# 5. Troubleshooting
+# 6. Troubleshooting
 
 If biomart refuses to query Ensembl again, run this command:
 ~~~
@@ -489,7 +570,7 @@ biomaRt::biomartCacheClear() # to solve a known bug https://github.com/Bioinform
 
 This will clean the cache memory and allow to perform the Ensembl query again.  
 
-# 6. Going further 
+# 7. Going further 
 
 ## 6.1 Useful links
 - [BiomartR](https://docs.ropensci.org/biomartr/)
