@@ -1,23 +1,20 @@
 ---
-title: "From fastq files to read counts"
+title: "From fastq files to alignments"
 teaching: 45
 exercises: 0 
 questions:
 - "How do I perform a quality check of my RNA-seq fastq files with `FastQC`?"
 - "How can I remove RNA-seq reads of low quality? using `trimmomatic`?"
 - "How do I align my reads to a reference genome using `STAR`?"
-- "What is the SAM/BAM format?"
-- "How do I turn RNA-seq read genome alignments into a count table?"
 objectives:
 - "Be able to remove RNA-seq reads with adapters and low quality bases."
+- "Be able to map/align the reads to a reference genome"
 keypoints:
 - "Next-Generation Sequencing techniques are massively parallel cDNA sequencing."
 - "Sequencing files are produced in a standard format: the fastq format."
 - "Using FastQC, one can easily check the sequencing quality of a fastq file."
 - "Performing read trimming ensures that seqence of bed quality and no sequencing adapter is left in your final reads."
 - "Align RNA-seq reads to a reference genome using a splice-aware aligner like `STAR`."
-- "The SAM/BAM format is the end-result of a read alignment to a reference genome."
-- "The resulting `.bam` files are used to generate a count table for use in differential expression analyses."
 ---
 
 # 1. Table of contents
@@ -301,7 +298,7 @@ First we need to exit the container and next we can transfer our HTML
 files to our local computer using `docker cp`.
 
 ~~~
-$ mkdir -p ~/Desktop/fastqc_html
+$ mkdir  ~/fastqc
 ~~~
 {: .bash}
 
@@ -323,15 +320,15 @@ directory we just created `~/Desktop/fastqc_html`.
 When working on a remote computer make use of the following command
 
 ~~~
-$ scp -r tbliek@genseq-cn02.science.uva.nl:~/rna_seq_lesson/fastqc/ ~/Desktop/fastqc_html
+$ scp -r root@178.128.240.207:~/fastqc/*.html ~/Desktop/fastqc_html
 ~~~
 {: .bash}
 
 
 As a reminder, the first part
-of the command `tbliek@genseq-cn02.science.uva.nl` is
+of the command `root@178.128.240.207` is
 the address for your remote computer. Make sure you replace everything
-after `dcuser@` with your instance number (the one you used to log in).
+after `root@` with your instance number (the one you used to log in).
 
 The second part starts with a `:` and then gives the absolute path
 of the files you want to transfer from your remote computer. Don't
@@ -697,7 +694,7 @@ In the programm the following arguments can be used.
 
 To run this on a single sample it looks something like this
 ~~~
-trimmomatic SE -phred33 -threads 2 Arabidopsis_sample1.fq.gz trimmed/Arabidopsis_sample1_qc.fq ILLUMINACLIP:adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25
+trimmomatic SE -phred33 -threads 1 Arabidopsis_sample1.fq.gz trimmed/Arabidopsis_sample1_qc.fq ILLUMINACLIP:adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25
 ~~~
 {: .bash}
 
@@ -766,10 +763,9 @@ If it all looks ok, rerun with out `echo`
 ~~~
 $ for infile in *.fq.gz
 do
-    outfile="$(basename $infile .fq.gz)"_qc.fq
-    trimmomatic SE -phred33 -threads 2 $infile ../trimmed/"$outfile ILLUMINACLIP:../general/adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25 CROP:100
+  outfile="$(basename $infile .fq.gz)"_qc.fq
+  trimmomatic SE -phred33 -threads 2 $infile trimmed/$outfile ILLUMINACLIP:adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25
 done
-
 ~~~
 {: .bash}
 
