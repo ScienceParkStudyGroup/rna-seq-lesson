@@ -1,5 +1,5 @@
 ---
-title: "Visualizing and counting bam"
+title: "Visualizing and counting of the alignments"
 teaching: 90
 exercises: 0
 questions:
@@ -10,6 +10,11 @@ questions:
 objectives:
 - "How to upload and view your bam file in IGV"
 - "Create a counts file to extract the number of reads that map within a gene, using featureCounts"
+keypoints:
+- "The SAM/BAM format is the end-result of a read alignment to a reference genome."
+- "With Samtools the aligments in the SAM/BAM files can be viewed, filtered and ordered"
+- "The aligments can be visualized in a genome using an genome viewer like IGV"
+- "The resulting `.bam` files are used to generate a count table for use in differential expression analyses."
 ---
 
 # 1. Table of Contents
@@ -25,8 +30,9 @@ objectives:
     - [3.1. Preparation of the Bam file for IGV](#31-preparation-of-the-bam-file-for-igv)
         - [Sorting](#sorting)
         - [Indexing](#indexing)
+        - [Transfer the files to your local computer](#transfer-the-files-to-your-local-computer)
     - [3.2. IGV](#32-igv)
-- [6. Creating the counts file](#6-creating-the-counts-file)
+- [4. Creating the counts file](#4-creating-the-counts-file)
 
 <!-- /TOC -->
 
@@ -48,13 +54,55 @@ displayed below with the different fields highlighted.
 <img src="../img/sam_bam_1.png">
 
 <img src="../img/sam_bam2.png">
-<br><br><br>
+<br><br>
+
+|Tag| Meaning|
+|----|-----------|
+|NM| Edit distance|
+|MD| Mismatching positions/bases|
+|AS| Alignment score|
+|BC| Barcode sequence|
+|X0| Number of best hits|
+|X1| Number of suboptimal hits found by BWA|
+|XN| Number of ambiguous bases in the reference|
+|XM| Number of mismatches in the alignment|
+|XO| Number of gap opens|
+|XG| Number of gap extentions|
+|XT| Type: Unique/Repeat/N/Mate-sw|
+|XA| Alternative hits; format: (chr,pos,CIGAR,NM;)|
+|XS| Suboptimal alignment score|
+|XF| Support from forward/reverse alignment|
+|XE| Number of supporting seeds|
+
+<br>
 To start of we'll have a look at how to use samtools to have a peak at the the contents of the bam files. 
 
 As these file are binary you can not simply use:
 ~~~
-$ head arabidopsis1.bam
+$ head Arabidopsis_sample1.bam 
 ~~~
+{: .bash}
+<br>
+~~~
+?BC?mRK??0t
+=8?W???F?????BlӔ?^;?n
+                     ?#??ٟ۟T??CA??h?????????$?|?K??
+?????чa??z?9|M???4??~WH??5??7???ǻ?Ԇr?~wE?Bd"???}q????.??c?K^?}?GM?s???@(}??ql&R??=RF?H??I???9?????Q:5eM?M?4?ጃ3??=??7?^?+x????sp
+??
+8??$???0?g?V?Xy?!???hm?#?P2?qX?`<t???	-?<???????
+?@?81??
+       ? ???+?
+c:??G?!       H
+       ???v*???І?Pv???c?x????y?a)?/??S?8[??ޒ?y!?P:,??-5??????֫$I^ǽ???ͧ_?ߗ??<??BChc?\k?eYU????a???kw?}????}??????8?:???!?
+3(
+  QD??(?T??p?C??
+?D?"?ф  0?? F???? ?0h&d?o?}έ?==u?F?tUݺU???k?????o??F???q????v????U????A????p{????ޕg?^p?ht?n?zj4j?W{L?mٕ??
+!M)J???n:?3M??*5???U?>P???!???ٍi?$I?eY?-
+                                       c???0
+                                            ?H?????	=?R?}WG/~>??????ޫ????s??/l?^r?/z??????x^u???'?'U?x@???N`o??G#?m??P?)ӕ?S??U?H?5?ѕ?\xJy???NH??????
+?f?>?R?I
+~~~
+{: .output}
 This will give an unreadable result.
 samtools can help us to make the content readable<br>
 ## 2.2 Samtools
@@ -80,49 +128,129 @@ The mpileup command produces a pileup format (or BCF) file giving, for each geno
 
 Looking at the content of the file using samtools view:
 ~~~
-$ samtools view arabidopsis1.bam | head
+$ samtools view Arabidopsis_sample1.bam | head
 ~~~
-Samtools will make the data readeble, this data is then piped through head to show the first 5 lines of the file<br>
+{: .bash}
+~~~
+ERR1406259.2	16	Chr1	17425094	60	85M228N16M	*	0	0	TGAGAATAAAACCATATGGGTTGGTGATTTGCATCACTGGATGGATGAGGCTTATCTTAATTCTTCTTTTGCTTCCGGCGACGAGAGAGAGATTGTTTCGG	CDEDDDDDB@4DEDDDDDDDDDDDDDDDDDDDDDCAEEDEFFFEFFHHHGHJJJIHJJJIIIGIIJIJJJJJJJFJJJIIIGJJIJJJHHHHHFFFFFCCC	AS:i:0	XN:i:0	XM:i:0	XO:i:0	XG:i:0	NM:i:0	MD:Z:101	YT:Z:UU	XS:A:+	NH:i:1
+ERR1406259.5	0	Chr1	25446585	60	101M	*	0	0	AATTATTGGGCCATATCCCGACCCCTTTGGCAAACCCATCGACCGTTCCAAGAATCCCTCCGGTAATCCCTCCGGCAACCCCAATAATAAGCTTATCAAGC	CCCFFFFFHHHHGJIJJJJJJJJIJJJIIIDHJIIJJJJJGIJGIFGIGIHHHHHHFFFFDDDB?BD@CDDDBBDDDDDDDDDDDDDEEDDDDDDDDEDDC	AS:i:0	XN:i:0	XM:i:0	XO:i:0	XG:i:0	NM:i:0	MD:Z:101	YT:Z:UU	NH:i:1
+ERR1406259.11	0	Chr1	22700646	60	101M	*	0	0	GCCATGTTGGGTGCAGCTGGAGCTATTGCTCCTGAGATTTTAGGAAAGGCTGGTCTGATTCCAGCAGAGACTGCTCTTCCTTGGTTCCAAACCGGTGTGAT	@@@DFDDEFDHBFHIIJJGIIJJIIJJFJFJJJJJJGIJJJJIGGHJ@FGHIE=FHIJJIGEHGJJGH=A3=CED?DEFF<CCCCCDCEDDDDBD385@DD	AS:i:0	XN:i:0	XM:i:0	XO:i:0	XG:i:0	NM:i:0	MD:Z:101	YT:Z:UU	NH:i:1
+ERR1406259.10	0	Chr1	11215252	60	69M263N32M	*	0	0	CCGTTCACTATCAAGTGCGGTAAACCGTCTGACCCGCATAACAATCCGTACTTCCCGTAGTTGTCGAACCTGCGTTTGGTTTTCTCGATCTGAGCATTGAG	@@CFFFFFHHHHHJJBGIHIFFIJJGGIIIIJIGGGIIIIJIIGIIJIGIIGGJJHHHFFBDEECBA;ABCDDD289@D<?BB>@AB:>BBD>>>CCC@>C	AS:i:0	XN:i:0	XM:i:0	XO:i:0	XG:i:0	NM:i:0	MD:Z:101	YT:Z:UU	XS:A:-	NH:i:1
+ERR1406259.12	16	Chr1	30360823	60	101M	*	0	0	AAGAGTGTCACAGAGCTTGAGAAGGAATATGAGATTAGGGGCTGCGGCAGAAAGGACTGGATTGATAAAAGAGGAGACTGGAGGTCTAAGGCTTATGGTTG	CDDDDDCDCCCDCCDDEEEEEEFFDDFEFFHEEC;ACGHFGGFJJIIHGF?*JJIHGGJJIJIGHBJJIJIJJIHFBIHJJJIGGGJJHHHHHFDFFF@@?	AS:i:0	XN:i:0	XM:i:0	XO:i:0	XG:i:0	NM:i:0	MD:Z:101	YT:Z:UU	NH:i:1
+ERR1406259.13	0	Chr1	25048653	60	49M136N52M	*	0	0	CATCATAGTATCCGGGTGAGTTACCGTGCTCACGGTACACAAATCCGTGCTCCAACTCGAATTCAACACAAGGAATCCACTTGTTGCGGATAAGGTAGTCA	CCCFFFFFFHHHHJJJEFHJJIJJJIGIJJJJJJJGIIJJJJJJJJJJJJJJJJGIJJHHHHFFFFFFDDDEDDDCDDDDDDDDDDDDDDDDDDD@@CDED	AS:i:0	XN:i:0	XM:i:0	XO:i:0	XG:i:0	NM:i:0	MD:Z:101	YT:Z:UU	XS:A:-	NH:i:1
+ERR1406259.17	16	Chr1	19517907	60	101M	*	0	0	TCCAAGCTGAGGGAAGAACTCTAGATGATCAAGAATCCTATCGGGACAAAATAATTGAGTACAAGAGTCTTGAAGATGTTGTTGAGGATAATATCAGTTTG	ADDDDDDDDEEEEEEFFDFFFHHHHHHHHJJJIIGGIJJJJJJJJJJJJJIJJJJJJJJJIJJIJIHIJJJJJJJJJJJJJJJJJJJJHHHHHFFFFFCCC	AS:i:0	XN:i:0	XM:i:0	XO:i:0	XG:i:0	NM:i:0	MD:Z:101	YT:Z:UU	NH:i:1
+ERR1406259.24	16	Chr1	6804452	60	49M153N52M	*	0	0	CAGCATCGTCCACTTCCACTTGCCCTCCCGGCGGCAATAATTTGCACAACTGTGGGGCTACAAGAATGTAACCATGCGAAGCGATGTGGTTAAGAACGTCA	:4?8(0>@CCC@CC@>>4<82<@<8=?8896=7E>EC?CD@IGGC=@C7CAF@@BDB9?9FHGD>BBHDFBCIIHHBGHEHBGA<+ACBBHDFDBA;D@<@	AS:i:0	XN:i:0	XM:i:0	XO:i:0	XG:i:0	NM:i:0	MD:Z:101	YT:Z:UU	XS:A:-	NH:i:1
+ERR1406259.25	0	Chr1	7738049	60	101M	*	0	0	GCTGAACGAATGGCCCGGAGAAGCGATTTTGATCAGNATTCATCAGGAGGAGCCAGTTATCCATCACACGGTGAGATNTACGAAGTTGTTCTCTACTTTGG	CCCFFFFFGFHHHJJJJJGGIJBBHIGIIIEAEDHI#0<FHEIEGIEGIICFCACE>BEFCCEDEEDCD@B?B@BCC#,8??@AB?CDDDDECCACDDEAC	AS:i:-2	XN:i:0	XM:i:2	XO:i:0	XG:i:0	NM:i:2	MD:Z:36T40G23	YT:Z:UU	NH:i:1
+ERR1406259.32	16	Chr1	4393371	60	99M2S	*	0	0	TAAGAACCTTCTTGGCTCCAGCCTGAAGGTGCTTCCCAGCACCGTCTCTGTCAACAAACACTCCGGTTCCTTCGATAACTAAGTCAATGCCTAGTTCCCCC	ADCA>3BC?BDCDDDDBDDBDDDDCCCDDDDBCBDEEED?5GGHHIIJJJIGHIJHF=FCJHJJJJJIIIJJIJIJJJJIJJJIIIGJGHFFHFFFFFCC@	AS:i:-2	XN:i:0	XM:i:0	XO:i:0	XG:i:0	NM:i:0	MD:Z:99	YT:Z:UU	NH:i:1
+~~~
+{: .output}
+Samtools will make the data readeble, this data is then piped through head to show the first 10 lines of the file<br>
 ## 2.4 counting and sorting
 
-samtools view can be used to filter the alignment based on characters like mapping quality, chromosome, orientation etc. When the -c option is added the filtered selection is counted.<br><br>
-
+samtools view can be used to filter the alignment based on characters like mapping quality, chromosome, orientation etc. When the `-c` option is added the filtered selection is counted.
+<br>
+<br>
 Count the total number of records:
 
 ~~~
-$ samtools view -c arabidopsis1.bam
+$ samtools view -c Arabidopsis_sample1.bam 
 ~~~
+{: .bash}
+~~~
+$ 263657
+~~~
+{: .output}
 <br>
 Count with flagstat for additional information:
 ~~~
 $ samtools flagstat arabidopsis1.bam
 ~~~
+{: .bash}
 <br>
-Count the records that align (reads mapping to multiple locations are counted multiple times):
+Count the records using the [samflags](https://broadinstitute.github.io/picard/explain-flags.html) argument.
+<br>
+<br>
+Count the alignments that don't align.
 ~~~
-$ samtools view -F 4 -c arabidopsis1.bam
+$ samtools view -f 4 -c Arabidopsis_sample1.bam
 ~~~
-here filtering is based on the [samflags](https://broadinstitute.github.io/picard/explain-flags.html). -f include alignments the fit the value, -F exclude alignments that fit the value
+{: .bash}
+~~~
+$ 515
+~~~
+{: .output}
+The argument `-f` includes reads that fit samflag 4, read unmapped.
 <br><br>
-Count the reads that map the forward strand
+Count the reads that do align
 ~~~
-$ samtools view -F 20 -c arabidopsis1.bam
+$ samtools view -F 4 -c Arabidopsis_sample1.bam
 ~~~
+{: .bash}
+~~~
+$ 263657
+~~~
+{: .output}
+Here `-F` is used to exclude reads that fit samflag 4, read unmapped. Everything else is included.
 <br>
-Count the reads that map the reverse strand
-~~~
-$ samtools view -f 10 -c arabidopsis1.bam
-~~~
+> ## Question
+> Sometimes you will see that this number of alignments is higher then the number of sequences in your fastq file. How can this be? 
+> > ## Solution
+> >  When a read multimaps, aligns to multiple positions in the genome, each of these posisions is included as a separate alignment. 
+> {: .solution}
+{: .challenge}
 <br>
-Select alignments with no mismatches and write to a new file
+Write your selection to a new file
 ~~~
-$ samtools filter -tag XM:0 -in arabidopsis1.bam -out arabidopsis1_noMismatch.bam
+samtools view -Sb -F 4 -o Arabidopsis_sample1_mapped.bam Arabidopsis_sample1.bam
 ~~~
+{: .bash}
+In this command `-Sb` is needed to keep the file binairy(compressed), and `-o` specifies the output filename (a bam file again).
+
+
+<br><br>
+Count the reads that align to the forward strand.
+~~~
+$ samtools view -F 20 -c Arabidopsis_sample1.bam
+~~~
+{: .bash}
+~~~
+$ 131631
+~~~
+{: .output}
+Use `-F 20` to excluse "read reverse strand" and "read unmapped".
 <br>
-Alternativly this can be done using samtools view and pipe it through grep
+<br>
+Count the reads that align to the reverse strand.
 ~~~
-$ samtools view arabidopsis1.bam | grep "XM:0" | wc -l
+$ samtools view -f 16 -c Arabidopsis_sample1.bam 
 ~~~
+{: .bash}
+~~~
+$ 131511
+~~~
+{: .output}
+With `-f 16` you select for "read reverse strand".
+<br>
+<br>
+With samtools it is also posible to select for alignments with a minimal mapping quality.
+Alignments with a maximal score (60 for hisat2 output files and 255 for star output files) are truely unique.
+~~~
+$ samtools view -q 60 -c Arabidopsis_sample1.bam
+~~~
+{: .bash}
+~~~
+$ 240224
+~~~
+{: .output}
+This number can never be bigger then the number of reads in the fastq file, as all reads in the output give a single alignment.
+
+> ## Question
+> Bam files usually contain a tag or attribute that gives the number of mismatches between the read and the reference genome. With samtools it is unfortunately not possible to filter on these values. Could you think of ab other way to select for alignments that align without any mismatches? (hint: make use of `grep "XM:i:0"` among others)
+> > ## Solution
+> > <br>`$ samtools view Arabidopsis_sample1.bam | grep "XM:i:0" | wc -l`<br>
+> {: .solution}
+{: .challenge}
+
 <br>
 <br>
 # 3. Visualazation of a bam file
@@ -142,6 +270,7 @@ Samtools can also be used to sort the read alignments. The aliments will reorder
 ~~~
 $ samtools sort -o arabidopsis1_sorted.bam arabidopsis1.bam
 ~~~
+{: .bash}
 
 where -o defines the name of the output file (also a bam).
 The default for samtools sort is sorting by position. There are more sorting posibilities to be found with samtools sort --help
@@ -151,7 +280,44 @@ The default for samtools sort is sorting by position. There are more sorting pos
 ~~~
 $ samtools index arabidopsis1_sorted.bam
 ~~~
+{: .bash}
 Only the input file name needs to be specified, based on this name a .bai (bam index) is produced.
+<br>
+<br>
+<br>
+### Transfer the files to your local computer
+
+Next the files need to be downloaded to your local computer
+First we need to exit the container (control D) and next create a folder on your VM outside the container.
+
+~~~
+$ mkdir IGVfiles
+~~~
+{: .bash}
+<br>
+Copy the files (both the bam and the bam.bai), or just the whole content of the directory mapped.
+~~~
+$ docker cp bioinfo:/home/mapped/ ~/IGVfiles/
+~~~
+{: .bash}
+<br>
+Go to your local computer, create a directory and download the files from the VM
+~~~
+$ mkdir IGV
+~~~
+{: .bash}
+<br>
+Download the sorted bam files
+~~~
+$  scp -r root@178.128.240.207:~/IGVfiles/mapped/*sorted.bam ~/Desktop/IGV
+~~~
+{: .bash}
+<br>
+And the index (.bai) files.
+~~~
+scp -r root@178.128.240.207:~/IGVfiles/mapped/*.bai ~/Desktop/IGV
+~~~
+{: .bash}
 
 
 ## 3.2. IGV
@@ -172,8 +338,17 @@ It is also posible to search for genes. just pop the name in the search box and 
 <img src="../img/gene10370.png">
 <br><br>
 <img src="../img/gene16080.png">
+<br>
+<br>
 
-# 6. Creating the counts file
+> ## Question
+> Pick a sample and visualize the forward and reverse alignments separately in IGV.
+> > ## Solution
+> >  Select and sort forward reads in one go.<br>`samtools view -Sb -F 20 Arabidopsis_sample1.bam | samtools sort -o Arabidopsis_FW_sorted.bam`<br>Index the forward reads.<br>`samtools index Arabidopsis_FW_sorted.bam`<br>Select and sort the reverse reads.<br>`samtools view -Sb -f 16 Arabidopsis_sample1.bam | samtools sort -o Arabidopsis_RV_sorted.bam`<br>Index the reverse reads.<br>`samtools index Arabidopsis_RV_sorted.bam`<br>Exit the container, create a directory and copy files.<br>`mkdir IGVfiles`<br>`docker cp bioinfo:/home/mapped/ ~/IGVfiles/`<br> from the Desktop of your local computer create directory and download the files.<br>`mkdir IGV`<br>`scp -r root@178.128.240.207:~/IGVfiles/mapped/*sorted.bam ~/Desktop/IGV`<br>`scp -r root@178.128.240.207:~/IGVfiles/mapped/*.bai ~/Desktop/IGV`<br> 
+> {: .solution}
+{: .challenge}
+
+# 4. Creating the counts file
 
 For downstream application for each of the samples the number of reads that maps within a gene has to be determined.
 Featurecounts from the subread package can do this.
@@ -187,6 +362,7 @@ $ gunzip ath_annotation.gff3.gz
 
 $ featureCounts -O -t gene -g ID -a ath_annotation.gff3 -o counts.txt mapped/*.bam
 ~~~
+{: .bash}
 
 -a <string>         Name of an annotation file. GTF/GFF format by default.
 -o <string>         Name of the output file including read counts.
