@@ -42,6 +42,7 @@ keypoints:
 - [5. Alignment to a reference genome](#5-alignment-to-a-reference-genome)
     - [5.1. Index the reference genome](#51-index-the-reference-genome)
     - [5.2. Align reads to reference genome](#52-align-reads-to-reference-genome)
+    - [5.3. Align reads to reference genome using hisat2](#53-align-reads-to-reference-genome-using-hisat2)
 
 <!-- /TOC -->
 
@@ -1027,3 +1028,82 @@ resulting in table containing all the alignment values.
 Arabidopsis_sample1_qcLog.final.out (END) 
 ~~~
 {: .output}
+
+## 5.3. Align reads to reference genome using hisat2
+<br>
+Alternatively it is possible to map the reads using hisat2. This tools works simular to star and gives a simular output. The commands are just a bit different.
+<br>
+<br>
+To start off we need to install the tools as it is not inclded in the fastq environment.
+~~~
+$ conda install -c biobuilds hisat2
+~~~
+{: .bash}
+<br>
+Just like with star the genome needs to be indexed.
+~~~
+$ hisat2-build -p 2 AtChromosome1.fa AtChromosome1
+~~~
+{: .bash}
+<br>
+Create a directory to store the alignment files and go into the directory trimmed where the trimmed files are located.
+~~~
+$ mkdir mapped
+
+$ cd trimmed
+~~~
+{: .bash}
+<br>
+Mapping is done in two steps. Hisat2 produces the alignments, samtools is used to compress them and write them to a file. More on how samtools works and what it does in the next lesson. For now this will do.
+~~~
+$ hisat2  -p 2 -x ../AtChromosome1 -U Arabidopsis_sample1_qc.fq | samtools view -Sb -o ../mapped/Arabidopsis_sample1.bam
+~~~
+{: .bash}
+~~~
+249425 reads; of these:
+  249425 (100.00%) were unpaired; of these:
+    515 (0.21%) aligned 0 times
+    240224 (96.31%) aligned exactly 1 time
+    8686 (3.48%) aligned >1 times
+99.79% overall alignment rate
+~~~
+{: .output}
+<br>
+A loop to go through all the files
+~~~
+$ for fastq in *.fq
+> do
+> bam="$(basename $fastq _qc.fq)".bam
+> hisat2  -p 2 -x ../AtChromosome1 -U $fastq | samtools view -Sb -o ../mapped/$bam
+> done
+~~~
+{: .bash}
+~~~
+249425 reads; of these:
+  249425 (100.00%) were unpaired; of these:
+    515 (0.21%) aligned 0 times
+    240224 (96.31%) aligned exactly 1 time
+    8686 (3.48%) aligned >1 times
+99.79% overall alignment rate
+242755 reads; of these:
+  242755 (100.00%) were unpaired; of these:
+    2354 (0.97%) aligned 0 times
+    230616 (95.00%) aligned exactly 1 time
+    9785 (4.03%) aligned >1 times
+99.03% overall alignment rate
+249517 reads; of these:
+  249517 (100.00%) were unpaired; of these:
+    553 (0.22%) aligned 0 times
+    239951 (96.17%) aligned exactly 1 time
+    9013 (3.61%) aligned >1 times
+99.78% overall alignment rate
+248320 reads; of these:
+  248320 (100.00%) were unpaired; of these:
+    1146 (0.46%) aligned 0 times
+    238745 (96.14%) aligned exactly 1 time
+    8429 (3.39%) aligned >1 times
+99.54% overall alignment rate
+~~~
+{: .output}
+<br>
+In the next lesson will have an in depth look at the alignment files.
