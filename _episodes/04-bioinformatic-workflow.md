@@ -54,25 +54,29 @@ displayed below with the different fields highlighted.
 <img src="../img/sam_bam_1.png">
 
 <img src="../img/sam_bam2.png">
-<br><br>
+<br>
+<br>
+Additionally tags (or attribute) can be aded to each of of the lines. These tags give some aditional information on the alignment. The number and type of tags varies between different alinment tools and the settings within these tools.
+Here a list of tags that are commonly used.
+<br>
 
-|Tag| Meaning|
-|----|-----------|
-|NM| Edit distance|
-|MD| Mismatching positions/bases|
-|AS| Alignment score|
-|BC| Barcode sequence|
-|X0| Number of best hits|
-|X1| Number of suboptimal hits found by BWA|
-|XN| Number of ambiguous bases in the reference|
-|XM| Number of mismatches in the alignment|
-|XO| Number of gap opens|
-|XG| Number of gap extentions|
-|XT| Type: Unique/Repeat/N/Mate-sw|
-|XA| Alternative hits; format: (chr,pos,CIGAR,NM;)|
-|XS| Suboptimal alignment score|
-|XF| Support from forward/reverse alignment|
-|XE| Number of supporting seeds|
+|Tag:Type|Meaning|
+|----|----|-------|
+|NM:i |Edit distance|
+|MD:i |Mismatching positions/bases|
+|AS:i |Alignment score|
+|BC:z |Barcode sequence|
+|X0:i |Number of best hits|
+|X1:i |Number of suboptimal hits found by BWA|
+|XN:i |Number of ambiguous bases in the reference|
+|XM:i |Number of mismatches in the alignment|
+|XO:i |Number of gap opens|
+|XG:i |Number of gap extentions|
+|XT |Type: Unique/Repeat/N/Mate-sw|
+|XA:z |Alternative hits; format: (chr,pos,CIGAR,NM;)|
+|XS:i |Suboptimal alignment score|
+|XF:i |Support from forward/reverse alignment|
+|XE:i |Number of supporting seeds|
 
 <br>
 To start of we'll have a look at how to use samtools to have a peak at the the contents of the bam files. 
@@ -82,7 +86,6 @@ As these file are binary you can not simply use:
 $ head Arabidopsis_sample1.bam 
 ~~~
 {: .bash}
-<br>
 ~~~
 ?BC?mRK??0t
 =8?W???F?????BlӔ?^;?n
@@ -124,7 +127,9 @@ The index command creates a new index file that allows fast look-up of data in a
 The tview command starts an interactive ascii-based viewer that can be used to visualize how reads are aligned to specified small regions of the reference genome. Compared to a graphics based viewer like IGV,[3] it has few features. Within the view, it is possible to jumping to different positions along reference elements (using 'g') and display help information ('?').
 - **mpileup**<br>
 The mpileup command produces a pileup format (or BCF) file giving, for each genomic coordinate, the overlapping read bases and indels at that position in the input BAM files(s). This can be used for SNP calling for example.
-- **flagstat**<br><br><br>
+- **flagstat**<br>
+Counts the number of alignments for each FLAG type.
+<br><br>
 
 Looking at the content of the file using samtools view:
 ~~~
@@ -166,8 +171,24 @@ Count with flagstat for additional information:
 $ samtools flagstat arabidopsis1.bam
 ~~~
 {: .bash}
+~~~
+263657 + 0 in total (QC-passed reads + QC-failed reads)
+14232 + 0 secondary
+0 + 0 supplementary
+0 + 0 duplicates
+263142 + 0 mapped (99.80% : N/A)
+0 + 0 paired in sequencing
+0 + 0 read1
+0 + 0 read2
+0 + 0 properly paired (N/A : N/A)
+0 + 0 with itself and mate mapped
+0 + 0 singletons (N/A : N/A)
+0 + 0 with mate mapped to a different chr
+0 + 0 with mate mapped to a different chr (mapQ>=5)
+~~~
+{: .output}
 <br>
-Count the records using the [samflags](https://broadinstitute.github.io/picard/explain-flags.html) argument.
+Count the records using the [FLAG](https://broadinstitute.github.io/picard/explain-flags.html) argument.
 <br>
 <br>
 Count the alignments that don't align.
@@ -217,7 +238,7 @@ $ samtools view -F 20 -c Arabidopsis_sample1.bam
 $ 131631
 ~~~
 {: .output}
-Use `-F 20` to excluse "read reverse strand" and "read unmapped".
+Use `-F 20` to exclude "read reverse strand" and "read unmapped".
 <br>
 <br>
 Count the reads that align to the reverse strand.
@@ -257,7 +278,7 @@ This number can never be bigger then the number of reads in the fastq file, as a
 
 A BAM file can be visualized using a genome viewer like IGV.
 We can't just upload the files in the viewer. We first need the files to be sorted and indexed.
-To do this we make use of samtools. This is a tool specificaly designed to work with BAM and SAM files.
+This can be done making use of samtools sort and samtools index.
 
 ## 3.1. Preparation of the Bam file for IGV
 
@@ -265,7 +286,7 @@ To do this we make use of samtools. This is a tool specificaly designed to work 
 
 ### Sorting
 
-Samtools can also be used to sort the read alignments. The aliments will reordered starting from the beginning of chromosome 1 to the end of the last chromosome.
+Samtools can also be used to sort the read alignments. The aliments will be sorted based on the position ofv the alignment on the reference genome, starting from the beginning of chromosome 1 to the end of the last chromosome.
 
 ~~~
 $ samtools sort -o arabidopsis1_sorted.bam arabidopsis1.bam
@@ -276,6 +297,7 @@ where -o defines the name of the output file (also a bam).
 The default for samtools sort is sorting by position. There are more sorting posibilities to be found with samtools sort --help
 
 ### Indexing
+An index file is needed to get easy eccess to the data in the alignment file.
 
 ~~~
 $ samtools index arabidopsis1_sorted.bam
