@@ -6,11 +6,11 @@ title: "Instructor Notes"
 
 - [1. R scripts](#1-r-scripts)
 - [2. Docker cloud setup](#2-docker-cloud-setup)
-  - [2.1 Create a Linux virtual machine](#21-create-a-linux-virtual-machine)
-  - [2.2 Connect to your Virtual Machine](#22-connect-to-your-virtual-machine)
-  - [2.3 Pull the Docker image](#23-pull-the-docker-image)
-  - [2.4 Create and run a container interactively](#24-create-and-run-a-container-interactively)
-  - [2.6 Create, run a container interactively and bind a local folder](#26-create-run-a-container-interactively-and-bind-a-local-folder)
+	- [2.1 Create a Linux virtual machine](#21-create-a-linux-virtual-machine)
+	- [2.2 Connect to your Virtual Machine](#22-connect-to-your-virtual-machine)
+	- [2.3 Pull the Docker image](#23-pull-the-docker-image)
+	- [2.4 Create and run a container interactively](#24-create-and-run-a-container-interactively)
+	- [2.6 Create, run a container interactively and bind a local folder](#26-create-run-a-container-interactively-and-bind-a-local-folder)
 - [3. Singularity setup](#3-singularity-setup)
 
 <!-- /MarkdownTOC -->
@@ -32,16 +32,21 @@ In this lesson, a series of episodes rely on the shell and specific bioinformati
 to install everything (softwares and data), in practice, it is much easier to dispose of an "out-of-the-box" installation where 
 data and softwares are available. 
 
-This is why a Docker image was created. 
+This is why a Docker image was created. You can think of a Docker image as the "cookie cutter" that is used to create/"cut" multiple 
+containers ("cookies") from the same template. 
+
+<img src="../img/99-instructor-notes-cookie-cutter-names.png" width="600px" alt="cookie cutter and cookies">
 
 While teaching Docker is not the purpose of this lesson, instructors might find it useful to follow [this nice Docker tutorial on forehand](https://carpentries-incubator.github.io/docker-introduction/index.html). 
+
+All in all, having students to work in Docker containers ensure that everyone has the same configuration. 
 
 
 ## 2.1 Create a Linux virtual machine
 
 Create a Linux-based virtual machine (VM) where Docker is installed and where you have root priviledges (since Docker requires it).
 
-One option is for instance to use the [Digital Ocean cloud infrastructure](https://www.digitalocean.com/products/droplets/) and create so-called "Droplets".
+One option is for instance to use the [Digital Ocean cloud infrastructure](https://www.digitalocean.com/products/droplets/) and create so-called "Droplets". A short and concise guide on how to do this is available here: 
 
 Many cloud providers are out there so keep your eyes open!
 
@@ -131,17 +136,27 @@ docker start -a -i fastq
 ~~~
 {: .language-bash}
 
+Explanation: 
+- `-a` stands for `--attach` and attach the STDOUT/STDERR to the current shell session.
+- `-i` stands for `--interactive` and attach the container STDIN. 
+
+In that way, the container STDIN is linked to the shell STDOUT.  
+
 
 ## 2.6 Create, run a container interactively and bind a local folder
 
-Since our work will not be lost but rather "stuck" into the "fastq" Docker container, we need to bind a local folder (from our VM) with a folder inside of the Docker container (say "home/"). 
+Since our work will not be lost but rather "stuck" into the "fastq" Docker container, we need to bind a local folder (from our VM) with a folder inside of the Docker container.
+
+We will call it "workspace/" and it will be our location in the Docker container where we will do our bioinformatic magic. 
+
+> ## Important note
+> Do not call this folder "home/" as our datasets and genome reference is in a folder called home/. This would overwrite it with an empty folder.
+{: .callout} 
 
 ~~~
-docker run --name fastq2 -it scienceparkstudygroup/master-gls:fastq-latest
+docker run -v $PWD:/workspace/ --name fastq -it scienceparkstudygroup/master-gls:fastq-latest
 ~~~
 {: .language-bash}
-
-
 
 
 
