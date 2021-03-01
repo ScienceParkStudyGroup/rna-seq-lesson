@@ -1,23 +1,20 @@
 ---
-title: "From fastq files to read counts"
+title: "From fastq files to alignments"
 teaching: 45
 exercises: 0 
 questions:
 - "How do I perform a quality check of my RNA-seq fastq files with `FastQC`?"
 - "How can I remove RNA-seq reads of low quality? using `trimmomatic`?"
 - "How do I align my reads to a reference genome using `STAR`?"
-- "What is the SAM/BAM format?"
-- "How do I turn RNA-seq read genome alignments into a count table?"
 objectives:
 - "Be able to remove RNA-seq reads with adapters and low quality bases."
+- "Be able to map/align the reads to a reference genome"
 keypoints:
 - "Next-Generation Sequencing techniques are massively parallel cDNA sequencing."
 - "Sequencing files are produced in a standard format: the fastq format."
 - "Using FastQC, one can easily check the sequencing quality of a fastq file."
 - "Performing read trimming ensures that seqence of bed quality and no sequencing adapter is left in your final reads."
 - "Align RNA-seq reads to a reference genome using a splice-aware aligner like `STAR`."
-- "The SAM/BAM format is the end-result of a read alignment to a reference genome."
-- "The resulting `.bam` files are used to generate a count table for use in differential expression analyses."
 ---
 
 # 1. Table of contents
@@ -45,6 +42,7 @@ keypoints:
 - [5. Alignment to a reference genome](#5-alignment-to-a-reference-genome)
     - [5.1. Index the reference genome](#51-index-the-reference-genome)
     - [5.2. Align reads to reference genome](#52-align-reads-to-reference-genome)
+    - [5.3. Align reads to reference genome using hisat2](#53-align-reads-to-reference-genome-using-hisat2)
 
 <!-- /TOC -->
 
@@ -301,7 +299,7 @@ First we need to exit the container and next we can transfer our HTML
 files to our local computer using `docker cp`.
 
 ~~~
-$ mkdir -p ~/Desktop/fastqc_html
+$ mkdir  ~/fastqc
 ~~~
 {: .bash}
 
@@ -323,15 +321,15 @@ directory we just created `~/Desktop/fastqc_html`.
 When working on a remote computer make use of the following command
 
 ~~~
-$ scp -r tbliek@genseq-cn02.science.uva.nl:~/rna_seq_lesson/fastqc/ ~/Desktop/fastqc_html
+$ scp -r root@178.128.240.207:~/fastqc/*.html ~/Desktop/fastqc_html
 ~~~
 {: .bash}
 
 
 As a reminder, the first part
-of the command `tbliek@genseq-cn02.science.uva.nl` is
+of the command `root@178.128.240.207` is
 the address for your remote computer. Make sure you replace everything
-after `dcuser@` with your instance number (the one you used to log in).
+after `root@` with your instance number (the one you used to log in).
 
 The second part starts with a `:` and then gives the absolute path
 of the files you want to transfer from your remote computer. Don't
@@ -697,7 +695,7 @@ In the programm the following arguments can be used.
 
 To run this on a single sample it looks something like this
 ~~~
-trimmomatic SE -phred33 -threads 2 Arabidopsis_sample1.fq.gz trimmed/Arabidopsis_sample1_qc.fq ILLUMINACLIP:adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25
+trimmomatic SE -phred33 -threads 1 Arabidopsis_sample1.fq.gz trimmed/Arabidopsis_sample1_qc.fq ILLUMINACLIP:adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25
 ~~~
 {: .bash}
 
@@ -766,10 +764,9 @@ If it all looks ok, rerun with out `echo`
 ~~~
 $ for infile in *.fq.gz
 do
-    outfile="$(basename $infile .fq.gz)"_qc.fq
-    trimmomatic SE -phred33 -threads 2 $infile ../trimmed/"$outfile ILLUMINACLIP:../general/adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25 CROP:100
+  outfile="$(basename $infile .fq.gz)"_qc.fq
+  trimmomatic SE -phred33 -threads 2 $infile trimmed/$outfile ILLUMINACLIP:adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25
 done
-
 ~~~
 {: .bash}
 
@@ -1031,3 +1028,82 @@ resulting in table containing all the alignment values.
 Arabidopsis_sample1_qcLog.final.out (END) 
 ~~~
 {: .output}
+
+## 5.3. Align reads to reference genome using hisat2
+<br>
+Alternatively it is possible to map the reads using hisat2. This tools works simular to star and gives a simular output. The commands are just a bit different.
+<br>
+<br>
+To start off we need to install the tools as it is not inclded in the fastq environment.
+~~~
+$ conda install -c biobuilds hisat2
+~~~
+{: .bash}
+<br>
+Just like with star the genome needs to be indexed.
+~~~
+$ hisat2-build -p 2 AtChromosome1.fa AtChromosome1
+~~~
+{: .bash}
+<br>
+Create a directory to store the alignment files and go into the directory trimmed where the trimmed files are located.
+~~~
+$ mkdir mapped
+
+$ cd trimmed
+~~~
+{: .bash}
+<br>
+Mapping is done in two steps. Hisat2 produces the alignments, samtools is used to compress them and write them to a file. More on how samtools works and what it does in the next lesson. For now this will do.
+~~~
+$ hisat2  -p 2 -x ../AtChromosome1 -U Arabidopsis_sample1_qc.fq | samtools view -Sb -o ../mapped/Arabidopsis_sample1.bam
+~~~
+{: .bash}
+~~~
+249425 reads; of these:
+  249425 (100.00%) were unpaired; of these:
+    515 (0.21%) aligned 0 times
+    240224 (96.31%) aligned exactly 1 time
+    8686 (3.48%) aligned >1 times
+99.79% overall alignment rate
+~~~
+{: .output}
+<br>
+A loop to go through all the files
+~~~
+$ for fastq in *.fq
+> do
+> bam="$(basename $fastq _qc.fq)".bam
+> hisat2  -p 2 -x ../AtChromosome1 -U $fastq | samtools view -Sb -o ../mapped/$bam
+> done
+~~~
+{: .bash}
+~~~
+249425 reads; of these:
+  249425 (100.00%) were unpaired; of these:
+    515 (0.21%) aligned 0 times
+    240224 (96.31%) aligned exactly 1 time
+    8686 (3.48%) aligned >1 times
+99.79% overall alignment rate
+242755 reads; of these:
+  242755 (100.00%) were unpaired; of these:
+    2354 (0.97%) aligned 0 times
+    230616 (95.00%) aligned exactly 1 time
+    9785 (4.03%) aligned >1 times
+99.03% overall alignment rate
+249517 reads; of these:
+  249517 (100.00%) were unpaired; of these:
+    553 (0.22%) aligned 0 times
+    239951 (96.17%) aligned exactly 1 time
+    9013 (3.61%) aligned >1 times
+99.78% overall alignment rate
+248320 reads; of these:
+  248320 (100.00%) were unpaired; of these:
+    1146 (0.46%) aligned 0 times
+    238745 (96.14%) aligned exactly 1 time
+    8429 (3.39%) aligned >1 times
+99.54% overall alignment rate
+~~~
+{: .output}
+<br>
+In the next lesson will have an in depth look at the alignment files.
