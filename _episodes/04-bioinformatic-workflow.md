@@ -331,13 +331,13 @@ $ mkdir IGV
 <br>
 Download the sorted bam files
 ~~~
-$  scp -r root@178.128.240.207:~/IGVfiles/mapped/*sorted.bam ~/Desktop/IGV
+$  scp -r root@178.128.240.207:~/home/tutorial/IGVfiles/mapped/*sorted.bam ~/Desktop/IGV
 ~~~
 {: .bash}
 <br>
 And the index (.bai) files.
 ~~~
-scp -r root@178.128.240.207:~/IGVfiles/mapped/*.bai ~/Desktop/IGV
+scp -r root@178.128.240.207:~/home/tutorial/IGVfiles/mapped/*.bai ~/Desktop/IGV
 ~~~
 {: .bash}
 
