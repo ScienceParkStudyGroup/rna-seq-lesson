@@ -74,9 +74,9 @@ Let's start and enter the container and have a look what the files we will be us
 
 
 ~~~
-$ docker run -it --name bioinfo scienceparkstudygroup/master-gls:fastq-latest
+$ docker start -a -i fastq
 
-$ conda activate fastq
+$ source activate fastq
 
 $ cd home
 ~~~
@@ -164,7 +164,7 @@ Therefore, for the first nucleotide in the read (C), there is a 1 in 1000 chance
 We will now create the quality reports of the reads that we downloaded. First, we need to make an output directory for the fastqc results to be stored. This we want to do in the 'home' directory that contains all the needed files.
 
 ~~~
-$ cd /home/
+$ cd /workspace/
 
 $ mkdir fastqc
 ~~~
@@ -174,7 +174,7 @@ $ mkdir fastqc
 Next we need to get to the directory that actually contains the the fastq files.
 
 ~~~
-$ ls /home/
+$ cd /home/
 ~~~
 {: .bash}
 
@@ -182,7 +182,7 @@ $ ls /home/
 Running fastqc uses the following command
 
 ~~~
-fastqc -o fastqc Arabidopsis_sample1.fq.gz
+fastqc -o /workspace/fastqc Arabidopsis_sample1.fq.gz
 ~~~
 {: .bash}
 
@@ -321,7 +321,7 @@ directory we just created `~/Desktop/fastqc_html`.
 When working on a remote computer make use of the following command
 
 ~~~
-$ scp -r root@178.128.240.207:~/fastqc/*.html ~/Desktop/fastqc_html
+$ scp -r root@178.128.240.207:~/home/tutorial/fastqc/*.html ~/Desktop/fastqc_html
 ~~~
 {: .bash}
 
@@ -669,8 +669,9 @@ When making use of illumina reads this is not as much of a problem and 3'-trimmi
 To start off make a directory trimmed for the output and then back to the rawReads directory.
 
 ~~~
-$ cd /home/
+$ cd /workspace/
 $ mkdir trimmed
+$ cd /home/
 ~~~
 {: .bash}
 
@@ -695,7 +696,7 @@ In the programm the following arguments can be used.
 
 To run this on a single sample it looks something like this
 ~~~
-trimmomatic SE -phred33 -threads 1 Arabidopsis_sample1.fq.gz trimmed/Arabidopsis_sample1_qc.fq ILLUMINACLIP:adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25
+$ trimmomatic SE -phred33 -threads 1 Arabidopsis_sample1.fq.gz /workspace/trimmed/Arabidopsis_sample1_qc.fq ILLUMINACLIP:adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25
 ~~~
 {: .bash}
 
@@ -742,7 +743,7 @@ Again starting with a dry run with echo.
 $ for infile in *.fq.gz
 do
   outfile="$(basename $infile .fq.gz)"_qc.fq
-  echo "trimmomatic SE -phred33 -threads 2 $infile trimmed/$outfile ILLUMINACLIP:adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25"
+  echo "trimmomatic SE -phred33 -threads 2 $infile /workspace/trimmed/$outfile ILLUMINACLIP:adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25"
 done
 ~~~
 {: .bash}
@@ -765,7 +766,7 @@ If it all looks ok, rerun with out `echo`
 $ for infile in *.fq.gz
 do
   outfile="$(basename $infile .fq.gz)"_qc.fq
-  trimmomatic SE -phred33 -threads 2 $infile trimmed/$outfile ILLUMINACLIP:adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25
+  trimmomatic SE -phred33 -threads 2 $infile /workspace/trimmed/$outfile ILLUMINACLIP:adapters.fasta:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:25
 done
 ~~~
 {: .bash}
@@ -1040,14 +1041,18 @@ $ conda install -c biobuilds hisat2
 ~~~
 {: .bash}
 <br>
-Just like with star the genome needs to be indexed.
+Just like with star the genome needs to be unzipped and indexed.
 ~~~
+$ gunzip AtChromosome1.fa.gz
+
 $ hisat2-build -p 2 AtChromosome1.fa AtChromosome1
 ~~~
 {: .bash}
 <br>
 Create a directory to store the alignment files and go into the directory trimmed where the trimmed files are located.
 ~~~
+$ cd /workspace/
+
 $ mkdir mapped
 
 $ cd trimmed
