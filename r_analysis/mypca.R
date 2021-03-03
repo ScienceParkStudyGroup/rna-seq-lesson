@@ -1,12 +1,8 @@
 # define a custom R function called "mypca()""
 mypca <- function(x, center = TRUE, scale = TRUE){
+  # assume that the rows correspond to the samples and the
+  # columns correspond to the variables
   
-  # This checks that the samples/individuals are in rows
-  # If samples in columns, then the matrix is transposed
-  if(nrow(x)>ncol(x))
-  {
-    x = t(x)
-  }
   
   # remove constant variables
   constant_val = apply(x,2,'sd')
