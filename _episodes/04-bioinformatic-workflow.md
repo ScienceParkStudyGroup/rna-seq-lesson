@@ -286,11 +286,11 @@ $ 240224
 This number can never be bigger then the number of reads in the fastq file, as all reads in the output give a single alignment.
 
 > ## Question
-> BAM files usually contain a tag or attribute that gives the number of mismatches between the read and the reference genome. With SAMtools it is unfortunately not possible to filter on these values. Could you think of ab other way to select for alignments that align without any mismatches?  
+> BAM files usually contain a tag or attribute that gives the number of mismatches between the read and the reference genome. With SAMtools it is unfortunately not possible to filter on these values. Could you think of an other way to select for alignments that align without any mismatches?  
 > Hint: make use of `grep "XM:i:0"` among others.
 > > ## Solution
 > > ~~~
-> > `samtools view Arabidopsis_sample1.bam | grep "XM:i:0" | wc -l`
+> > samtools view Arabidopsis_sample1.bam | grep "XM:i:0" | wc -l
 > > ~~~
 > > {: .language-bash}
 > {: .solution}
