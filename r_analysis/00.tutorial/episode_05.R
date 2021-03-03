@@ -214,7 +214,9 @@ ggsave(filename = "../img/05-comparison-before-after-vst.png")
 # PCA: scree plot
 #################
 
-pca_results <- mypca(variance_stabilised_counts, 
+# The variance_stabilised_counts has to be transposed
+# So that samples are in rows and genes in columns
+pca_results <- mypca(t(variance_stabilised_counts), 
                      center = TRUE, 
                      scale = TRUE)
 
