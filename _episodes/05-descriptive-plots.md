@@ -605,7 +605,7 @@ If the original data has more than two variables (e.g. n), which usually is the 
 
 ## 5.3 The Iris data set
 
-​The ability of PCA to capture as much variance as possible in the main principal components enables us to  to visualize (and summarize) the relation between objects (and variables) from a multi-dimensional space to a two dimensional plot.  
+The ability of PCA to capture as much variance as possible in the main principal components enables us to  to visualize (and summarize) the relation between objects (and variables) from a multi-dimensional space to a two dimensional plot.  
 
 
 We can use the Fisher's famous Iris flower dataset from 1936 that describes three species of Iris (_Iris setosa_, _Iris virginica_ and _Iris versicolor_). The data set consists of __50 samples__ from each of these three species of Iris. __Four variables (features)__ were measured from each sample: the length and the width of the sepals and petals, in centimeters ([source Wikipedia](https://en.wikipedia.org/wiki/Iris_flower_data_set)). See some pictures below.
@@ -657,8 +657,8 @@ For convenience we use a very rudimentary (own) implementation implementation of
 ~~~
 # define a custom R function called "mypca()""
 mypca <- function(x, center = TRUE, scale = TRUE){
-  # Samples should be in columns
-  # Variables in the rows
+  # Samples should be in rows
+  # Variables in the columns
 
   # remove constant variables
   constant_val = apply(x,2,'sd')
@@ -701,8 +701,8 @@ explained_var = pca$explained_var$exp_var
 {: .language-r}
 
 > ## Important note
-> To have the sample scores in the `scores` R object, samples should be in columns in the matrix used for the PCA.
-> In turn, this requires the variables to be in rows so that the `loadings` R object contains the loadings of the variables.
+> To have the sample scores in the `scores` R object, samples should be in rows in the matrix used for the PCA.
+> In turn, this requires the variables to be in columns so that the `loadings` R object contains the loadings of the variables.
 {: .callout}
 
 
@@ -749,24 +749,25 @@ From the score plot it is clear that the Setosa flowers are clearly different fr
 > __Hint:__ you will have to re-compute the pca results with `mypca(iris[,1:4], center = TRUE, scale = TRUE)` since 
 > the `scores` dataframe only contains sample scores for PC1 and PC2.   
 > __Question:__ can you better separate the samples on PC1 and PC3?
-> 
+>
 > > ## Solution
 > > ~~~
 > > pca <- mypca(iris[,1:4], center = TRUE, scale = TRUE)
 > > scores = as.data.frame(pca$scores[,1:3])
 > > scores['Species'] = iris$Species
 > > iris_score_plot_pc1_pc3 <- ggplot(scores) + 
-> >          geom_point(aes(x = PC1, y = PC3, shape = Species, col = Species), size = 2) + 
-> >   xlab(paste0('PC1(',explained_var[1],'%)')) + 
-> >   ylab(paste0('PC2(',explained_var[3],'%)')) + 
-> >   ggtitle('PCA score plot: PC1 - PC3')
+> >       geom_point(aes(x = PC1, y = PC3, shape = Species, col = Species), size = 2) + 
+> > xlab(paste0('PC1(',explained_var[1],'%)')) + 
+> > ylab(paste0('PC2(',explained_var[3],'%)')) + 
+> > ggtitle('PCA score plot: PC1 - PC3')
 > > iris_score_plot_pc1_pc3
 > > ~~
 > > {: .language-r}
 > > <img src="../">
 > > Answer: no, not really. The versicolor and virginica species are still pretty much overlapping.
-> {: .solution }
-{: .challenge}
+> > {: .solution }
+> > {: .challenge}
+> > ~~~
 
 
 The scores are indicative of how the objects in the data set score in the new component space, correspondingly the loadings indicate how the variables score in the component space. The score plots above for example show a separation on PC1 between the 3 groups. If we would like to know which variables are important for this separation we can try to interpret our data.
@@ -889,7 +890,8 @@ To get an idea of how much variation can be explained by PC1, PC2, PC3, etc., a 
 
 First, the PCA is computed using the `mypca()` function. This returns a list with three objects, the `scores`, `loadings` and `explained_var` dataframes. 
 ~~~
-pca_results <- mypca(variance_stabilised_counts, 
+# transpose the data because in variance_stabilised_counts the rows are the variables and the columns correspond to the samples
+pca_results <- mypca(t(variance_stabilised_counts), 
                      center = TRUE, 
                      scale = TRUE)
 ~~~
@@ -939,7 +941,8 @@ Let's first see how our _P. syringae_ infection condition is reflected at the PC
 After computing the PCA itself, scores are extracted. 
 
 ~~~
-pca_results <- mypca(variance_stabilised_counts, 
+# transpose the data to make sure that the rows correspond to the samples and the columns correspond to the variables
+pca_results <- mypca(t(variance_stabilised_counts), 
                      center = TRUE, 
                      scale = TRUE)
 scores <- pca_results$scores
