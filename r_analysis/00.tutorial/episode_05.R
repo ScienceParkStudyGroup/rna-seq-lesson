@@ -90,6 +90,9 @@ p_raw + p_scaled
 ###################
 # PCA: iris dataset
 ###################
+library(datasets)
+data(iris)
+head(iris)
 
 # Loadings refer to parameters like sepal length or petal width
 # Scores refer to observations (individual flowers)
@@ -98,7 +101,6 @@ dim(iris) # 150 observations, 4 variables
 
 
 # perform the PCA analysis on only the first 4 variables (skip the Species variable)
-iris = t(iris[,1:4]) # transpose the matrix without species character col
 pca <- mypca(iris[,1:4], center = TRUE, scale = TRUE)
 scores = as.data.frame(pca$scores[,1:2])
 scores['Species'] = iris$Species
@@ -175,6 +177,7 @@ p_mean_sd_scaled <-
        y = "Gene count standard deviation (log10 scale)") +
   ggtitle("Mean - Standard deviation relationship\n(no variance stabilisation ")
 p_mean_sd_scaled
+
 ggsave(filename = "../img/05-mean-sd-gene-before-vst.png", plot = p_mean_sd_scaled)
 # while we have corrected for sample to sample differences (e.g. sequencing depth)
 # the SD of every gene still has a strong relationship with the mean 
