@@ -657,8 +657,8 @@ For convenience we use a very rudimentary (own) implementation implementation of
 ~~~
 # define a custom R function called "mypca()""
 mypca <- function(x, center = TRUE, scale = TRUE){
-  # Samples should be in columns
-  # Variables in the rows
+  # Samples should be in rows
+  # Variables in the columns
 
   # remove constant variables
   constant_val = apply(x,2,'sd')
@@ -889,7 +889,10 @@ To get an idea of how much variation can be explained by PC1, PC2, PC3, etc., a 
 
 First, the PCA is computed using the `mypca()` function. This returns a list with three objects, the `scores`, `loadings` and `explained_var` dataframes. 
 ~~~
-pca_results <- mypca(variance_stabilised_counts, 
+# transpose first so that samples are in rows and genes in columns
+t_variance_stabilised_counts <- t(variance_stabilised_counts)
+
+pca_results <- mypca(t_variance_stabilised_counts, 
                      center = TRUE, 
                      scale = TRUE)
 ~~~
