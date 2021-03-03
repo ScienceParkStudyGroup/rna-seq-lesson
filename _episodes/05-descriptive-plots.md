@@ -765,9 +765,9 @@ From the score plot it is clear that the Setosa flowers are clearly different fr
 > > {: .language-r}
 > > <img src="../">
 > > Answer: no, not really. The versicolor and virginica species are still pretty much overlapping.
-> > {: .solution }
-> > {: .challenge}
-> > ~~~
+> {: .solution }
+{: .challenge}
+
 
 
 The scores are indicative of how the objects in the data set score in the new component space, correspondingly the loadings indicate how the variables score in the component space. The score plots above for example show a separation on PC1 between the 3 groups. If we would like to know which variables are important for this separation we can try to interpret our data.
@@ -891,7 +891,9 @@ To get an idea of how much variation can be explained by PC1, PC2, PC3, etc., a 
 First, the PCA is computed using the `mypca()` function. This returns a list with three objects, the `scores`, `loadings` and `explained_var` dataframes. 
 ~~~
 # transpose the data because in variance_stabilised_counts the rows are the variables and the columns correspond to the samples
-pca_results <- mypca(t(variance_stabilised_counts), 
+t_variance_stabilised_counts <- variance_stabilised_counts
+
+pca_results <- mypca(t_variance_stabilised_counts), 
                      center = TRUE, 
                      scale = TRUE)
 ~~~
@@ -941,10 +943,6 @@ Let's first see how our _P. syringae_ infection condition is reflected at the PC
 After computing the PCA itself, scores are extracted. 
 
 ~~~
-# transpose the data to make sure that the rows correspond to the samples and the columns correspond to the variables
-pca_results <- mypca(t(variance_stabilised_counts), 
-                     center = TRUE, 
-                     scale = TRUE)
 scores <- pca_results$scores
 
 # first 5 rows and columns
