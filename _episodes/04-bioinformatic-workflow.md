@@ -286,11 +286,11 @@ $ 240224
 This number can never be bigger then the number of reads in the fastq file, as all reads in the output give a single alignment.
 
 > ## Question
-> BAM files usually contain a tag or attribute that gives the number of mismatches between the read and the reference genome. With SAMtools it is unfortunately not possible to filter on these values. Could you think of ab other way to select for alignments that align without any mismatches?  
+> BAM files usually contain a tag or attribute that gives the number of mismatches between the read and the reference genome. With SAMtools it is unfortunately not possible to filter on these values. Could you think of an other way to select for alignments that align without any mismatches?  
 > Hint: make use of `grep "XM:i:0"` among others.
 > > ## Solution
 > > ~~~
-> > `samtools view Arabidopsis_sample1.bam | grep "XM:i:0" | wc -l`
+> > samtools view Arabidopsis_sample1.bam | grep "XM:i:0" | wc -l
 > > ~~~
 > > {: .language-bash}
 > {: .solution}
@@ -397,7 +397,7 @@ It is also posible to search for genes. Just write the name in the search box an
 > ## Question
 > Pick a sample and visualize the forward and reverse alignments separately in IGV.
 > > ## Solution
-> >  Select and sort forward reads in one go.<br>`samtools view -Sb -F 20 Arabidopsis_sample1.bam | samtools sort -o Arabidopsis_FW_sorted.bam`<br>Index the forward reads.<br>`samtools index Arabidopsis_FW_sorted.bam`<br>Select and sort the reverse reads.<br>`samtools view -Sb -f 16 Arabidopsis_sample1.bam | samtools sort -o Arabidopsis_RV_sorted.bam`<br>Index the reverse reads.<br>`samtools index Arabidopsis_RV_sorted.bam`<br>Exit the container, create a directory and copy files.<br>`mkdir IGVfiles`<br>`docker cp bioinfo:/home/mapped/ ~/IGVfiles/`<br> from the Desktop of your local computer create directory and download the files.<br>`mkdir IGV`<br>`scp -r root@178.128.240.207:~/IGVfiles/mapped/*sorted.bam ~/Desktop/IGV`<br>`scp -r root@178.128.240.207:~/IGVfiles/mapped/*.bai ~/Desktop/IGV`<br><br>Upload the files in IGV and you should get something like this.<img src="../img/SeparateFw_RV.png">
+> >  Select and sort forward reads in one go.<br>`samtools view -Sb -F 20 Arabidopsis_sample1.bam | samtools sort -o Arabidopsis_FW_sorted.bam`<br>Index the forward reads.<br>`samtools index Arabidopsis_FW_sorted.bam`<br>Select and sort the reverse reads.<br>`samtools view -Sb -f 16 Arabidopsis_sample1.bam | samtools sort -o Arabidopsis_RV_sorted.bam`<br>Index the reverse reads.<br>`samtools index Arabidopsis_RV_sorted.bam`<br>From the Desktop of your local computer create directory and download the files.<br>`mkdir IGV`<br>`scp -r root@178.128.240.207:~/home/tutorial/IGVfiles/mapped/*sorted.bam* ~/Desktop/IGV`<br><br>Upload the files in IGV and you should get something like this.<img src="../img/SeparateFw_RV.png">
 > {: .solution}
 {: .challenge}
 
