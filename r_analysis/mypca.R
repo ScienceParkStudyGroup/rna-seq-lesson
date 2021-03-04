@@ -1,8 +1,7 @@
 # define a custom R function called "mypca()""
 mypca <- function(x, center = TRUE, scale = TRUE){
-  # assume that the rows correspond to the samples and the
-  # columns correspond to the variables
-  
+  # Samples should be in rows
+  # Variables in the columns
   
   # remove constant variables
   constant_val = apply(x,2,'sd')

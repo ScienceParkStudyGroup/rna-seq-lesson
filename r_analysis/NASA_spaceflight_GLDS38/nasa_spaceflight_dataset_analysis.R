@@ -97,6 +97,7 @@ p_raw + p_scaled
 dds = estimateDispersions(object = dds, fitType = "mean")
 vst_counts = getVarianceStabilizedData(object = dds)
 
+colnames(vst_counts) = new_sample_names
 
 # Plot of mean - sd comparison
 # Variance - mean plot for all genes
@@ -128,20 +129,19 @@ p_mean_sd_scaled + p_mean_sd_vst
 
 
 # PCA plot with the mypca() on scaled counts
+scaled_counts <- t(scaled_counts) # samples in rows and genes in columns
 pca_results <- mypca(scaled_counts, scale = TRUE)
-percentage_variance <- as.data.frame(pca_results$explained_var) %>% 
-  rownames_to_column("PC")
+percentage_variance <- as.data.frame(pca_results$explained_var)
 
 # make the plot
-scree_plot <- ggplot(percentage_variance, aes(x = PC, y = exp_var)) +
-  ylab('explained variance (%)') + 
-  ggtitle('explained variance per component') + 
-  geom_bar(stat = "identity")
-
-# display it
+scree_plot <- 
+  percentage_variance %>% 
+  rownames_to_column("PC") %>% 
+  ggplot(., aes(x = PC, y = exp_var)) +
+    ylab('explained variance (%)') + 
+    ggtitle('explained variance per component') + 
+    geom_bar(stat = "identity")
 scree_plot
-
-
 
 scores <- pca_results$scores %>% 
   rownames_to_column("sample") %>% 
@@ -159,16 +159,17 @@ ggsave(filename = "NASA_spaceflight_GLDS38/pca_plot_scaled_counts.pdf")
 
 
 # PCA on the vst counts
-pca_results <- mypca(vst_counts)
-scores <- pca_results$scores %>% 
-  rownames_to_column("sample_name") %>% 
-  left_join(., y = sample2condition, by = "sample_name")
-percentage_variance <- as.data.frame(pca_results$explained_var)
+t_vst_counts <- t(vst_counts)
+pca_results_vst <- mypca(t_vst_counts)
+scores_vst <- pca_results_vst$scores %>% 
+  rownames_to_column("sample") %>% 
+  left_join(., y = sample2condition, by = "sample")
+percentage_variance_vst <- as.data.frame(pca_results_vst$explained_var)
 
-p_vst_counts <- ggplot(scores, aes(PC1, PC2, color = condition)) +
+p_vst_counts <- ggplot(scores_vst, aes(PC1, PC2, color = condition)) +
   geom_point(size = 6) +
-  xlab(paste0("PC1: ",percentage_variance[1,],"% variance")) +
-  ylab(paste0("PC2: ",percentage_variance[2,],"% variance")) + 
+  xlab(paste0("PC1: ",percentage_variance_vst[1,],"% variance")) +
+  ylab(paste0("PC2: ",percentage_variance_vst[2,],"% variance")) + 
   coord_fixed() +
   ggtitle("PCA plot (vst transformed") +
   theme(axis.text = element_text(size = 12))
@@ -260,3 +261,76 @@ EnhancedVolcano(toptable = resLFC,
   guides(legend = NULL)
 
 
+#########################################################
+# Extra: mypca(scale = TRUE) versus mypca(scale = FALSE)
+########################################################
+
+# Scaled counts (NOT variance stabilised)
+pca1 <- mypca(scaled_counts, scale = TRUE)
+pca2 <- mypca(scaled_counts, scale = FALSE)
+pca3 <- mypca(t_vst_counts, scale = TRUE)
+pca4 <- mypca(scaled_counts, scale = FALSE)
+
+scores1 <- pca1$scores %>% 
+  rownames_to_column("sample") %>% 
+  left_join(., y = sample2condition, by = "sample")
+percentage_variance1 <- as.data.frame(pca1$explained_var)
+
+p1 <- ggplot(scores1, aes(PC1, PC2, color = condition)) +
+  geom_point(size = 6) +
+  xlab(paste0("PC1: ",percentage_variance1[1,],"% variance")) +
+  ylab(paste0("PC2: ",percentage_variance1[2,],"% variance")) + 
+  coord_fixed() +
+  ggtitle("PCA plot on scaled counts + pca scaling TRUE") +
+  theme(axis.text = element_text(size = 12))
+p1
+
+scores2 <- pca2$scores %>% 
+  rownames_to_column("sample") %>% 
+  left_join(., y = sample2condition, by = "sample")
+percentage_variance2 <- as.data.frame(pca2$explained_var)
+p2 <- ggplot(scores2, aes(PC1, PC2, color = condition)) +
+  geom_point(size = 6) +
+  xlab(paste0("PC1: ",percentage_variance2[1,],"% variance")) +
+  ylab(paste0("PC2: ",percentage_variance2[2,],"% variance")) + 
+  coord_fixed() +
+  ggtitle("PCA plot (vst transformed") +
+  ggtitle("PCA plot on scaled counts + pca scaling FALSE") +
+  theme(axis.text = element_text(size = 12))
+p2
+
+scores3 <- pca3$scores %>% 
+  rownames_to_column("sample") %>% 
+  left_join(., y = sample2condition, by = "sample")
+percentage_variance3 <- as.data.frame(pca3$explained_var)
+p3 <- ggplot(scores3, aes(PC1, PC2, color = condition)) +
+  geom_point(size = 6) +
+  xlab(paste0("PC1: ",percentage_variance3[1,],"% variance")) +
+  ylab(paste0("PC2: ",percentage_variance3[2,],"% variance")) + 
+  coord_fixed() +
+  ggtitle("PCA plot (vst transformed") +
+  ggtitle("PCA plot on variance stabilised counts + pca scaling TRUE") +
+  theme(axis.text = element_text(size = 12))
+p3
+
+scores4 <- pca4$scores %>% 
+  rownames_to_column("sample") %>% 
+  left_join(., y = sample2condition, by = "sample")
+percentage_variance4 <- as.data.frame(pca4$explained_var)
+p4 <- ggplot(scores4, aes(PC1, PC2, color = condition)) +
+  geom_point(size = 6) +
+  xlab(paste0("PC1: ",percentage_variance4[1,],"% variance")) +
+  ylab(paste0("PC2: ",percentage_variance4[2,],"% variance")) + 
+  coord_fixed() +
+  ggtitle("PCA plot (vst transformed") +
+  ggtitle("PCA plot on variance stabilised counts + pca scaling FALSE") +
+  theme(axis.text = element_text(size = 12))
+p4
+
+p1 + p2 + p3 + p4
+
+bind_cols(percentage_variance1,
+          percentage_variance2,
+          percentage_variance3, 
+          percentage_variance4) %>% 
+  rownames_to_column("PC")
