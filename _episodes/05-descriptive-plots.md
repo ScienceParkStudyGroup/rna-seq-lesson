@@ -266,9 +266,16 @@ suppressPackageStartupMessages(library(DESeq2)) # to load DESeq2 and suppress th
 # Creation of the DESeqDataSet object
 dds <- DESeqDataSetFromMatrix(countData = counts, 
                               colData = xp_design, 
-                              design = ~ 1) # the model does not matter here 
+                              design = ~ infected) 
 ~~~
 {: .language-r}
+
+> ## Important note
+> When creating the `dds` object, you should specify your experimental condition of interest.  
+> Here we specify `design = ~ infected` since this is the condition of interest used in this lesson.  
+> Scaling of the raw counts to correct for library size for instance will not take the design formula into account. 
+{: .callout}
+
 
 We now have a `DESeqDataSet` object that contains both count data and experimental metadata that is the relationship between samples and their combination of experimental factors. 
 
@@ -941,7 +948,7 @@ ggplot(pca_results$explained_var,
 Let's first see how our _P. syringae_ infection condition is reflected at the PCA level.
 
 After computing the PCA itself, scores are extracted. 
-
+	
 ~~~
 scores <- pca_results$scores
 
