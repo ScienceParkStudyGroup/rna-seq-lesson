@@ -233,15 +233,32 @@ res %>%
   left_join(x = ., y = arabidopsis2uniprot, by = "gene") %>% 
   write_csv(file = "NASA_spaceflight_GLDS38/neg_diff_genes.csv")
 
+# Top 20 genes (absolute log2FC)
+# genes upregulated by microgravity
+res %>% 
+  as.data.frame() %>% 
+  rownames_to_column("gene") %>%  
+  as_tibble() %>% 
+  filter(padj < 0.01) %>%
+  mutate(abs_log2FoldChange = abs(log2FoldChange)) %>% 
+  arrange(desc(abs_log2FoldChange)) %>% 
+  top_n(n = 20) %>% 
+  filter(log2FoldChange > 0)
 
-##################
-# Volcano plot
-##################
+res %>% 
+  as.data.frame() %>% 
+  rownames_to_column("gene") %>%  
+  as_tibble() %>% 
+  filter(gene == "AT2G33380") 
+
+################# Volcano plot #################
 res <- results(dds, contrast = c("condition", "space_flight", "ground_control"))
 resLFC <- lfcShrink(dds = dds, 
                     res = res,
                     type = "normal",
                     coef = 2) # corresponds to "infected_Pseudomonas_syringae_DC3000_vs_mock" comparison
+
+
 
 EnhancedVolcano(toptable = resLFC,
                 x = "log2FoldChange",
@@ -334,3 +351,7 @@ bind_cols(percentage_variance1,
           percentage_variance3, 
           percentage_variance4) %>% 
   rownames_to_column("PC")
+
+ggsave(filename = "NASA_spaceflight_GLDS38/plots/effects_of_vst_versus_pca_scaling.png", 
+       width = 12, 
+       height = 8)
