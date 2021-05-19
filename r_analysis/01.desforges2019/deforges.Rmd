@@ -361,6 +361,7 @@ This corresponds to a fold change of `r 2^min_logfc`.
 
 The gene AT1G05650 is expressed `r 1/2^min_logfc` times higher (1/min) in control seedlings than in auxin-treated seedlings. 
 
+\newpage
 
 # Exercise 4: volcano plot
 
@@ -415,9 +416,51 @@ knitr::kable(broom::tidy(
     resLFC$log2FoldChange)
   )
 )
-
 ```
 
+\newpage
 
+# Exercise 5: adopt a gene
 
+## AT3G58190
+**Names:**
+* ASYMMETRIC LEAVES 2-LIKE 16 
+* LATERAL ORGAN BOUNDARIES DOMAIN 29 (LBD29)
+
+**Papers:** 
+- Paper 1: Zhang F, Tao W, Sun R, Wang J, Li C, et al. (2020) PRH1 mediates ARF7-LBD dependent auxin signaling to regulate lateral root development in Arabidopsis thaliana. PLOS Genetics 16(2): e1008044. https://doi.org/10.1371/journal.pgen.1008044. 
+- Paper 2: Okushima Y, Fukaki H, Onoda M, Theologis A, Tasaka M. ARF7 and ARF19 regulate lateral root formation via direct activation of LBD/ASL genes in Arabidopsis. Plant Cell. 2007;19(1):118-130. doi:10.1105/tpc.106.047761. https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1820965/
+
+Quotes:   
+
+> "The development of lateral roots in Arabidopsis thaliana is strongly dependent 
+> on signaling directed by the AUXIN RESPONSE FACTOR7 (ARF7), which in turn activates 
+> LATERAL ORGAN BOUNDARIES DOMAIN (LBD) transcription factors (LBD16, LBD18 and LBD29)" 
+
+**Images**
+
+```{r, out.height="30%", echo=FALSE}
+knitr::include_graphics("images/figure6_okushima_2007.jpeg")
+```
+
+\newpage 
+
+## AT2G23170
+**Names:** Auxin-responsive GRETCHEN HAGEN3.3 (GH3.3) protein 	
+Description: conjugates amino acids to auxin and regulates its homeostasis. 
+
+> "The production of amide-linked IAA-amino acid conjugates is catalysed by Group II
+> GRETCHEN HAGEN3 (GH3) acyl amido synthetases"
+
+**Papers**:
+- Paper 1: Di DW, Li G, Sun L, Wu J, Wang M, Kronzucker HJ, Fang S, Chu J, Shi W. High ammonium inhibits root growth in Arabidopsis thaliana by promoting auxin conjugation rather than inhibiting auxin biosynthesis. J Plant Physiol. 2021 Apr 18;261:153415. doi: 10.1016/j.jplph.2021.153415. Epub ahead of print. PMID: 33894579.
+- Paper 2: Staswick PE, Serban B, Rowe M, Tiryaki I, Maldonado MT, Maldonado MC, Suza W. Characterization of an Arabidopsis enzyme family that conjugates amino acids to indole-3-acetic acid. Plant Cell. 2005 Feb;17(2):616-27. doi: 10.1105/tpc.104.026690. Epub 2005 Jan 19. PMID: 15659623; PMCID: PMC548830.
+
+**Images**
+```{r out.height="30%", echo=FALSE}
+knitr::include_graphics("images/figure7_di_2021.jpg")
+```
+
+This figure shows that ammonium (NH4+) induces the expression of GH3.3 in the elongation
+zone. This in turn reduces the amount of biologically active auxin. 
 
