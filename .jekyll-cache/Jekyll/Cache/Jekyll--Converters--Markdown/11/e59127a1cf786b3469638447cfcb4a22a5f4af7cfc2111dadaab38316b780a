@@ -1,0 +1,418 @@
+I"�<h1 id="1-table-of-contents">1. Table of Contents</h1>
+<!-- TOC -->
+
+<ul>
+  <li><a href="#1-table-of-contents">1. Table of Contents</a></li>
+  <li><a href="#2-preparing-the-data">2. preparing the data</a>
+    <ul>
+      <li><a href="#21-uploading-and-selecting-the-data">2.1 Uploading and selecting the data</a></li>
+      <li><a href="#22-get-the-differentially-expressed-genes">2.2 Get the differentially expressed genes.</a></li>
+      <li><a href="#23-running-the-function">2.3 Running the function.</a></li>
+      <li><a href="#24-scaling-the-data">2.4 Scaling the data.</a></li>
+    </ul>
+  </li>
+  <li><a href="#3-visualization-of-a-of-the-de-genes">3. Visualization of a of the DE genes</a>
+    <ul>
+      <li><a href="#31-hierarchical-tree-of-the-samples">3.1. Hierarchical tree of the samples</a></li>
+      <li><a href="#32-hierarchical-tree-of-the-genes">3.2. Hierarchical tree of the genes</a></li>
+      <li><a href="#33-create-a-heatmap-of-the-data">3.3. Create a heatmap of the data.</a></li>
+    </ul>
+  </li>
+  <li><a href="#4-hirargical-clustering-of-the-data">4. Hirargical clustering of the data</a>
+    <ul>
+      <li><a href="#41-clustering-on-height-of-the-tree">4.1. clustering on height of the tree.</a></li>
+      <li><a href="#42-clustering-by-selecting-a-number-of-clusters">4.2. clustering by selecting a number of clusters.</a></li>
+      <li><a href="#43-visualize-the-clustering-in-a-heatmap">4.3. Visualize the clustering in a heatmap.</a></li>
+    </ul>
+  </li>
+  <li><a href="#4-looking-at-the-individual-clusters">4. Looking at the individual clusters.</a>
+    <ul>
+      <li><a href="#41-vizualizing-the-cores-of-the-clusters">4.1. Vizualizing the cores of the clusters.</a></li>
+    </ul>
+  </li>
+  <li><a href="#5-how-many-clusters-to-choose">5. How many clusters to choose</a>
+    <ul>
+      <li><a href="#51-sse">5.1. SSE:</a></li>
+      <li><a href="#52-average-silhouette-width">5.2. Average silhouette width:</a></li>
+    </ul>
+  </li>
+  <li><a href="#6-clustering-using-k-means">6. Clustering using K-means</a></li>
+</ul>
+
+<!-- /TOC -->
+
+<p>Clustering is extremely useful for generating hypotheses and data exploration in general. The idea is that genes which have similar expression patterns (co-expression genes) are often controlled by the same regulatory mechanisms (co-regulated genes). Often times co-expressed genes share similar functions so by looking at which genes are found in a cluster we can get an idea of what that cluster is doing.</p>
+
+<p>This is all a little abstract so let’s learn by doing. First we need to pull down some data to play with.</p>
+
+<h1 id="2-preparing-the-data">2. preparing the data</h1>
+
+<p>In the lesson <a href="https://scienceparkstudygroup.github.io/rna-seq-lesson/06-differential-analysis/index.html">Differential expression analysis</a> we used a subset of the data based on a single condition. For this cluster analysis it is more interresting to use a bigger data set consisting more conditions. This way we can find groups of genes that are not only DE in a single condition but also in multiple.</p>
+
+<h2 id="21-uploading-and-selecting-the-data">2.1 Uploading and selecting the data</h2>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">counts</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">read.delim</span><span class="p">(</span><span class="s2">"At_root_hormones_TotRNA.txt"</span><span class="p">,</span><span class="w"> </span><span class="n">header</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">T</span><span class="p">,</span><span class="w"> </span><span class="n">stringsAsFactors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">F</span><span class="p">)</span><span class="w">
+</span><span class="n">genes</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">counts</span><span class="p">[,</span><span class="m">1</span><span class="p">]</span><span class="w">
+</span><span class="n">counts</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">counts</span><span class="p">[,</span><span class="m">-1</span><span class="p">]</span><span class="w">
+</span><span class="n">row.names</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">genes</span><span class="w">
+
+</span><span class="n">xp_design</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">read.delim</span><span class="p">(</span><span class="s2">"root_hormone_experimental_design.txt"</span><span class="p">,</span><span class="w"> </span><span class="n">header</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">T</span><span class="p">,</span><span class="w"> </span><span class="n">stringsAsFactors</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">F</span><span class="p">,</span><span class="w"> </span><span class="n">colClasses</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">rep</span><span class="p">(</span><span class="s2">"character"</span><span class="p">,</span><span class="m">2</span><span class="p">))</span><span class="w">
+
+</span><span class="n">counts</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">counts</span><span class="p">[,</span><span class="w"> </span><span class="n">xp_design</span><span class="o">$</span><span class="n">sample</span><span class="p">]</span><span class="w">
+
+</span><span class="c1">## Check that sample names match in both files</span><span class="w">
+</span><span class="nf">all</span><span class="p">(</span><span class="n">colnames</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span><span class="w"> </span><span class="o">%in%</span><span class="w"> </span><span class="n">xp_design</span><span class="o">$</span><span class="n">sample</span><span class="p">)</span><span class="w">
+</span><span class="nf">all</span><span class="p">(</span><span class="n">colnames</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">xp_design</span><span class="o">$</span><span class="n">sample</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="22-get-the-differentially-expressed-genes">2.2 Get the differentially expressed genes.</h2>
+
+<p>A function is provided that will normalize and select genes that are differentially expressed.
+This function will iterate through all possible combinations of conditions and return a list containing all the genes and normalized count values, that are DE in any of these combinations of conditions.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">normalize</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="k">function</span><span class="p">(</span><span class="n">countdata</span><span class="p">,</span><span class="w"> </span><span class="n">xp_design</span><span class="p">,</span><span class="w"> </span><span class="n">f</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">){</span><span class="w">
+  </span><span class="n">col.names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">colnames</span><span class="p">(</span><span class="n">xp_design</span><span class="p">)</span><span class="w">                                                </span><span class="c1"># extract all column names</span><span class="w">
+  </span><span class="n">columns.to.discard</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s2">"sample"</span><span class="p">,</span><span class="s2">"fq1"</span><span class="p">,</span><span class="s2">"fq2"</span><span class="p">,</span><span class="s2">"fq"</span><span class="p">)</span><span class="w">                                    </span><span class="c1"># column we don't need to extract all conditions</span><span class="w">
+  </span><span class="n">colsForConditions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">col.names</span><span class="p">[</span><span class="o">!</span><span class="w"> </span><span class="n">col.names</span><span class="w"> </span><span class="o">%in%</span><span class="w"> </span><span class="n">columns.to.discard</span><span class="p">]</span><span class="w">              </span><span class="c1"># only keeping the column of interest</span><span class="w">
+  </span><span class="c1"># one condition</span><span class="w">
+  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nf">length</span><span class="p">(</span><span class="n">colsForConditions</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="m">1</span><span class="p">){</span><span class="w">
+    </span><span class="n">condition</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">factor</span><span class="p">(</span><span class="n">xp_design</span><span class="p">[,</span><span class="n">colsForConditions</span><span class="p">])</span><span class="w">
+    </span><span class="c1"># two conditions</span><span class="w">
+  </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nf">length</span><span class="p">(</span><span class="n">colsForConditions</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="m">2</span><span class="p">){</span><span class="w">
+    </span><span class="c1"># two conditions --&gt; make a third column that is the product of the two</span><span class="w">
+    </span><span class="n">xp_design</span><span class="o">$</span><span class="n">conditions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">paste</span><span class="p">(</span><span class="n">xp_design</span><span class="p">[,</span><span class="n">colsForConditions</span><span class="p">[</span><span class="m">1</span><span class="p">]],</span><span class="n">xp_design</span><span class="p">[,</span><span class="n">colsForConditions</span><span class="p">[</span><span class="m">2</span><span class="p">]],</span><span class="n">sep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"."</span><span class="p">)</span><span class="w">
+    </span><span class="n">condition</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">factor</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xp_design</span><span class="p">[,</span><span class="s2">"conditions"</span><span class="p">],</span><span class="n">levels</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">unique</span><span class="p">(</span><span class="n">xp_design</span><span class="p">[,</span><span class="s2">"conditions"</span><span class="p">]))</span><span class="w">
+  </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nf">length</span><span class="p">(</span><span class="n">colsForConditions</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="m">3</span><span class="p">){</span><span class="w">
+    </span><span class="n">xp_design</span><span class="o">$</span><span class="n">conditions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">paste</span><span class="p">(</span><span class="n">xp_design</span><span class="p">[,</span><span class="n">colsForConditions</span><span class="p">[</span><span class="m">1</span><span class="p">]],</span><span class="n">xp_design</span><span class="p">[,</span><span class="n">colsForConditions</span><span class="p">[</span><span class="m">2</span><span class="p">]],</span><span class="n">xp_design</span><span class="p">[,</span><span class="n">colsForConditions</span><span class="p">[</span><span class="m">3</span><span class="p">]],</span><span class="n">sep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"."</span><span class="p">)</span><span class="w">
+    </span><span class="n">condition</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">factor</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xp_design</span><span class="p">[,</span><span class="s2">"conditions"</span><span class="p">],</span><span class="n">levels</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">unique</span><span class="p">(</span><span class="n">xp_design</span><span class="p">[,</span><span class="s2">"conditions"</span><span class="p">]))</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+  </span><span class="c1"># Analysis with DESeq2</span><span class="w">
+  </span><span class="c1"># Create a coldata frame and instantiate the DESeqDataSet. See ?DESeqDataSetFromMatrix</span><span class="w">
+  </span><span class="n">coldata</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">data.frame</span><span class="p">(</span><span class="n">row.names</span><span class="o">=</span><span class="n">colnames</span><span class="p">(</span><span class="n">countdata</span><span class="p">),</span><span class="w"> </span><span class="n">condition</span><span class="p">)</span><span class="w">
+  </span><span class="n">dds</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">DESeqDataSetFromMatrix</span><span class="p">(</span><span class="n">countData</span><span class="o">=</span><span class="n">countdata</span><span class="p">,</span><span class="w"> </span><span class="n">colData</span><span class="o">=</span><span class="n">coldata</span><span class="p">,</span><span class="w"> </span><span class="n">design</span><span class="o">=~</span><span class="n">condition</span><span class="p">)</span><span class="w">
+  </span><span class="c1"># Run the DESeq pipeline</span><span class="w">
+  </span><span class="n">dds</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">DESeq</span><span class="p">(</span><span class="n">dds</span><span class="p">)</span><span class="w">
+  </span><span class="c1"># create dataframe containing normalized counts, to which the differential expression values will be added</span><span class="w">
+  </span><span class="n">resdata</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">as.data.frame</span><span class="p">(</span><span class="n">counts</span><span class="p">(</span><span class="n">dds</span><span class="p">,</span><span class="w"> </span><span class="n">normalized</span><span class="o">=</span><span class="kc">TRUE</span><span class="p">))</span><span class="w">
+  </span><span class="c1"># iterate through the list of conditions to create differential expression (DE) values for all possible pairs</span><span class="w">
+  </span><span class="n">total_selec</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">list</span><span class="p">()</span><span class="w">
+  </span><span class="n">x</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="m">1</span><span class="w">
+  </span><span class="k">for</span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">levels</span><span class="p">(</span><span class="n">condition</span><span class="p">)){</span><span class="w">
+    </span><span class="n">x</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="m">1</span><span class="w">
+    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="nf">length</span><span class="p">(</span><span class="n">levels</span><span class="p">(</span><span class="n">condition</span><span class="p">))){</span><span class="w">
+      </span><span class="k">for</span><span class="p">(</span><span class="n">j</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">x</span><span class="o">:</span><span class="nf">length</span><span class="p">(</span><span class="n">levels</span><span class="p">(</span><span class="n">condition</span><span class="p">))){</span><span class="w">
+        </span><span class="n">res</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">results</span><span class="p">(</span><span class="n">dds</span><span class="p">,</span><span class="w"> </span><span class="n">contrast</span><span class="o">=</span><span class="nf">c</span><span class="p">(</span><span class="s2">"condition"</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w">  </span><span class="n">levels</span><span class="p">(</span><span class="n">condition</span><span class="p">)[</span><span class="n">j</span><span class="p">]))</span><span class="w">                      </span><span class="c1"># i = first in pair, levels(condition)[j] is the second in pair.</span><span class="w">
+        </span><span class="n">d</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">paste</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">levels</span><span class="p">(</span><span class="n">condition</span><span class="p">)[</span><span class="n">j</span><span class="p">],</span><span class="w"> </span><span class="n">sep</span><span class="o">=</span><span class="s2">"&amp;"</span><span class="p">)</span><span class="w">                                                </span><span class="c1"># paste the two conditions in one character, to be used as the pair name</span><span class="w">
+        </span><span class="n">res</span><span class="o">$</span><span class="n">genenames</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">rownames</span><span class="p">(</span><span class="n">res</span><span class="p">)</span><span class="w">
+        </span><span class="n">resul</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">as.data.frame</span><span class="p">(</span><span class="n">res</span><span class="p">)</span><span class="w">
+        </span><span class="n">significantDE</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">resul</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w"> </span><span class="n">filter</span><span class="p">(</span><span class="n">padj</span><span class="o">&lt;</span><span class="n">p</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="p">(</span><span class="n">log2FoldChange</span><span class="o">&gt;</span><span class="n">f</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">log2FoldChange</span><span class="o">&lt;</span><span class="p">(</span><span class="m">-1</span><span class="o">*</span><span class="n">f</span><span class="p">))</span><span class="w"> </span><span class="p">)</span><span class="w">
+        </span><span class="n">selec</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">as.list</span><span class="p">(</span><span class="n">significantDE</span><span class="o">$</span><span class="n">genenames</span><span class="p">)</span><span class="w">
+        </span><span class="n">total_selec</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">append</span><span class="p">(</span><span class="n">total_selec</span><span class="p">,</span><span class="w"> </span><span class="n">selec</span><span class="p">)</span><span class="w">
+      </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+  </span><span class="n">total_selec</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="n">unique</span><span class="p">(</span><span class="n">total_selec</span><span class="p">))</span><span class="w">
+  </span><span class="n">total_selec</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">t</span><span class="p">(</span><span class="n">as.data.frame</span><span class="p">(</span><span class="n">total_selec</span><span class="p">))</span><span class="w">
+  </span><span class="n">selection</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">resdata</span><span class="p">[</span><span class="n">total_selec</span><span class="p">[,</span><span class="m">1</span><span class="p">],]</span><span class="w">
+
+  </span><span class="nf">return</span><span class="p">(</span><span class="n">selection</span><span class="p">)</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p><br />
+<br /></p>
+
+<h2 id="23-running-the-function">2.3 Running the function.</h2>
+<p><br />
+The function requires four input values:</p>
+<ul>
+  <li>dataframe containing the raw counts.</li>
+  <li>dataframe of the experimental design.</li>
+  <li>minimal log2 foldchange.</li>
+  <li>maximal p-value.</li>
+</ul>
+
+<p>For this lesson will set the mimimal 2log foldchange at 2 and the maximum p-value at 0.01.
+<br /></p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">DEgenes</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">normalize</span><span class="p">(</span><span class="n">counts</span><span class="p">,</span><span class="n">xp_design</span><span class="p">,</span><span class="m">2</span><span class="p">,</span><span class="m">0.01</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+<p><br />
+<br />
+Let’s check how many gene were found to be differentially expressed.</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># dim returms the number of rows (number of genes) and the number of columns (number of samples).</span><span class="w">
+</span><span class="nf">dim</span><span class="p">(</span><span class="n">DEgenes</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+<p><br />
+output giving the number of samples and DE genes.</p>
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[1]  549  24
+</code></pre></div></div>
+<p><br /></p>
+
+<blockquote class="challenge">
+  <h2 id="question">Question</h2>
+  <p>Bam files usually contain a tag or attribute that gives the number of mismatches between the read and the reference genome. With samtools it is unfortunately not possible to filter on these values. Could you think of ab other way to select for alignments that align without any mismatches? (hint: make use of <code class="highlighter-rouge">grep "XM:i:0"</code> among others)</p>
+  <blockquote class="solution">
+    <h2 id="solution">Solution</h2>
+    <p><br /><code class="highlighter-rouge">$ samtools view Arabidopsis_sample1.bam | grep "XM:i:0" | wc -l</code><br /></p>
+  </blockquote>
+</blockquote>
+<p><br />
+<br /></p>
+<h2 id="24-scaling-the-data">2.4 Scaling the data.</h2>
+<p><br />
+Since we are comparing gene expression patterns we need to scale the data otherwise all of the highly expressed genes will cluster together even if they have different patterns among the samples.
+<br /></p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">DEgenes</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">as.matrix</span><span class="p">(</span><span class="n">DEgenes</span><span class="p">)</span><span class="w">
+</span><span class="n">scaledata</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">t</span><span class="p">(</span><span class="n">scale</span><span class="p">(</span><span class="n">t</span><span class="p">(</span><span class="n">DEgenes</span><span class="p">)))</span><span class="w">
+</span></code></pre></div></div>
+<p><br />
+<br /></p>
+
+<h1 id="3-visualization-of-a-of-the-de-genes">3. Visualization of a of the DE genes</h1>
+<p><br />
+Starting off we will use the scaled data to construct the trees (dendrograms). For this we need to calculate the distance between the different samples and genes. We have done this earlier but that was on the complete data set and now we are working with a subset containing only differentially expressed genes.
+<br /></p>
+
+<h2 id="31-hierarchical-tree-of-the-samples">3.1. Hierarchical tree of the samples</h2>
+<p><br />
+The hierarchical tree is needed for the heatmap, and can also give an indication if there are outlayers among the samples.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">hc</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">hclust</span><span class="p">(</span><span class="n">as.dist</span><span class="p">(</span><span class="m">1</span><span class="o">-</span><span class="n">cor</span><span class="p">(</span><span class="n">scaledata</span><span class="p">,</span><span class="w"> </span><span class="n">method</span><span class="o">=</span><span class="s2">"spearman"</span><span class="p">)),</span><span class="w"> </span><span class="n">method</span><span class="o">=</span><span class="s2">"complete"</span><span class="p">)</span><span class="w"> </span><span class="c1"># Clusters columns by Spearman correlation.</span><span class="w">
+</span></code></pre></div></div>
+<p><br />
+The distance data is used to plot the dendrogram.</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">sampleTree</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">as.dendrogram</span><span class="p">(</span><span class="n">hc</span><span class="p">,</span><span class="w"> </span><span class="n">method</span><span class="o">=</span><span class="s2">"average"</span><span class="p">)</span><span class="w">
+</span><span class="n">plot</span><span class="p">(</span><span class="n">sampleTree</span><span class="p">,</span><span class="w">
+     </span><span class="n">main</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Sample Clustering"</span><span class="p">,</span><span class="w">
+     </span><span class="n">ylab</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Height"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><img src="../img/Sample_Tree.png" width="900px" alt="Sample_tree" /></p>
+<h2 id="32-hierarchical-tree-of-the-genes">3.2. Hierarchical tree of the genes</h2>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">hr</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">hclust</span><span class="p">(</span><span class="n">as.dist</span><span class="p">(</span><span class="m">1</span><span class="o">-</span><span class="n">cor</span><span class="p">(</span><span class="n">t</span><span class="p">(</span><span class="n">scaledata</span><span class="p">),</span><span class="w"> </span><span class="n">method</span><span class="o">=</span><span class="s2">"pearson"</span><span class="p">)),</span><span class="w"> </span><span class="n">method</span><span class="o">=</span><span class="s2">"complete"</span><span class="p">)</span><span class="w"> </span><span class="c1"># Cluster rows by Pearson correlation.</span><span class="w">
+</span></code></pre></div></div>
+<p><br /></p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">geneTree</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">as.dendrogram</span><span class="p">(</span><span class="n">hr</span><span class="p">,</span><span class="w"> </span><span class="n">method</span><span class="o">=</span><span class="s2">"average"</span><span class="p">)</span><span class="w">
+</span><span class="n">plot</span><span class="p">(</span><span class="n">geneTree</span><span class="p">,</span><span class="w">
+     </span><span class="n">leaflab</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"none"</span><span class="p">,</span><span class="w">             
+     </span><span class="n">main</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Gene Clustering"</span><span class="p">,</span><span class="w">
+     </span><span class="n">ylab</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Height"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+<p><br />
+<img src="../img/Gene_Tree.png" width="900px" alt="Gene_cluster_tree" />
+<br /></p>
+
+<h2 id="33-create-a-heatmap-of-the-data">3.3. Create a heatmap of the data.</h2>
+<p>In this case we’ll be using gplots for the construction of the heatmap. This makes it easier to add some additional features later in this lesson.
+<br /></p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">heatmap.2</span><span class="p">(</span><span class="n">DEgenes</span><span class="p">,</span><span class="w">
+          </span><span class="n">Rowv</span><span class="o">=</span><span class="n">as.dendrogram</span><span class="p">(</span><span class="n">hr</span><span class="p">),</span><span class="w"> 
+          </span><span class="n">Colv</span><span class="o">=</span><span class="n">as.dendrogram</span><span class="p">(</span><span class="n">hc</span><span class="p">),</span><span class="w">
+          </span><span class="n">col</span><span class="o">=</span><span class="n">redgreen</span><span class="p">(</span><span class="m">100</span><span class="p">),</span><span class="w">
+          </span><span class="n">scale</span><span class="o">=</span><span class="s2">"row"</span><span class="p">,</span><span class="w">
+          </span><span class="n">margins</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="m">7</span><span class="p">,</span><span class="w"> </span><span class="m">7</span><span class="p">),</span><span class="w">
+          </span><span class="n">cexCol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.7</span><span class="p">,</span><span class="w">
+          </span><span class="n">labRow</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">F</span><span class="p">,</span><span class="w">
+          </span><span class="n">main</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Heatmap.2"</span><span class="p">,</span><span class="w">
+          </span><span class="n">trace</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"none"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+<p><img src="../img/heatmap2ColvT.png" width="900px" alt="Gene_cluster_tree" />
+<br />
+If the samples are in a specific order, like in a time series it is possible te remove the dendrogram on the columns by setting <code class="highlighter-rouge">Colv=F</code>.
+<img src="../img/heatmap2ColvF.png" width="900px" alt="Gene_cluster_tree" /></p>
+<blockquote class="challenge">
+  <h2 id="question-1">Question</h2>
+  <p>Pick a sample and visualize the forward and reverse alignments separately in IGV.</p>
+  <blockquote class="solution">
+    <h2 id="solution-1">Solution</h2>
+    <p>Select and sort forward reads in one go.<br /><code class="highlighter-rouge">samtools view -Sb -F 20 Arabidopsis_sample1.bam | samtools sort -o Arabidopsis_FW_sorted.bam</code><br />Index the forward reads.<br /><code class="highlighter-rouge">samtools index Arabidopsis_FW_sorted.bam</code><br />Select and sort the reverse reads.<br /><code class="highlighter-rouge">samtools view -Sb -f 16 Arabidopsis_sample1.bam | samtools sort -o Arabidopsis_RV_sorted.bam</code><br />Index the reverse reads.<br /><code class="highlighter-rouge">samtools index Arabidopsis_RV_sorted.bam</code><br />Exit the container, create a directory and copy files.<br /><code class="highlighter-rouge">mkdir IGVfiles</code><br /><code class="highlighter-rouge">docker cp bioinfo:/home/mapped/ ~/IGVfiles/</code><br /> from the Desktop of your local computer create directory and download the files.<br /><code class="highlighter-rouge">mkdir IGV</code><br /><code class="highlighter-rouge">scp -r root@178.128.240.207:~/home/tutorial/IGVfiles/mapped/*sorted.bam* ~/Desktop/IGV</code><br /><br />Upload the files in IGV and you should get something like this.<img src="../img/SeparateFw_RV.png" /></p>
+  </blockquote>
+</blockquote>
+
+<h1 id="4-hirargical-clustering-of-the-data">4. Hirargical clustering of the data</h1>
+<p><br />
+<br /></p>
+
+<h2 id="41-clustering-on-height-of-the-tree">4.1. clustering on height of the tree.</h2>
+<p>We can also extract discrete clusters of genes as a means to identify co-expression modules. This is done by cutting the tree at a specified height and the resulting branches will make a cluster. We can cut the tree high to obtain a small number of large clusters or lower to obtain many small clusters. Let’s try a few different cut heights: 1.5, 1.0 and 5.0:</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">hclusth1.5</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cutree</span><span class="p">(</span><span class="n">hr</span><span class="p">,</span><span class="w"> </span><span class="n">h</span><span class="o">=</span><span class="m">1.5</span><span class="p">)</span><span class="w"> </span><span class="c1">#cut tree at height of 1.5</span><span class="w">
+</span><span class="n">hclusth1.0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cutree</span><span class="p">(</span><span class="n">hr</span><span class="p">,</span><span class="w"> </span><span class="n">h</span><span class="o">=</span><span class="m">1.0</span><span class="p">)</span><span class="w"> </span><span class="c1">#cut tree at height of 1.0</span><span class="w">
+</span><span class="n">hclusth0.5</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cutree</span><span class="p">(</span><span class="n">hr</span><span class="p">,</span><span class="w"> </span><span class="n">h</span><span class="o">=</span><span class="m">0.5</span><span class="p">)</span><span class="w"> </span><span class="c1">#cut tree at height of 0.5</span><span class="w">
+</span></code></pre></div></div>
+<p><br />
+<br /></p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># output of the function cuttree is a vector containing the cluster number for each of the genes.</span><span class="w">
+</span><span class="n">head</span><span class="p">(</span><span class="n">hclusth0.5</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+<p><br />
+<br /></p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># number of clusters</span><span class="w">
+</span><span class="nf">length</span><span class="p">(</span><span class="n">unique</span><span class="p">(</span><span class="n">hclusth0.5</span><span class="p">))</span><span class="w">
+</span></code></pre></div></div>
+<p><br /></p>
+<div class="output highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[1] 26
+</code></pre></div></div>
+<p><br />
+<br /></p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">library</span><span class="p">(</span><span class="n">dendextend</span><span class="p">)</span><span class="w">
+</span><span class="c1">#plot the tree</span><span class="w">
+</span><span class="n">plot</span><span class="p">(</span><span class="n">geneTree</span><span class="p">,</span><span class="w">
+     </span><span class="n">leaflab</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"none"</span><span class="p">,</span><span class="w">
+     </span><span class="n">main</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Gene Clustering"</span><span class="p">,</span><span class="w">
+     </span><span class="n">ylab</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Height"</span><span class="p">)</span><span class="w">
+
+</span><span class="c1">#add the three cluster vectors</span><span class="w">
+</span><span class="n">the_bars</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">cbind</span><span class="p">(</span><span class="n">hclusth0.5</span><span class="p">,</span><span class="w"> </span><span class="n">hclusth1.0</span><span class="p">,</span><span class="w"> </span><span class="n">hclusth1.5</span><span class="p">)</span><span class="w">
+</span><span class="c1">#this makes the bar</span><span class="w">
+</span><span class="n">colored_bars</span><span class="p">(</span><span class="n">the_bars</span><span class="p">,</span><span class="w"> </span><span class="n">geneTree</span><span class="p">,</span><span class="w"> </span><span class="n">sort_by_labels_order</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">T</span><span class="p">,</span><span class="w"> </span><span class="n">y_shift</span><span class="o">=</span><span class="m">-0.1</span><span class="p">,</span><span class="w"> </span><span class="n">rowLabels</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s2">"h=0.5"</span><span class="p">,</span><span class="s2">"h=1.0"</span><span class="p">,</span><span class="s2">"h=1.5"</span><span class="p">),</span><span class="n">cex.rowLabels</span><span class="o">=</span><span class="m">0.7</span><span class="p">)</span><span class="w">
+</span><span class="c1">#this will add lines showing the cut heights</span><span class="w">
+</span><span class="n">abline</span><span class="p">(</span><span class="n">h</span><span class="o">=</span><span class="m">1.5</span><span class="p">,</span><span class="w"> </span><span class="n">lty</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="o">=</span><span class="s2">"grey"</span><span class="p">)</span><span class="w">
+</span><span class="n">abline</span><span class="p">(</span><span class="n">h</span><span class="o">=</span><span class="m">1.0</span><span class="p">,</span><span class="w"> </span><span class="n">lty</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="o">=</span><span class="s2">"grey"</span><span class="p">)</span><span class="w">
+</span><span class="n">abline</span><span class="p">(</span><span class="n">h</span><span class="o">=</span><span class="m">0.5</span><span class="p">,</span><span class="w"> </span><span class="n">lty</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="o">=</span><span class="s2">"grey"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+<p><img src="../img/Gene_Tree_clusterColors2.png" width="900px" alt="Gene_cluster_tree" />
+<br />
+<br /></p>
+
+<h2 id="42-clustering-by-selecting-a-number-of-clusters">4.2. clustering by selecting a number of clusters.</h2>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># alternatively it is also posible to set the number of cluster you want.</span><span class="w">
+</span><span class="n">hclustk5</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cutree</span><span class="p">(</span><span class="n">hr</span><span class="p">,</span><span class="w"> </span><span class="n">k</span><span class="o">=</span><span class="m">5</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p><br />
+<br /></p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">plot</span><span class="p">(</span><span class="n">geneTree</span><span class="p">,</span><span class="w">
+     </span><span class="n">leaflab</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"none"</span><span class="p">,</span><span class="w">
+     </span><span class="n">main</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Gene Clustering"</span><span class="p">,</span><span class="w">
+     </span><span class="n">ylab</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Height"</span><span class="p">)</span><span class="w">
+</span><span class="n">colored_bars</span><span class="p">(</span><span class="n">hclustk5</span><span class="p">,</span><span class="w"> </span><span class="n">geneTree</span><span class="p">,</span><span class="w"> </span><span class="n">sort_by_labels_order</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">T</span><span class="p">,</span><span class="w"> </span><span class="n">y_shift</span><span class="o">=</span><span class="m">-0.1</span><span class="p">,</span><span class="w"> </span><span class="n">rowLabels</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s2">"k=5"</span><span class="p">),</span><span class="n">cex.rowLabels</span><span class="o">=</span><span class="m">0.7</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+<p><img src="../img/Gene_Tree_KclusterColors2.png" width="900px" alt="Gene_cluster_tree" /></p>
+<h2 id="43-visualize-the-clustering-in-a-heatmap">4.3. Visualize the clustering in a heatmap.</h2>
+<p><br />
+<br /></p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># It is also posible to visualize the bar indicating the clusters in combination with a heatmap.</span><span class="w">
+</span><span class="c1"># This will make it more easy to see if you choose the right number of clusters.</span><span class="w">
+</span><span class="n">clustColBar</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">rainbow</span><span class="p">(</span><span class="nf">length</span><span class="p">(</span><span class="n">unique</span><span class="p">(</span><span class="n">hclustk5</span><span class="p">)),</span><span class="w"> </span><span class="n">start</span><span class="o">=</span><span class="m">0.1</span><span class="p">,</span><span class="w"> </span><span class="n">end</span><span class="o">=</span><span class="m">0.9</span><span class="p">)</span><span class="w">
+</span><span class="n">clustColBar</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">clustColBar</span><span class="p">[</span><span class="n">as.vector</span><span class="p">(</span><span class="n">hclustk5</span><span class="p">)]</span><span class="w">
+
+</span><span class="n">heatmap.2</span><span class="p">(</span><span class="n">DEgenes</span><span class="p">,</span><span class="w">
+          </span><span class="n">Rowv</span><span class="o">=</span><span class="n">as.dendrogram</span><span class="p">(</span><span class="n">hr</span><span class="p">),</span><span class="w"> 
+          </span><span class="n">Colv</span><span class="o">=</span><span class="n">as.dendrogram</span><span class="p">(</span><span class="n">hc</span><span class="p">),</span><span class="w">
+          </span><span class="n">col</span><span class="o">=</span><span class="n">redgreen</span><span class="p">(</span><span class="m">100</span><span class="p">),</span><span class="w">
+          </span><span class="n">scale</span><span class="o">=</span><span class="s2">"row"</span><span class="p">,</span><span class="w">
+          </span><span class="n">margins</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="m">7</span><span class="p">,</span><span class="w"> </span><span class="m">7</span><span class="p">),</span><span class="w">
+          </span><span class="n">cexCol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.7</span><span class="p">,</span><span class="w">
+          </span><span class="n">labRow</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">F</span><span class="p">,</span><span class="w">
+          </span><span class="n">main</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Heatmap.2"</span><span class="p">,</span><span class="w">
+          </span><span class="n">trace</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"none"</span><span class="p">,</span><span class="w">
+          </span><span class="n">RowSideColors</span><span class="o">=</span><span class="n">clustColBar</span><span class="p">,</span><span class="w">
+          </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+<p><img src="../img/heatmap2clusterColor.png" width="900px" alt="Gene_cluster_tree" />
+<br />
+<br /></p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">counts</span><span class="p">[</span><span class="m">1</span><span class="o">:</span><span class="m">5</span><span class="p">,</span><span class="m">1</span><span class="o">:</span><span class="m">5</span><span class="p">]</span><span class="w">
+</span></code></pre></div></div>
+
+<h1 id="4-looking-at-the-individual-clusters">4. Looking at the individual clusters.</h1>
+<p><br />
+<br /></p>
+
+<h2 id="41-vizualizing-the-cores-of-the-clusters">4.1. Vizualizing the cores of the clusters.</h2>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">clust.core</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">function</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">dat</span><span class="p">,</span><span class="w"> </span><span class="n">clusters</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+  </span><span class="n">ind</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">clusters</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">i</span><span class="p">)</span><span class="w">
+  </span><span class="n">colMeans</span><span class="p">(</span><span class="n">dat</span><span class="p">[</span><span class="n">ind</span><span class="p">,])</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="n">clusters</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">hclustk5</span><span class="w">
+</span><span class="n">cores</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">sapply</span><span class="p">(</span><span class="n">unique</span><span class="p">(</span><span class="n">clusters</span><span class="p">),</span><span class="w"> </span><span class="n">clust.core</span><span class="p">,</span><span class="w"> </span><span class="n">scaledata</span><span class="p">,</span><span class="w"> </span><span class="n">clusters</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+<p>The matrix cores containes the average values</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">library</span><span class="p">(</span><span class="n">reshape2</span><span class="p">)</span><span class="w">
+</span><span class="n">moltenCores</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">melt</span><span class="p">(</span><span class="n">cores</span><span class="p">)</span><span class="w"> </span><span class="c1">## get the data in a "long" format</span><span class="w">
+</span><span class="n">colnames</span><span class="p">(</span><span class="n">moltenCores</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s1">'sample'</span><span class="p">,</span><span class="s1">'cluster'</span><span class="p">,</span><span class="s1">'value'</span><span class="p">)</span><span class="w">
+
+</span><span class="n">ggplot</span><span class="p">(</span><span class="n">moltenCores</span><span class="p">,</span><span class="w"> </span><span class="n">aes</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">sample</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="n">value</span><span class="p">,</span><span class="w"> </span><span class="n">group</span><span class="o">=</span><span class="n">cluster</span><span class="p">,</span><span class="w"> </span><span class="n">colour</span><span class="o">=</span><span class="n">as.factor</span><span class="p">(</span><span class="n">cluster</span><span class="p">)))</span><span class="w"> </span><span class="o">+</span><span class="w"> 
+  </span><span class="n">geom_point</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> 
+  </span><span class="n">geom_line</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">xlab</span><span class="p">(</span><span class="s2">"Sample"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">ylab</span><span class="p">(</span><span class="s2">"Expression"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">labs</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="w"> </span><span class="s2">"Cluster Expression of the samples"</span><span class="p">,</span><span class="n">color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Cluster"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">theme</span><span class="p">(</span><span class="n">axis.text.x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">element_text</span><span class="p">(</span><span class="n">angle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">45</span><span class="p">,</span><span class="w"> </span><span class="n">hjust</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">))</span><span class="w">
+</span></code></pre></div></div>
+<p><img src="../img/clusterCores.png" width="900px" alt="Gene_cluster_tree" />
+Isolate a cluster of interrest.</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">clust4</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">t</span><span class="p">(</span><span class="n">scaledata</span><span class="p">[</span><span class="n">hclustk4</span><span class="o">==</span><span class="m">4</span><span class="p">,])</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#get the data frame into long format for plotting</span><span class="w">
+</span><span class="n">clust4Molten</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">melt</span><span class="p">(</span><span class="n">clust4</span><span class="p">,</span><span class="w"> </span><span class="n">id.vars</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Sample"</span><span class="p">)</span><span class="w">
+</span><span class="n">colnames</span><span class="p">(</span><span class="n">clust4Molten</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s1">'sample'</span><span class="p">,</span><span class="s1">'gene'</span><span class="p">,</span><span class="s1">'value'</span><span class="p">)</span><span class="w">
+
+</span><span class="c1">#Subset the cores molten dataframe so we can plot core4</span><span class="w">
+</span><span class="n">core</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">moltenCores</span><span class="p">[</span><span class="n">moltenCores</span><span class="o">$</span><span class="n">cluster</span><span class="o">==</span><span class="m">4</span><span class="p">,]</span><span class="w">
+
+</span><span class="n">ggplot</span><span class="p">(</span><span class="n">clust4Molten</span><span class="p">,</span><span class="w"> </span><span class="n">aes</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">sample</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="n">value</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w"> 
+  </span><span class="n">geom_line</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"grey"</span><span class="p">,</span><span class="w"> </span><span class="n">aes</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s2">"grey"</span><span class="p">,</span><span class="w"> </span><span class="n">group</span><span class="o">=</span><span class="n">gene</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="c1">#this adds the core </span><span class="w">
+  </span><span class="n">geom_line</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">core</span><span class="p">,</span><span class="w"> </span><span class="n">aes</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span><span class="n">value</span><span class="p">,</span><span class="w"> </span><span class="n">group</span><span class="o">=</span><span class="n">cluster</span><span class="p">),</span><span class="w"> </span><span class="n">color</span><span class="o">=</span><span class="s2">"blue"</span><span class="p">,</span><span class="n">inherit.aes</span><span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">geom_point</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">core</span><span class="p">,</span><span class="w"> </span><span class="n">aes</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span><span class="n">value</span><span class="p">,</span><span class="w"> </span><span class="n">group</span><span class="o">=</span><span class="n">cluster</span><span class="p">),</span><span class="w"> </span><span class="n">color</span><span class="o">=</span><span class="s2">"blue"</span><span class="p">,</span><span class="n">inherit.aes</span><span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">xlab</span><span class="p">(</span><span class="s2">"Samples"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">ylab</span><span class="p">(</span><span class="s2">"Expression"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">labs</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="w"> </span><span class="n">paste0</span><span class="p">(</span><span class="s2">"Cluster 4 consisting "</span><span class="p">,</span><span class="w"> </span><span class="n">nrow</span><span class="p">(</span><span class="n">clust4</span><span class="p">),</span><span class="w"> </span><span class="s2">" genes"</span><span class="p">),</span><span class="n">color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Score"</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w">
+  </span><span class="n">theme</span><span class="p">(</span><span class="n">axis.text.x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">element_text</span><span class="p">(</span><span class="n">angle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">45</span><span class="p">,</span><span class="w"> </span><span class="n">hjust</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span><span class="p">))</span><span class="w">
+
+</span></code></pre></div></div>
+
+<p><img src="../img/cluster1.png" width="900px" alt="Gene_cluster_tree" /></p>
+
+<h1 id="5-how-many-clusters-to-choose">5. How many clusters to choose</h1>
+
+<h2 id="51-sse">5.1. SSE:</h2>
+
+<p>The first measure is using the sum of squared error (SSE). SSE is defined as the sum of the squared distance between each member of a cluster and its cluster centroid. We repeatedly test and increasing number of clusters and evaluate the SSE. As we increase the number of clusters the distance between any point and it’s centroid will be smaller since the cluster itself is smaller. At a certain number of clusters number however, the SSE will not significantly decrease with each new addition of a cluster. This is the elbow and suggests a suitable number of clusters:</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">wss</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="p">(</span><span class="n">nrow</span><span class="p">(</span><span class="n">scaledata</span><span class="p">)</span><span class="m">-1</span><span class="p">)</span><span class="o">*</span><span class="nf">sum</span><span class="p">(</span><span class="n">apply</span><span class="p">(</span><span class="n">scaledata</span><span class="p">,</span><span class="m">2</span><span class="p">,</span><span class="n">var</span><span class="p">))</span><span class="w">
+</span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="m">2</span><span class="o">:</span><span class="m">20</span><span class="p">)</span><span class="w"> </span><span class="n">wss</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">sum</span><span class="p">(</span><span class="n">kmeans</span><span class="p">(</span><span class="n">scaledata</span><span class="p">,</span><span class="w">
+                                     </span><span class="n">centers</span><span class="o">=</span><span class="n">i</span><span class="p">)</span><span class="o">$</span><span class="n">withinss</span><span class="p">)</span><span class="w">
+</span><span class="n">plot</span><span class="p">(</span><span class="m">1</span><span class="o">:</span><span class="m">20</span><span class="p">,</span><span class="w"> </span><span class="n">wss</span><span class="p">,</span><span class="w"> </span><span class="n">type</span><span class="o">=</span><span class="s2">"b"</span><span class="p">,</span><span class="w"> </span><span class="n">xlab</span><span class="o">=</span><span class="s2">"Number of Clusters"</span><span class="p">,</span><span class="w">
+     </span><span class="n">ylab</span><span class="o">=</span><span class="s2">"Within groups sum of squares"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+<h2 id="52-average-silhouette-width">5.2. Average silhouette width:</h2>
+
+<p>The next method is by estimating the optimum number using the average silhouette width. The silhouette value describes how similar a gene is to its own cluster (cohesion) compared to other clusters (separation). A high value indicates that the gene is well placed. So if the average of all of these silhouettes is high then the number of clusters is good.</p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">library</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span><span class="w">
+</span><span class="n">sil</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">rep</span><span class="p">(</span><span class="m">0</span><span class="p">,</span><span class="w"> </span><span class="m">20</span><span class="p">)</span><span class="w">
+</span><span class="c1">#repeat k-means for 1:20 and extract silhouette:</span><span class="w">
+</span><span class="k">for</span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="m">2</span><span class="o">:</span><span class="m">20</span><span class="p">){</span><span class="w">
+  </span><span class="n">k1to20</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">kmeans</span><span class="p">(</span><span class="n">scaledata</span><span class="p">,</span><span class="w"> </span><span class="n">centers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">nstart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">25</span><span class="p">,</span><span class="w"> </span><span class="n">iter.max</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">20</span><span class="p">)</span><span class="w">
+  </span><span class="n">ss</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">silhouette</span><span class="p">(</span><span class="n">k1to20</span><span class="o">$</span><span class="n">cluster</span><span class="p">,</span><span class="w"> </span><span class="n">dist</span><span class="p">(</span><span class="n">scaledata</span><span class="p">))</span><span class="w">
+  </span><span class="n">sil</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">mean</span><span class="p">(</span><span class="n">ss</span><span class="p">[,</span><span class="w"> </span><span class="m">3</span><span class="p">])</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="c1"># Plot the  average silhouette width</span><span class="w">
+</span><span class="n">plot</span><span class="p">(</span><span class="m">1</span><span class="o">:</span><span class="m">20</span><span class="p">,</span><span class="w"> </span><span class="n">sil</span><span class="p">,</span><span class="w"> </span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"b"</span><span class="p">,</span><span class="w"> </span><span class="n">pch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">19</span><span class="p">,</span><span class="w"> </span><span class="n">xlab</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Number of clusters k"</span><span class="p">,</span><span class="w"> </span><span class="n">ylab</span><span class="o">=</span><span class="s2">"Average silhouette width"</span><span class="p">)</span><span class="w">
+</span><span class="n">abline</span><span class="p">(</span><span class="n">v</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">which.max</span><span class="p">(</span><span class="n">sil</span><span class="p">),</span><span class="w"> </span><span class="n">lty</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">2</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">cat</span><span class="p">(</span><span class="s2">"Average silhouette width optimal number of clusters:"</span><span class="p">,</span><span class="w"> </span><span class="n">which.max</span><span class="p">(</span><span class="n">sil</span><span class="p">),</span><span class="w"> </span><span class="s2">"\n"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<h1 id="6-clustering-using-k-means">6. Clustering using K-means</h1>
+
+<p>K-means clustering is fundamentally different from hierarchical clustering in that it is a form of partitional clustering in which the data are divied into K partitions. This requires a priori knowledge about the optimum number of partitions (clusters), thus the classic question ‘How do i determine the correct number of clusters?’ which we cover below. In K-means the data is seeded with K random datapoints. Then the data closest to those points are assigned to that ‘cluster’, the mean of those data is calculated and that mean becomes the new cluster center. The data are then re-assigned to their nearest point and the whole process repeats until the clusters are stable. Still confused? Check out this awesome gif from <a href="http://shabal.in/visuals.html">Andrey Shabalin:</a></p>
+
+<p><img src="../img/kmeans.gif" width="800" /></p>
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">set.seed</span><span class="p">(</span><span class="m">20</span><span class="p">)</span><span class="w">
+</span><span class="n">kClust</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">kmeans</span><span class="p">(</span><span class="n">scaledata</span><span class="p">,</span><span class="w"> </span><span class="n">centers</span><span class="o">=</span><span class="m">4</span><span class="p">,</span><span class="w"> </span><span class="n">nstart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1000</span><span class="p">,</span><span class="w"> </span><span class="n">iter.max</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">20</span><span class="p">)</span><span class="w">
+</span><span class="n">kClusters</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">kClust</span><span class="o">$</span><span class="n">cluster</span><span class="w">
+</span></code></pre></div></div>
+
+:ET

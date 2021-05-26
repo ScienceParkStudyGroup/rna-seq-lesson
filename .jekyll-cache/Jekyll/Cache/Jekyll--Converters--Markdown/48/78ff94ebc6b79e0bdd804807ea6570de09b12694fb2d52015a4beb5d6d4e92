@@ -1,0 +1,151 @@
+I"�"<!-- MarkdownTOC autolink="true" -->
+
+<ul>
+  <li><a href="#1-r-scripts">1. R scripts</a></li>
+  <li><a href="#2-docker-cloud-setup">2. Docker cloud setup</a>
+    <ul>
+      <li><a href="#21-create-a-linux-virtual-machine">2.1 Create a Linux virtual machine</a></li>
+      <li><a href="#22-connect-to-your-virtual-machine">2.2 Connect to your Virtual Machine</a></li>
+      <li><a href="#23-pull-the-docker-image">2.3 Pull the Docker image</a></li>
+      <li><a href="#24-create-and-run-a-container-interactively">2.4 Create and run a container interactively</a></li>
+      <li><a href="#26-create-run-a-container-interactively-and-bind-a-local-folder">2.6 Create, run a container interactively and bind a local folder</a></li>
+    </ul>
+  </li>
+  <li><a href="#3-singularity-setup">3. Singularity setup</a></li>
+</ul>
+
+<!-- /MarkdownTOC -->
+
+<h1 id="1-r-scripts">1. R scripts</h1>
+
+<p>All R scripts used in the tutorials are available <a href="../r_analysis/00.tutorials.R">here</a></p>
+
+<ul>
+  <li><a href="../r_analysis/00.tutorials/episode_05.R">Episode 05 (“Exploration of counts”)</a></li>
+  <li><a href="../r_analysis/00.tutorials/episode_06.R">Episode 06 (“Differential expression analysis”)</a></li>
+</ul>
+
+<p><br /></p>
+
+<h1 id="2-docker-cloud-setup">2. Docker cloud setup</h1>
+
+<p>In this lesson, a series of episodes rely on the shell and specific bioinformatic softwares. While it is possible to ask students
+to install everything (softwares and data), in practice, it is much easier to dispose of an “out-of-the-box” installation where 
+data and softwares are available.</p>
+
+<p>This is why a Docker image was created. You can think of a Docker image as the “cookie cutter” that is used to create/”cut” multiple 
+containers (“cookies”) from the same template.</p>
+
+<p><img src="../img/99-instructor-notes-cookie-cutter-names.png" width="600px" alt="cookie cutter and cookies" /></p>
+
+<p>While teaching Docker is not the purpose of this lesson, instructors might find it useful to follow <a href="https://carpentries-incubator.github.io/docker-introduction/index.html">this nice Docker tutorial on forehand</a>.</p>
+
+<p>All in all, having students to work in Docker containers ensure that everyone has the same configuration.</p>
+
+<h2 id="21-create-a-linux-virtual-machine">2.1 Create a Linux virtual machine</h2>
+
+<p>Create a Linux-based virtual machine (VM) where Docker is installed and where you have root priviledges (since Docker requires it).</p>
+
+<p>One option is for instance to use the <a href="https://www.digitalocean.com/products/droplets/">Digital Ocean cloud infrastructure</a> and create so-called “Droplets”. A short and concise guide on how to do this is available here:</p>
+
+<p>Many cloud providers are out there so keep your eyes open!</p>
+
+<h2 id="22-connect-to-your-virtual-machine">2.2 Connect to your Virtual Machine</h2>
+
+<p>Start a command-line Shell (e.g. Terminal on Mac OS) and <code class="highlighter-rouge">ssh</code> into your machine.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ssh root@[your IP address]
+</code></pre></div></div>
+
+<h2 id="23-pull-the-docker-image">2.3 Pull the Docker image</h2>
+
+<p><a href="https://docs.docker.com/engine/reference/commandline/pull/">Pulling</a> in Docker terminology means that you can use a pre-built image from the Docker Hub repository.</p>
+
+<p>The analogy is the “cookie cutter”. A Docker image is a cookie cutter that you will use to…make cookies (the containers).</p>
+
+<p>Here, pull means that the required Docker image for the bioinformatic episodes of the lesson will be downloaded and made available in your VM.</p>
+
+<p>Presently (February 2021), the Docker image used is called “master-gls:fastq-latest”.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker pull scienceparkstudygroup/master-gls:fastq-latest
+</code></pre></div></div>
+
+<p>This command will download the Docker image, verify its completeness and exit once its done.</p>
+
+<p>You should see something like this:</p>
+
+<p><img src="../img/99-instructor-notes-docker-pull.png" width="800px" alt="docker pull command" /></p>
+
+<p>You can verify that you have a Docker image named “scienceparkstudygroup/master-gls:fastq-latest” with the following command:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker image <span class="nb">ls</span>
+</code></pre></div></div>
+
+<p><img src="../img/99-instructor-notes-docker-image-ls.png" width="800px" alt="docker image ls" /></p>
+
+<p>You see that your image has an image ID that is unique. The size of this Docker image is quite big since it amounts to 1.35GB.</p>
+
+<h2 id="24-create-and-run-a-container-interactively">2.4 Create and run a container interactively</h2>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker run <span class="nt">--name</span> fastq <span class="nt">-it</span> scienceparkstudygroup/master-gls:fastq-latest
+</code></pre></div></div>
+
+<p>Command explanation:</p>
+<ul>
+  <li><code class="highlighter-rouge">docker run</code>: creates a container</li>
+  <li><code class="highlighter-rouge">--name</code>: give a personalised name to your container rather than an arbitrary (super long) number.</li>
+  <li><code class="highlighter-rouge">-it</code>: start the container allocate an interactive bash in the container.</li>
+  <li><code class="highlighter-rouge">scienceparkstudygroup/master-gls:fastq-latest</code>: the super long name our Docker image has. This image has been downloaded previously using <code class="highlighter-rouge">docker pull</code> and should be available already on your system. If a new image has been pushed to Docker Hub, then it will download the latest tag “fastq-latest” image.</li>
+</ul>
+
+<p>cd into the <code class="highlighter-rouge">/home</code> folder and list the files:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cd </span>home/
+<span class="nb">ls</span> <span class="nt">-l</span>
+</code></pre></div></div>
+
+<p><img src="../img/99-instructor-notes-docker-cd.png" width="800px" alt="docker cd home" /></p>
+
+<p>You can see that all necessary fastq files and genome references are there! Neat!</p>
+
+<p>To exit your running container, type: <code class="highlighter-rouge">exit</code>. Ok, now you are back on the VM again. Your container called “fastq” has stopped. 
+To verify this, type:</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker container <span class="nb">ls</span> <span class="nt">-a</span>
+</code></pre></div></div>
+
+<p><img src="../img/99-instructor-notes-docker-exit.png" width="100%" alt="docker exit" /></p>
+
+<p>To enter your running container again, type:</p>
+
+<p>The issue is that when your container has been exited, it is impossible to restart an interactive session. 
+Say you would have been working IN the container then all results are lost….
+Not ideal..</p>
+
+<p>Well, actually there is a try to re-enter a stopped container.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker start <span class="nt">-a</span> <span class="nt">-i</span> fastq
+</code></pre></div></div>
+
+<p>Explanation:</p>
+<ul>
+  <li><code class="highlighter-rouge">-a</code> stands for <code class="highlighter-rouge">--attach</code> and attach the STDOUT/STDERR to the current shell session.</li>
+  <li><code class="highlighter-rouge">-i</code> stands for <code class="highlighter-rouge">--interactive</code> and attach the container STDIN.</li>
+</ul>
+
+<p>In that way, the container STDIN is linked to the shell STDOUT.</p>
+
+<h2 id="26-create-run-a-container-interactively-and-bind-a-local-folder">2.6 Create, run a container interactively and bind a local folder</h2>
+
+<p>Since our work will not be lost but rather “stuck” into the “fastq” Docker container, we need to bind a local folder (from our VM) with a folder inside of the Docker container.</p>
+
+<p>We will call it “workspace/” and it will be our location in the Docker container where we will do our bioinformatic magic.</p>
+
+<blockquote class="callout">
+  <h2 id="important-note">Important note</h2>
+  <p>Do not call this folder “home/” as our datasets and genome reference is in a folder called home/. This would overwrite it with an empty folder.</p>
+</blockquote>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker run <span class="nt">-v</span> <span class="nv">$PWD</span>:/workspace/ <span class="nt">--name</span> fastq <span class="nt">-it</span> scienceparkstudygroup/master-gls:fastq-latest
+</code></pre></div></div>
+
+<h1 id="3-singularity-setup">3. Singularity setup</h1>
+
+:ET
