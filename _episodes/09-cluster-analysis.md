@@ -62,6 +62,8 @@ row.names(counts) <- genes
 
 xp_design <- read.delim("root_hormone_experimental_design.txt", header = T, stringsAsFactors = F, colClasses = rep("character",2))
 
+xp_design = xp_design %>% filter(dpi == "7")
+
 counts <- counts[, xp_design$sample]
 
 ## Check that sample names match in both files
@@ -269,6 +271,11 @@ head(hclusth0.5)
 ~~~
 {: .language-r}
 <br>
+~~~
+AT1G02930 AT1G02940 AT1G05575 AT1G05700 AT1G07747 AT1G13710 
+        1         2         3         4         5         2 
+~~~
+{: .output}
 <br>
 ~~~
 # number of clusters
@@ -469,4 +476,48 @@ kClusters <- kClust$cluster
 ~~~
 {: .language-r}
 
+Let's visualize the clustering in a heatmap:
+~~~
+plot(clustering_of_samples)
+~~~
+{: .language-r}
 
+<img src="../img/heatmap2KclusterColor.png" width="900px" alt="Gheatmap_with_Kmeans_clusters">
+
+How does this compare to the `cuttree(k=5)`
+~~~
+plot(geneTree,
+     leaflab = "none",
+     main = "Gene Clustering",
+     ylab = "Height")
+the_bars <- cbind(hclustk5, kClusters)
+colored_bars(the_bars, geneTree, sort_by_labels_order = T, y_shift=-0.1, rowLabels = c("Treecut",'K-means'),cex.rowLabels=0.7)
+~~~
+{: .language-r}
+
+
+
+<img src="../img/geneTree_KmeansVStreecut.png" width="900px" alt="Kmean_vs_treecut_cluster_tree">
+~~~
+plot(clustering_of_samples)
+~~~
+{: .language-r}
+
+
+~~~
+plot(clustering_of_samples)
+~~~
+{: .language-r}
+
+<img src="../img/clusterKcores.png" width="900px" alt="Gene_cluster_tree">
+~~~
+plot(clustering_of_samples)
+~~~
+{: .language-r}
+
+
+<img src="../img/Kcluster3.png" width="900px" alt="Gene_cluster_tree">
+~~~
+plot(clustering_of_samples)
+~~~
+{: .language-r}
