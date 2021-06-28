@@ -12,11 +12,13 @@ source("mypca.R")
 ###############################
 
 ## Data import
-counts <- read.delim("00.tutorial/counts.txt", header = T, stringsAsFactors = F)
-genes <- counts[,1]
-counts <- counts[,-1]
-row.names(counts) <- genes
-xp_design <- read.delim("00.tutorial/experimental_design_modified.txt", header = T, stringsAsFactors = F, colClasses = rep("character",4))
+counts <- read.delim("00.tutorial/counts.txt", header = T, stringsAsFactors = F) %>% 
+  column_to_rownames("Geneid")
+
+xp_design <- read.delim("00.tutorial/experimental_design_modified.txt", 
+                        header = T, 
+                        stringsAsFactors = F, 
+                        colClasses = rep("character",4))
 
 # change col names
 colnames(xp_design) <- c("sample", "seed", "infected", "dpi")

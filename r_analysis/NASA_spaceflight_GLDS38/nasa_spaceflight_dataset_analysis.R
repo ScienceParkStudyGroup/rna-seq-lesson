@@ -286,7 +286,7 @@ EnhancedVolcano(toptable = resLFC,
 pca1 <- mypca(scaled_counts, scale = TRUE)
 pca2 <- mypca(scaled_counts, scale = FALSE)
 pca3 <- mypca(t_vst_counts, scale = TRUE)
-pca4 <- mypca(scaled_counts, scale = FALSE)
+pca4 <- mypca(t_vst_counts, scale = FALSE)
 
 scores1 <- pca1$scores %>% 
   rownames_to_column("sample") %>% 
