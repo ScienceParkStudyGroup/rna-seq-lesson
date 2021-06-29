@@ -57,9 +57,7 @@ keypoints:
 Check the Wikipedia page for now: https://en.wikipedia.org/wiki/FASTQ_format
 
 
-The first step in the RNA-Seq workflow is to take the FASTQ files received from the sequencing facility and assess the quality of the sequence reads. 
-
-**Unmapped read data (FASTQ)**
+The first step in the RNA-Seq workflow is to take the FASTQ files received from the sequencing facility and assess the quality of the sequencing reads. 
 
 The [FASTQ](https://en.wikipedia.org/wiki/FASTQ_format) file format is the defacto file format for sequence reads generated from next-generation sequencing technologies. This file format evolved from FASTA in that it contains sequence data, but also contains quality information. Similar to FASTA, the FASTQ file begins with a header line. The difference is that the FASTQ header is denoted by a `@` character. For a single record (sequence read) there are four lines, each of which are described below:
 
@@ -70,20 +68,75 @@ The [FASTQ](https://en.wikipedia.org/wiki/FASTQ_format) file format is the defac
 |3|Always begins with a '+' and sometimes the same info in line 1|
 |4|Has a string of characters which represent the quality scores; must have same number of characters as line 2|
 
-Let's start and enter the container and have a look what the files we will be using actualy look like.
+## 2.2 Getting familiar with the Docker container
 
+Please make sure you have completed the [Setup section](../setup.html) ideally with the Docker option. 
+
+Let's first create a `tutorial` subfolder in the `/home/` folder. 
 
 ~~~
-$ docker start -a -i fastq
+$ cd /home/
 
-$ source activate fastq
-
-$ cd home
+$ mkdir tutorial/
 ~~~
 {: .bash}
 
-As you can see the `/home/` directory contains 4 fastq files. The files are generaly quite big (they usualy contain up to 40 milion reads), so it's a smart thing to keep them zipped as they are.
+Now we will (i) download the required Docker image and (ii) start the Docker container that we will call `bioinfo` and that contains all tutorial softwares and datasets. 
+
+Docker does this in one single-step with the `docker run` command. 
+
+~~~
+$ docker run -v $PWD:/workspace/ --name bioinfo -it scienceparkstudygroup/master-gls:fastq-latest
+~~~
+{: .bash}
+
+Some explanation here:
+* `--name`: our container is named `bioinfo` so you can use this when performing actions on your container.  
+* `-it`: starts an interactive bash session inside your container upon start up.
+* `-v $PWD:/workspace/`: this has linked your current working directory (called `tutorial/`) to a new directory inside the container called `workspace/`. We use different names to know where we are.
+
+```bash
+local_machine:
+  /home/
+    tutorial/
+
+    >> docker container bioinfo
+         /workspace/
+```
+
+Everything that happens inside the `workspace/` folder of your Docker container will be mirrored outside in the `tutorial/` folder of your local machine. 
+
+Let's try this by creating a file in the Docker container inside `workspace/`
+
+~~~
+$ touch testfile.txt
+~~~
+{: .bash}
+
+Now exit the container: 
+
+~~~
+$ exit
+~~~
+{: .bash}
+
+You can re-enter the container with:
+~~~
+$ docker start -a -i bioinfo
+~~~
+{: .bash}
+
+
+> ## Exercise
+> Try to exit and re-enter the container at least two times. Create and delete a test file and verify that the file exists in `tutorial/`
+{: .challenge}
+
+## 2.3 A first peek at our FASTQ files
+
+Several sequencing files are available in the `/dataets/` folder as it contains 4 fastq files. The files are generaly quite big (they usualy contain up to 40 milion reads), so it's a smart thing to keep them zipped as they are.  
+
 `zcat` is a simular function as `cat` but works on zipped files. With the use of this function we can have a look at the files without having to unzip them. 
+
 ~~~
 $ zcat Arabidopsis_sample2.fq.gz | head -n 20
 ~~~
@@ -116,28 +169,32 @@ GAGAAGGCAAAGGAGAATGATAAAGAACCGAGAATCAGCTGCAAGGTCCCGGGCCAGGAAACAGATATTCACGGCAGACC
 
 Let's have a close look at the first read of this sample:
 
-```
+~~~
 @ERR1406259.27450842
 CATCGCTGAAGATCTGTGAACCAGCCTTGAACCAAACTGCCTCTCCAAACTTGACTCCGTTCCTGGCCAAAAGCTCAGGGAAGACGCAGCCTAGGGCTCCG
 +
 ?ABEEEDCBFEDGHFJFJIHFEFCC=>BEC>FJ@GHCHBHCGFJHG;:F<AI;90F=E44:8FA>@8C;;33237-?84(>*$A#$#/B.5)->0%/8D=;
-```
+~~~
+{: .output}
 
 As mentioned previously, line 4 has characters encoding the quality of each nucleotide in the read. The legend below provides the mapping of quality scores (Phred-33) to the quality encoding characters. **Different quality encoding scales exist (differing by offset in the ASCII table), but note the most commonly used one is fastqsanger**
 
-```
+~~~
  Quality encoding: !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHI
                    |         |         |         |         |
     Quality score: 0........10........20........30........40                                
-```
+~~~
+{: .output}
  
 Using the quality encoding character legend, the first nucelotide in the read (C) is called with a quality score of 30. The second base (A) has a quality of 32, etc.
 
 Each quality score represents the probability that the corresponding nucleotide call is incorrect. This quality score is logarithmically based and is calculated as:
 
-	Q = -10 x log10(P), where P is the probability that a base call is erroneous
+$$Q = -10 \times log_{10}(P)$$     
 
-These probabaility values are the results from the base calling algorithm and dependent on how much signal was captured for the base incorporation. The score values can be interpreted as follows:
+where $$P$$ is the probability that a base call is erroneous.
+
+These probability values are the results from the base calling algorithm and dependent on how much signal was captured for the base incorporation. The score values can be interpreted as follows:
 
 |Phred Quality Score |Probability of incorrect base call |Base call accuracy|
 |:-------------------|:---------------------------------:|-----------------:|
@@ -155,15 +212,19 @@ Therefore, for the first nucleotide in the read (C), there is a 1 in 1000 chance
 > {: .solution}
 {: .challenge}
 
+<br> 
 
 # 3. Quality control of FASTQ files
 
-
 ## 3.1. Running FastQC  
 
-We will now create the quality reports of the reads that we downloaded. First, we need to make an output directory for the fastqc results to be stored. This we want to do in the 'home' directory that contains all the needed files.
+We will now create the quality reports of the reads that we downloaded.  
+
+ First, we need to make an output directory for the fastqc results to be stored. This we want to do in the 'home' directory that contains all the needed files.
 
 ~~~
+# activating conda environment to access the fastqc command-line tool
+$ source activate fastq
 $ cd /workspace/
 
 $ mkdir fastqc
@@ -174,7 +235,7 @@ $ mkdir fastqc
 Next we need to get to the directory that actually contains the the fastq files.
 
 ~~~
-$ cd /home/
+$ cd /datasets/
 ~~~
 {: .bash}
 
@@ -321,13 +382,12 @@ directory we just created `~/Desktop/fastqc_html`.
 When working on a remote computer make use of the following command
 
 ~~~
-$ scp -r root@178.128.240.207:~/home/tutorial/fastqc/*.html ~/Desktop/fastqc_html
+$ scp -r root@[your machine IP address]:~/home/tutorial/fastqc/*.html ~/Desktop/fastqc_html
 ~~~
 {: .bash}
 
 
-As a reminder, the first part
-of the command `root@178.128.240.207` is
+As a reminder, the first part of the command `root@[your machine IP address]` is
 the address for your remote computer. Make sure you replace everything
 after `root@` with your instance number (the one you used to log in).
 
