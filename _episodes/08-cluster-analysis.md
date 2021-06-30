@@ -162,9 +162,9 @@ output giving the number of samples and DE genes.
 <br>
 
 > ## Question
-> Bam files usually contain a tag or attribute that gives the number of mismatches between the read and the reference genome. With samtools it is unfortunately not possible to filter on these values. Could you think of ab other way to select for alignments that align without any mismatches? (hint: make use of `grep "XM:i:0"` among others)
+> The output of the function should be normalized counts. Are they normalized? how do you know?
 > > ## Solution
-> > <br>`$ samtools view Arabidopsis_sample1.bam | grep "XM:i:0" | wc -l`<br>
+> > <br>`head(DEgenes)` shows the top 6 rows of the data. If the values are doubles they're normalized. The input (raw counts) data consists of integers.<br>
 > {: .solution}
 {: .challenge}
 <br>
@@ -172,6 +172,8 @@ output giving the number of samples and DE genes.
 ## 2.4 Scaling the data.
 <br>
 Since we are comparing gene expression patterns we need to scale the data otherwise all of the highly expressed genes will cluster together even if they have different patterns among the samples.
+The function scale scales collumns. So to scale per gene (rows) data needs to be transposed.
+
 <br>
 ~~~
 DEgenes <- as.matrix(DEgenes)
@@ -183,7 +185,7 @@ scaledata <- t(scale(t(DEgenes)))
 
 # 3. Visualization of a of the DE genes
 <br>
-Starting off we will use the scaled data to construct the trees (dendrograms). For this we need to calculate the distance between the different samples and genes. We have done this earlier but that was on the complete data set and now we are working with a subset containing only differentially expressed genes.
+Starting off we will use the scaled data to construct the trees (dendrograms), both for the samples and the genes. For this we need to calculate the distance between the different samples and genes. We have done this earlier but that was on the complete data set and now we are working with a subset containing only differentially expressed genes.
 <br>
 
 ## 3.1. Hierarchical tree of the samples
@@ -195,6 +197,7 @@ hc <- hclust(as.dist(1-cor(scaledata, method="spearman")), method="complete") # 
 ~~~
 {: .language-r}
 <br>
+<br>
 The distance data is used to plot the dendrogram.
 ~~~
 sampleTree = as.dendrogram(hc, method="average")
@@ -203,7 +206,8 @@ plot(sampleTree,
      ylab = "Height")
 ~~~
 {: .language-r}
-
+<br>
+<br>
 <img src="../img/Sample_Tree.png" width="900px" alt="Sample_tree">
 ## 3.2. Hierarchical tree of the genes
 
@@ -242,12 +246,12 @@ heatmap.2(DEgenes,
 {: .language-r}
 <img src="../img/heatmap2ColvT.png" width="900px" alt="Gene_cluster_tree">
 <br>
-If the samples are in a specific order, like in a time series it is possible te remove the dendrogram on the columns by setting `Colv=F`.
+If the samples are in a specific order, like in a time series it is possible te remove the dendrogram on the columns (samples) by setting `Colv=F`.
 <img src="../img/heatmap2ColvF.png" width="900px" alt="Gene_cluster_tree">
 > ## Question
-> Pick a sample and visualize the forward and reverse alignments separately in IGV.
+> Based on the heatmap it is already possible to speculate on the number of clusters, groups of genes showing simular paterns of expression. What would be a nice number for this dataset?
 > > ## Solution
-> >  Select and sort forward reads in one go.<br>`samtools view -Sb -F 20 Arabidopsis_sample1.bam | samtools sort -o Arabidopsis_FW_sorted.bam`<br>Index the forward reads.<br>`samtools index Arabidopsis_FW_sorted.bam`<br>Select and sort the reverse reads.<br>`samtools view -Sb -f 16 Arabidopsis_sample1.bam | samtools sort -o Arabidopsis_RV_sorted.bam`<br>Index the reverse reads.<br>`samtools index Arabidopsis_RV_sorted.bam`<br>Exit the container, create a directory and copy files.<br>`mkdir IGVfiles`<br>`docker cp bioinfo:/home/mapped/ ~/IGVfiles/`<br> from the Desktop of your local computer create directory and download the files.<br>`mkdir IGV`<br>`scp -r root@178.128.240.207:~/home/tutorial/IGVfiles/mapped/*sorted.bam* ~/Desktop/IGV`<br><br>Upload the files in IGV and you should get something like this.<img src="../img/SeparateFw_RV.png">
+> >  There are more or less 4-5 distict clusters visable.
 > {: .solution}
 {: .challenge}
 
