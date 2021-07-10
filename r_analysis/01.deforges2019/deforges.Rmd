@@ -1,0 +1,466 @@
+---
+title: "Deforges 2019 rna-seq analysis"
+author: "Marc Galland"
+date: "`r Sys.Date()`"
+output: 
+  pdf_document:
+    toc: true
+    toc_depth: 2
+---
+# Setup 
+
+## Add a table of contents
+
+[Link to R Markdown guide (click me)](https://bookdown.org/yihui/rmarkdown/pdf-document.html)
+
+## Disabling warnings and messages
+This will keep your final PDF report clean from execution alarms, unnecessary text, etc.  
+This code chunck sets global options for the execution of each code chunk. You can disable warnings and messages globally this way. 
+
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      warning = FALSE, 
+                      message = FALSE, 
+                      collapse = TRUE)
+```
+
+\newpage
+
+# Introduction
+
+Q1: The publication of [Deforges et al. 2019](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6501089/) is aimed at discovering 
+the extent of the regulated exerted by certain non-coding RNAs called "cis-natural antisense transcripts" (cis-NATs) on the coding messenger RNA located on the opposite DNA strand. 
+cis-natural antisense RNAs are non-coding RNAs located on the opposite DNA strand relatively to a true coding messenger RNA. 
+cognate sense RNAs are messenger RNA that code for a protein. 
+
+Q2: seedings were harvested after 3h of incubation with the different phytohormones (including auxin). Three biological replicates per condition were taken.  
+
+Q3: the Illumina HiSeq 2500 plaftorm was used. 
+
+> "The libraries were sequenced on a HiSeq 2500 Illumina sequencer and about 30 million of paired-end reads per sample were obtained."
+
+Q4: the Hisat2 software was used for read mapping to the reference Arabidopsis thaliana genome.   
+
+> "Identification of cis-NATs and Analysis of their Coding Potential  
+> To identify cis-NATs, the paired-end reads from the 3 replicates were 
+> pooled together and uniquely mapped to the TAIR10 genome using Hisat2 
+> (Kim et al., 2015)."   
+
+
+   
+# Exercise 1: data import
+
+We first load the `tidyverse` package that contains most of the data transformation
+functions we will need. 
+```{r}
+library("tidyverse") 
+```
+
+
+## Import gene counts and sample to conditions
+```{r import raw gene counts, echo=TRUE}
+raw_counts <- read.csv("raw_gene_counts_arabidopsis_root_auxin.csv", 
+                       header = TRUE, 
+                       stringsAsFactors = FALSE) %>% 
+  # for DESeq subsequent data import 
+  column_to_rownames("gene")
+
+# first five rows
+knitr::kable(raw_counts[1:5,])
+```
+
+```{r import sample to condition correspondence}
+sample2condition <- read.csv("sample2condition_arabidopsis_root_auxin.csv", 
+                             header = TRUE, 
+                             stringsAsFactors = FALSE)
+
+# first five rows
+knitr::kable(sample2condition)
+```
+
+## Create the DESeqDataSet object
+This `DESeqDataSet` object is used to store both data (gene counts) and metadata 
+(sample to experimental condition correspondence) in one unique R object. 
+Functions can be directly be applied to this object and corresponding results stored
+within the same object. 
+
+```{r}
+library(DESeq2)
+dds <- DESeqDataSetFromMatrix(countData = raw_counts, 
+                              colData = sample2condition, 
+                              design = ~ condition)
+
+```
+
+You can have a quick peek at the number of genes, number of samples, etc. by calling
+the `dds` object. 
+```{r dds peek}
+dds
+```
+
+## Calculate size factors and scale gene counts
+
+The median ratio method is used to calculate the size factor correction for each 
+sample (mainly corrects for library sequencing depth but not only).
+```{r}
+dds <- estimateSizeFactors(dds)
+sizeFactors(dds)
+```
+Since most of these size factors are comparable, it suggests that the sequencing depth
+and other possible biases are not heavily affecting the gene count levels. 
+
+Let's scale (= correct) gene counts accordingly. Since we have already calculated
+and saved the size factors in the `dds` object, we can run:
+```{r}
+scaled_counts = counts(dds, normalized = TRUE) 
+```
+
+Save this data as a `.csv` file. 
+```{r}
+write.csv(x = scaled_counts, 
+          file = "../01.desforges2019/scaled_counts.csv",
+          quote = FALSE,
+          row.names = TRUE)
+```
+
+## Plot the raw and scaled counts next to one another
+Plot the raw counts. 
+```{r}
+p_raw <- 
+  raw_counts %>%
+  rownames_to_column("gene") %>% 
+  gather(key = "sample", value = "gene_counts", - gene) %>% 
+  mutate(gene_counts_log = log10(gene_counts + 1)) %>% 
+  ggplot(., aes(x = sample, y = gene_counts_log)) +
+  geom_boxplot(fill = "lightgrey") +
+  labs(y = "Raw gene counts (log10 transformed)") +
+  theme(axis.text.x = element_text(angle = 90))
+p_raw
+```
+
+Plot the scaled counts. 
+
+```{r}
+p_scaled <- 
+  scaled_counts %>% 
+  as.data.frame() %>% 
+  rownames_to_column("gene") %>% 
+  gather(key = "sample", value = "gene_counts", - gene) %>% 
+  mutate(gene_counts_log = log10(gene_counts + 1)) %>% 
+  ggplot(., aes(x = sample, y = gene_counts_log)) +
+  geom_boxplot(fill = "lightgreen") +
+  labs(y = "Scaled gene counts (log10 transformed)") +
+  theme(axis.text.x = element_text(angle = 90))
+p_scaled
+```
+
+We can plot them side by side using the `patchwork` library. 
+```{r}
+library("patchwork")
+p_raw + p_scaled
+```
+
+
+Q5: The scaling procedure ensures that gene counts are corrected for potential bias affecting the final gene counts e.g. different sequencing depth per sample. It uses
+the median of ratios method to calculate a correction factor: `estimateSizeFactors()`
+One can see on the last plot that gene count medians are more similar after scaling. 
+
+\newpage
+
+# Exercise 2: Principal Component Analysis
+
+The PCA analysis will be used to show the distance between samples. To do so, we will create a so-called score plot. 
+The PCA will also tell us how much of the total variance can be explained by the first
+two principal components. 
+
+A PCA analysis acts as a sample-level quality check of our experiment:
+- Are the samples from the same condition grouped together?
+- Are the first two principal components (PC1, PC2) explaining a major percentage of the 
+total variation present in the dataset?
+- Are the samples from different experimental conditions well separated by PC1 and PC2?
+
+If "yes" is the answer to these questions, then the experiment can be considered a success.
+
+## Variance stabilisation
+
+The PCA is very sensitive to mean-variance relationship. We first stabilise the variance
+so that it becomes independent from the mean. 
+
+```{r}
+dds = estimateDispersions(object = dds, 
+	                      fitType = "parametric", 
+	                      quiet = TRUE)
+
+vsd = varianceStabilizingTransformation(
+  object = dds,
+  blind = TRUE, # do not take the design formula into account. 
+                # best practice for sample-level QC
+  fitType = "parametric")
+
+# extract the matrix of variance stabilised counts
+variance_stabilised_counts <- assay(vsd)
+```
+
+We need to have samples in rows and genes in columns. The `scaled_counts` object 
+has to be transposed before computing the PCA.
+```{r transpose scaled counts}
+t_variance_stabilised_counts <- t(variance_stabilised_counts)
+```
+
+## PCA function
+
+Let's import the `mypca()` function.   
+Source: https://scienceparkstudygroup.github.io/rna-seq-lesson/05-descriptive-plots/index.html#53-the-iris-data-set 
+
+```{r}
+source("../mypca.R")
+```
+
+## PCA computation: screeplot
+
+```{r}
+pca_results <- mypca(t_variance_stabilised_counts, 
+                     center = TRUE, 
+                     scale = TRUE)
+```
+
+The `pca_results` contains the scores, loadings and explained variance. 
+
+## Scree plot
+
+The scree plot shows the percentage of the total variance explained by each principal components. Here, with 6 samples, we can compute a maximum of 6 PCs. 
+
+```{r scree plot}
+percentage_variance <- as.data.frame(pca_results$explained_var)
+
+# make the plot
+scree_plot <- 
+  percentage_variance %>% 
+  rownames_to_column("PC") %>% 
+  ggplot(., aes(x = PC, y = exp_var)) +
+    ylab('explained variance (%)') + 
+    ggtitle('explained variance per component') + 
+    geom_bar(stat = "identity")
+scree_plot
+```
+
+Q6: PC1 and PC2 explain 34.9% and 25.8% of the total variance respectively. 
+
+## Sample score plot
+
+In the same dataframe, PCA sample scores are combined with their experimental condition. 
+
+```{r sample scores}
+scores <- pca_results$scores %>% 
+  rownames_to_column("sample") %>% 
+  left_join(., y = sample2condition, by = "sample")
+
+knitr::kable(scores, digits = 5)
+```
+
+Create the score plot.
+```{r score plot creation}
+p_score_plot <- ggplot(scores, aes(PC1, PC2, color = condition)) +
+  geom_point(size = 6) +
+  xlab(paste0("PC1: ",percentage_variance[1,],"% variance")) +
+  ylab(paste0("PC2: ",percentage_variance[2,],"% variance")) + 
+  coord_fixed() +
+  ggtitle("Sample score plot (variance stabilised") +
+  theme(axis.text = element_text(size = 12))
+p_score_plot
+```
+
+
+Q7: the samples from the control group are grouped together on both PC1 and PC2.
+That is not as clear for samples from the auxin-treated group since these are separated
+on both PC1 and PC2. Yet, this experiment can be considered good enough to continue since the experimental condition is clearly reflected by PC1. Since PC1 account for the majority of the variance, the differential gene expression should give consistent results. 
+
+\newpage
+
+# Exercise 3: differential expression
+
+## Calling differential genes
+
+```{r call diff genes}
+dds <- DESeq(dds)
+diff_genes <- results(dds, contrast = c("condition", "auxin", "control")) %>% 
+  as.data.frame()
+```
+
+```{r nb of genes differiential}
+diff_genes_signif <-  
+  diff_genes %>% 
+  filter(padj < 0.01) %>% 
+  nrow()
+```
+
+Q8: `r diff_genes_signif` genes out of a total of `r nrow(diff_genes)` genes.
+
+## Top 20 genes
+
+By filtering first on the adjusted p-value (should be < 0.01) and then by ordering the genes by their absolute log2FoldChange, we can visualise the top 20 most significant differentially regulated genes.
+```{r top 20}
+diff_genes %>% 
+  filter(padj < 0.01) %>% 
+  dplyr::arrange(desc(abs(log2FoldChange))) %>%
+  head(n = 20) %>% 
+  knitr::kable(digits = 3)
+```
+
+Since "we called "auxin" was used as the numerator in the `results()` function, 
+a positive log2FoldChange indicates that the gene is up-regulated by the application
+of auxin in Arabidopsis roots. 
+
+```{r auxin upregulated}
+genes_upregulated_by_auxin <- 
+  diff_genes %>% 
+  filter(padj < 0.01) %>% 
+  dplyr::arrange(desc(abs(log2FoldChange))) %>%
+  head(n = 20) %>% 
+  dplyr::filter(log2FoldChange > 0)
+
+
+knitr::kable(genes_upregulated_by_auxin, 
+             digits = 3)
+```
+
+Q9: `r nrow(genes_upregulated_by_auxin)` are up-regulated by auxin. 
+
+## Maximum and minimum log2 fold changes
+
+What are the maximum and minimum log2 fold changes from these top 20 genes? 
+
+__Maximum__
+```{r max}
+max_logfc <- 
+  diff_genes %>% 
+  filter(padj < 0.01) %>% 
+  dplyr::arrange(desc(abs(log2FoldChange))) %>% 
+  pull(log2FoldChange) %>%  
+  max()
+```
+
+The maximum log2FoldChange in response to auxin is `r max_logfc`. 
+This corresponds to a fold change of `r 2^max_logfc`. (2^foldchange).
+
+The expression of the AT3G23635 gene in auxin-treated seedlings is `r 2^max_logfc` 
+higher than in control seedlings. 
+
+
+```{r min}
+min_logfc <- 
+  diff_genes %>% 
+  filter(padj < 0.01) %>% 
+  dplyr::arrange(desc(abs(log2FoldChange))) %>% 
+  pull(log2FoldChange) %>%  
+  min()
+```
+
+The minimum log2FoldChange in response to auxin is `r min_logfc`. 
+This corresponds to a fold change of `r 2^min_logfc`. 
+
+The gene AT1G05650 is expressed `r 1/2^min_logfc` times higher (1/min) in control seedlings than in auxin-treated seedlings. 
+
+\newpage
+
+# Exercise 4: volcano plot
+
+## Shrinkage
+Shrinkage prevents 
+
+```{r shrink fold changes coming from low-expressed genes}
+diff_genes <- results(dds, contrast = c("condition", "auxin", "control")) 
+
+resLFC <- lfcShrink(dds = dds, 
+                    res = diff_genes,
+                    type = "normal",
+                    coef = 2) 
+```
+
+## Volcano plot
+```{r volcano plot}
+library("EnhancedVolcano")
+EnhancedVolcano(toptable = resLFC,
+                x = "log2FoldChange",
+                y = "padj",
+                lab = rownames(resLFC),
+                xlim = c(-7, +7),
+                ylim = c(0,50),
+                pCutoff = 0.01,
+                transcriptPointSize = 2.0,
+                FCcutoff = 1, 
+                title = "Volcano plot",
+                legend=c(
+                  'Not significant',
+                  'Log2 fold-change (but do not pass p-value cutoff)',
+                  'Pass p-value cutoff',
+                  'Pass both p-value & Log2 fold change')) + 
+  guides(legend = NULL)
+```
+
+Q11: 
+- Most up-regulated genes: top right of the volcano plot. 
+- Most down-regulated genes: top left of the volcano plot. 
+- Most statistically significant genes are the highest on the y-axis. 
+
+Q12: the volcano plot is well balanced since it seems that the number of up- and down-regulated genes is comparable. 
+
+Q13: The minimum and maximum log2 fold changes have been altered (see below) by the shrinkage.   
+The minimum is now `r min(resLFC$log2FoldChange, na.rm = TRUE)`.  
+The maximum is now `r max(resLFC$log2FoldChange, na.rm = TRUE)`.  
+The limits of the volcano plot have been changed accordingly. 
+
+```{r}
+knitr::kable(broom::tidy(
+  summary(
+    resLFC$log2FoldChange)
+  )
+)
+```
+
+\newpage
+
+# Exercise 5: adopt a gene
+
+## AT3G58190
+**Names:**
+* ASYMMETRIC LEAVES 2-LIKE 16 
+* LATERAL ORGAN BOUNDARIES DOMAIN 29 (LBD29)
+
+**Papers:** 
+- Paper 1: Zhang F, Tao W, Sun R, Wang J, Li C, et al. (2020) PRH1 mediates ARF7-LBD dependent auxin signaling to regulate lateral root development in Arabidopsis thaliana. PLOS Genetics 16(2): e1008044. https://doi.org/10.1371/journal.pgen.1008044. 
+- Paper 2: Okushima Y, Fukaki H, Onoda M, Theologis A, Tasaka M. ARF7 and ARF19 regulate lateral root formation via direct activation of LBD/ASL genes in Arabidopsis. Plant Cell. 2007;19(1):118-130. doi:10.1105/tpc.106.047761. https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1820965/
+
+Quotes:   
+
+> "The development of lateral roots in Arabidopsis thaliana is strongly dependent 
+> on signaling directed by the AUXIN RESPONSE FACTOR7 (ARF7), which in turn activates 
+> LATERAL ORGAN BOUNDARIES DOMAIN (LBD) transcription factors (LBD16, LBD18 and LBD29)" 
+
+**Images**
+
+```{r, out.height="30%", echo=FALSE}
+knitr::include_graphics("images/figure6_okushima_2007.jpeg")
+```
+
+\newpage 
+
+## AT2G23170
+**Names:** Auxin-responsive GRETCHEN HAGEN3.3 (GH3.3) protein 	
+Description: conjugates amino acids to auxin and regulates its homeostasis. 
+
+> "The production of amide-linked IAA-amino acid conjugates is catalysed by Group II
+> GRETCHEN HAGEN3 (GH3) acyl amido synthetases"
+
+**Papers**:
+- Paper 1: Di DW, Li G, Sun L, Wu J, Wang M, Kronzucker HJ, Fang S, Chu J, Shi W. High ammonium inhibits root growth in Arabidopsis thaliana by promoting auxin conjugation rather than inhibiting auxin biosynthesis. J Plant Physiol. 2021 Apr 18;261:153415. doi: 10.1016/j.jplph.2021.153415. Epub ahead of print. PMID: 33894579.
+- Paper 2: Staswick PE, Serban B, Rowe M, Tiryaki I, Maldonado MT, Maldonado MC, Suza W. Characterization of an Arabidopsis enzyme family that conjugates amino acids to indole-3-acetic acid. Plant Cell. 2005 Feb;17(2):616-27. doi: 10.1105/tpc.104.026690. Epub 2005 Jan 19. PMID: 15659623; PMCID: PMC548830.
+
+**Images**
+```{r out.height="30%", echo=FALSE}
+knitr::include_graphics("images/figure7_di_2021.jpg")
+```
+
+This figure shows that ammonium (NH4+) induces the expression of GH3.3 in the elongation
+zone. This in turn reduces the amount of biologically active auxin. 
+

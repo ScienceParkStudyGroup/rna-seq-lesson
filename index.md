@@ -15,7 +15,7 @@ We will use mostly R and its companion RStudio to perform our RNA-Seq analyses a
 
 Depending on the level of participants, the bioinformatic part might be performed (QC of fastq files, genome alignment, counting, etc.). For this, we will use a Docker image containing all necessary datasets and softwares. 
 
-Before you begin, be sure you are all set up (see below). For complete information, see the [Setup](/setup.html) section. 
+Before you begin, be sure you are all set up (see below). For complete information, see the [Setup](../setup.html) section. 
 
 
 ## Main learning objectives

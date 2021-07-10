@@ -7,6 +7,8 @@ suppressPackageStartupMessages(library(ggrepel))
 
 source("mypca.R")
 
+dir.create("00.tutorial/figures/")
+
 ###############################
 # Episode 05: descriptive plots
 ###############################
@@ -292,7 +294,9 @@ seed_plot <-
   coord_fixed(ratio = 1) +
   ggtitle("PCA score plot with the seed condition overlaid")
 seed_plot
-ggsave(filename = "../img/05-seed-score-plot.png", plot = seed_plot)
+
+ggsave(filename = "00.tutorial/figures/05-seed-score-plot.png", plot = seed_plot)
+ggsave(filename = "00.tutorial/figures/05-seed-score-plot.svg", plot = seed_plot)
 
 # dpi score plot
 dpi_plot <- ggplot(scores_with_conditions, 

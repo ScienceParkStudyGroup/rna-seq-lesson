@@ -147,17 +147,19 @@ This is the second way to install softwares and packages. It _should_ work but t
 
 
 ## 2.2 Data files 
-https://zenodo.org/record/4555551
+
+https://zenodo.org/badge/DOI/10.5281/zenodo.5082718.svg
+
 
 > ## What you need to download.
 > [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4555551.svg)](https://doi.org/10.5281/zenodo.4555551)
-> Please download the necessary data files for the lesson [from the Zenodo archive](https://doi.org/10.5281/zenodo.4555551).  
+> Please download the necessary data files for the lesson [from the Zenodo archive](https://doi.org/10.5281/zenodo.5082718).  
 >
-> - **Counts**: A `counts.txt` dataframe of the sample raw counts. It is a tab separated file therefore data are in tabulated separated columns.
-> - **Experimental design**: the `experimental_design_modified.txt` dataframe indicates the correspondence between samples and experimental conditions (e.g. control, treated).  
-- **Differentially expressed genes**: `differential_genes.tsv` dataframe contains the result of the DESeq2 analysis.  
+> - **Counts**: A `raw_counts.csv` dataframe of the sample raw counts. It is a tab separated file therefore data are in tabulated separated columns.
+> - **Samples to experimental conditions**: the `samples_to_conditions.csv` dataframe indicates the correspondence between samples and experimental conditions (e.g. control, treated).  
+- **Differentially expressed genes**: `differential_genes.csv` dataframe contains the result of the DESeq2 analysis.  
 > - Please read the original study description below and have a look at the file preview to understand their format.  
-> - These `counts.txt` file was obtained by running the `v0.1.1` version of a [RNA-Seq bioinformatic pipeline](https://github.com/KoesGroup/Snakemake_hisat-DESeq/blob/master/README.md) on the [mRNA-Seq sequencing files from Vogel et al. (2016)](https://www.ebi.ac.uk/ena/data/view/PRJEB13938).
+> - These `raw_counts.csv` file was obtained by running the `v0.1.1` version of a [RNA-Seq bioinformatic pipeline](https://github.com/KoesGroup/Snakemake_hisat-DESeq/blob/master/README.md) on the [mRNA-Seq sequencing files from Vogel et al. (2016)](https://www.ebi.ac.uk/ena/data/view/PRJEB13938).
 {: .prereq}
 
 # 3. Original study
