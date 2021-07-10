@@ -55,12 +55,12 @@ In the lesson [Differential expression analysis](https://scienceparkstudygroup.g
 ## 2.1 Uploading and selecting the data
 
 ~~~
-counts <- read.delim("At_root_hormones_TotRNA.txt", header = T, stringsAsFactors = F)
+counts <- read.delim("counts.txt", header = T, stringsAsFactors = F)
 genes <- counts[,1]
 counts <- counts[,-1]
 row.names(counts) <- genes
 
-xp_design <- read.delim("root_hormone_experimental_design.txt", header = T, stringsAsFactors = F, colClasses = rep("character",2))
+xp_design <- read.delim("experimental_design_modified.txt", header = T, stringsAsFactors = F, colClasses = rep("character",2))
 
 xp_design = xp_design %>% filter(dpi == "7")
 
