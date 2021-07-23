@@ -392,6 +392,7 @@ One can also cluster samples and genes to identify groups of genes that show a c
 
 We are going to make use of a library called `pheatmap`. Here is a minimal example (`mtcars` is a dataset that comes included with R).
 ~~~
+library(pheatmap)
 df <- scale(mtcars)
 pheatmap(df)
 ~~~
@@ -412,7 +413,7 @@ When using the Docker image (see [Setup](../setup.html)), the function is alread
 Otherwise, navigate to [the median_of_ratios_manual_normalization page](http://0.0.0.0:4000/median_of_ratios_manual_normalization/index.html#section-two-a-function-to-normalize-the-deseq2-way), copy-paste it into the R console, it is then ready to use.  
 ~~~
 # import custom function
-source("normalization_function.R")
+source("scripts/normalization_function.R")
 ~~~
 {: .language-r}
 

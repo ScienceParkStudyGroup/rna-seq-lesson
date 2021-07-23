@@ -168,6 +168,15 @@ head(xp_normal_conditions)
 
 If you plot the HSF2A gene expression distribution, you get a nice schoolbook guaussian curve.
 
+~~~
+p2 <- ggplot(xp_normal_conditions, aes(x = expression, fill = condition)) +
+  ggtitle("Distribution of HSF2A expression levels in 1000 samples") +
+  theme(legend.position = "none") +
+  geom_density(color = "black", alpha = 0.5) 
+p2
+~~~
+{: .language-r}
+
 <img src="../img/02-normal-hist.png" alt="Histogram of HSFA2 gene expression value in normal conditions (n = 1000)" height="400px">
 
 Let's now create the data for another gene. 
@@ -179,7 +188,7 @@ xp = bind_rows(xp_normal_conditions, xp_heat_stress) # get a peek with head(xp) 
 
 p3 <- ggplot(xp, aes(x = expression, fill = condition)) +
   ggtitle("Distribution of HSF2A expression levels in 1000 samples") +
-  geom_histogram(color = "black") 
+  geom_density(color = "black", alpha = 0.5) 
 p3
 ~~~
 {: .language-r}
@@ -231,7 +240,6 @@ xp2 = bind_rows(xp_normal_conditions_more_spread, xp_heat_stress) # heat stress 
 p4 <- ggplot(xp2, aes(x = expression, fill = condition)) +
   ggtitle("Distribution of HSF2A expression levels in 1000 samples") +
   geom_histogram(color = "black", bins = 30) + 
-  theme(text = element_text(size = 20)) + 
   scale_x_continuous(limits = c(1,6))
 p4
 
