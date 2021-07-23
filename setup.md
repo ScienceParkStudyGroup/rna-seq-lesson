@@ -9,8 +9,8 @@ title:
 
 - [1. Option 1 \(preferred\): using a Docker image](#1-option-1-preferred-using-a-docker-image)
 	- [1.1 Installing Docker](#11-installing-docker)
-	- [1.2 The `fastq-latest` image for bioinformatic steps \(episodes 03 and 04\)](#12-the-fastq-latest-image-for-bioinformatic-steps-episodes-03-and-04)
-	- [1.3 The `rnaseq-latest` image for count data analysis \(episodes 05, 06 and 07\)](#13-the-rnaseq-latest-image-for-count-data-analysis-episodes-05-06-and-07)
+	- [1.2 The `fastq-2021` image for bioinformatic steps \(episodes 03 and 04\)](#12-the-fastq-2021-image-for-bioinformatic-steps-episodes-03-and-04)
+	- [1.3 The `rnaseq-2021` image for count data analysis \(episodes 05, 06 and 07\)](#13-the-rnaseq-2021-image-for-count-data-analysis-episodes-05-06-and-07)
 - [2. Option 2: manual installation](#2-option-2-manual-installation)
 	- [2.1 Softwares and packages](#21-softwares-and-packages)
 	- [2.2 Data files](#22-data-files)
@@ -27,8 +27,8 @@ title:
 The preferred option to install all softwares and packages is to use a tailor-made Docker image. See [this nice introduction to Docker here](https://aws.amazon.com/docker/).   
 
 There are two Docker images necessary to complete this RNA-seq lesson:
-1. The command-line Docker `fastq-latest` image necessary to perform all bioinformatic analyses on the sequencing files: trimming, alignment and count table generation.
-2. The RStudio Docker `rnaseq-latest` image necessary to perform all count-related analyses: EDA, differential expression and downstream functional analyses.   
+1. The command-line Docker `fastq-2021` image necessary to perform all bioinformatic analyses on the sequencing files: trimming, alignment and count table generation.
+2. The RStudio Docker `rnaseq-2021` image necessary to perform all count-related analyses: EDA, differential expression and downstream functional analyses.   
 
 
 So first thing first, we need to install Docker itself. 
@@ -61,11 +61,11 @@ So first thing first, we need to install Docker itself.
 
 
 
-## 1.2 The `fastq-latest` image for bioinformatic steps (episodes 03 and 04)
+## 1.2 The `fastq-2021` image for bioinformatic steps (episodes 03 and 04)
 
 This Docker image will allow you to complete the [episodes 03](https://scienceparkstudygroup.github.io/rna-seq-lesson/03-qc-of-sequencing-results/index.html) and [04](https://scienceparkstudygroup.github.io/rna-seq-lesson/04-bioinformatic-workflow/index.html) that work on `.fastq` sequencing files.
 
-The Docker image is called `fastq-latest` and contains softwares and data required for the command-line part of the lesson. It can be found [found at the Science Park Study Group DockerHub](https://hub.docker.com/repository/docker/scienceparkstudygroup/master-gls) with the tag `fastq-latest`.
+The Docker image is called `fastq-2021` and contains softwares and data required for the command-line part of the lesson. It can be found [found at the Science Park Study Group DockerHub](https://hub.docker.com/repository/docker/scienceparkstudygroup/master-gls) with the tag `fastq-2021`.
 
 > ## Before you start
 >
@@ -86,11 +86,11 @@ __Docker command-line explanations:__
 - The `-v $PWD:/workspace/` maps your working directory (e.g. `~/Desktop/rnaseq-tutorial`) to the container `/workspace/` folder. 
 
 
-## 1.3 The `rnaseq-latest` image for count data analysis (episodes 05, 06 and 07)
+## 1.3 The `rnaseq-2021` image for count data analysis (episodes 05, 06 and 07)
 
 This image is based on a [Bioconductor Docker imag release 3.10](https://hub.docker.com/r/bioconductor/bioconductor_docker/tags) image with additional packages such as `pheatmap` or `tidyverse`.
 
-The latest image can be [found at the Science Park Study Group DockerHub](https://hub.docker.com/repository/docker/scienceparkstudygroup/master-gls) with the tag `rnaseq-latest`.
+The image can be [found at the Science Park Study Group DockerHub](https://hub.docker.com/repository/docker/scienceparkstudygroup/master-gls) with the tag `rnaseq-2021`.
 
 
 > ## Before you start
