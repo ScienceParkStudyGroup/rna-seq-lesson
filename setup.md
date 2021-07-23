@@ -100,12 +100,12 @@ The latest image can be [found at the Science Park Study Group DockerHub](https:
 > 1. First, install [Docker desktop](https://www.docker.com/products/docker-desktop) for your operating system.  
 > 2. If needed, install Shell Bash: [follow these instructions](http://swcarpentry.github.io/shell-novice/setup.html).
 > 3. Open a new Shell Bash window and navigate to a folder that will be your workspace. For instance, you could create a folder named `rnaseq-tutorial/` on your Desktop and move inside with the Shell using `cd ~/Desktop/rnaseq-tutorial/`. 
-> 4. In a Shell Bash window, type the following command: `docker run --rm --name rstudio_instance -v $PWD:/home/rstudio/ -e PASSWORD=mypwd -p 8787:8787 scienceparkstudygroup/master-gls:rnaseq-latest`. This will download a Docker image for the course, create and run a container where RStudio will be running.   
+> 4. In a Shell Bash window, type the following command: `docker run --detach --name machine01 -e PASSWORD=mypwd -p 8787:8787 scienceparkstudygroup/master-gls:rnaseq-latest`. This will download a Docker image for the course, create and run a container where RStudio will be running.   
 > 4. Navigate to [http://localhost:8787](http://localhost:8787) in your web browser. You should have an RStudio session running. Type `rstudio` as the user name and `mypwd` as your password. 
 > 5. To quit, close the web browser window where RStudio is running and exit the Shell too. 
 {: .prereq}
 
-
+ 
 
 > ## Important note
 >
