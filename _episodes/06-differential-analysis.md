@@ -134,6 +134,22 @@ Differential gene expression analysis will consist of simply two lines of code:
 
 ~~~
 dds2 <- DESeq(dds2)
+~~~
+{: .language-r}
+
+
+~~~
+estimating size factors
+estimating dispersions
+gene-wise dispersion estimates
+mean-dispersion relationship
+final dispersion estimates
+fitting model and testing
+~~~
+{: .output}
+
+
+~~~
 res <- results(dds2)
 
 # have a peek at the DESeqResults object 
