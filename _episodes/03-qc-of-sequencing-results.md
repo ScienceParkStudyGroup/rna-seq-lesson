@@ -68,18 +68,25 @@ The [FASTQ](https://en.wikipedia.org/wiki/FASTQ_format) file format is the defac
 |3|Always begins with a '+' and sometimes the same info in line 1|
 |4|Has a string of characters which represent the quality scores; must have same number of characters as line 2|
 
-## 2.2 Getting familiar with the Docker container
+## 2.2 Creating the workspace folder
 
 Please make sure you have completed the [Setup section](../setup.html) ideally with the Docker option. 
 
-Let's first create a `tutorial` subfolder in the `/home/` folder. 
+You should be outside of the Docker container for now, pick your favorite folder on your machine and create a `workspace/` where the work will take place. 
 
 ~~~
-$ cd /home/
-
-$ mkdir tutorial/
+$ mkdir workspace/
 ~~~
 {: .bash}
+
+Finally, move to the workspace folder:
+
+~~~
+$ cd workspace/ 
+~~~
+{: .bash}
+
+## 2.3 Getting familiar with the Docker container
 
 Now we will (i) download the required Docker image and (ii) start the Docker container that we will call `bioinfo` and that contains all tutorial softwares and datasets. 
 
@@ -96,16 +103,7 @@ Some explanation here:
 * `-v $PWD:/workspace/`: this has linked your current working directory (called `tutorial/`) to a new directory inside the container called `workspace/`. We use different names to know where we are.  
 * `scienceparkstudygroup/master-gls:fastq-2021`: this downloads a specific Docker image from an online resource called DockerHub. 
 
-```bash
-local_machine:
-  /home/
-    tutorial/
-
-    >> docker container bioinfo
-         /workspace/
-```
-
-Everything that happens inside the `workspace/` folder of your Docker container will be mirrored outside in the `tutorial/` folder of your local machine. 
+Everything that happens inside the container in the `workspace/` folder of your Docker container will be mirrored outside in the `workspace/` folder of your local machine.  
 
 Let's try this by creating a file in the Docker container inside `workspace/`
 
@@ -129,12 +127,26 @@ $ docker start -a -i bioinfo
 
 
 > ## Exercise
-> Try to exit and re-enter the container at least two times. Create and delete a test file and verify that the file exists in `tutorial/`
+> Try to exit and re-enter the container at least two times. Create and delete a test file and verify that the file exists in `workspace/`
 {: .challenge}
 
-## 2.3 A first peek at our FASTQ files
+## 2.4 A first peek at our FASTQ files
 
-Several sequencing files are available in the `/dataets/` folder as it contains 4 fastq files. The files are generaly quite big (they usualy contain up to 40 milion reads), so it's a smart thing to keep them zipped as they are.  
+Several sequencing files are available in the `/datasets/` folder as it contains 4 fastq files. The files are generaly quite big (they usualy contain up to 40 milion reads), so it's a smart thing to keep them zipped as they are.  
+
+Let's move to the directory that contains the sequencing files (.fastq.gz) and other needed files e.g. genome reference sequence.  
+~~~
+cd /datasets/
+ls
+~~~
+{: .bash}
+
+You should see a list of files:
+~~~
+Arabidopsis_sample1.fq.gz  Arabidopsis_sample3.fq.gz  AtChromosome1.fa.gz  ath_annotation.gff3.gz
+Arabidopsis_sample2.fq.gz  Arabidopsis_sample4.fq.gz  adapters.fasta
+~~~
+{: .output}
 
 `zcat` is a simular function as `cat` but works on zipped files. With the use of this function we can have a look at the files without having to unzip them. 
 
@@ -221,11 +233,11 @@ Therefore, for the first nucleotide in the read (C), there is a 1 in 1000 chance
 
 We will now create the quality reports of the reads that we downloaded.  
 
- First, we need to make an output directory for the fastqc results to be stored. This we want to do in the 'home' directory that contains all the needed files.
+First, we need to make an output directory for the fastqc results to be stored. This we want to do in the 'home' directory that contains all the needed files.
 
 ~~~
 # activating conda environment to access the fastqc command-line tool
-$ source activate fastq
+$ conda activate fastq
 $ cd /workspace/
 
 $ mkdir fastqc
@@ -244,16 +256,14 @@ $ cd /datasets/
 Running fastqc uses the following command
 
 ~~~
-fastqc -o /workspace/fastqc Arabidopsis_sample1.fq.gz
+fastqc -o /workspace/fastqc /datasets/Arabidopsis_sample1.fq.gz
 ~~~
 {: .bash}
 
-Of course we don't want to do this for all the samples seperately so we can loop through the list of samples and run them all sequentially
-
-With the use of echo you can start off with a "dry run"
-
+Of course we don't want to do this for all the samples seperately so we can loop through the list of samples and run them all sequentially.
+Using  `echo`, you can start off with a "dry run":  
 ~~~
-$ for filename in  *.fq.gz
+$ for filename in  /datasets/*.fq.gz
   do
     echo fastqc -o fastqc $filename
   done
@@ -544,11 +554,6 @@ The **"Overrepresented sequences"** table is another important module as it disp
 As our report only represents a subset of reads (chromosome 1) for `Mov10_oe_1.subset.fq`, which can skew the QC results. We encourage you to look at the [full set of reads](../fastqc/Mov10oe_1-fastqc_report.html) and note how the QC results differ when using the entire dataset.
 
 After exploring the quality of the data, we determine from which gene or transcript the reads originated from using mapping tools. The quality of the data is important when determining where it aligns to on the genome or transcriptome, but the mapping tools we use (salmon and STAR) are able to account for adapter contamination, vector contamination and low-quality bases at the ends of reads. Therefore, after noting any QC issues, we can use our raw reads for the alignment or mapping to the reference genome or transcriptome.
-
-
-
-
-
 
 
 ## 3.3. Working with the FastQC text output
