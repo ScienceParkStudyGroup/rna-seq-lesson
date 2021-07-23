@@ -368,32 +368,19 @@ the files outside of the container using `docker cp` and next from the
 remote computer to your local computer with the help of `scp`.
 
 First we need to exit the container and next we can transfer our HTML 
-files to our local computer using `docker cp`.
+files to our local computer.
 
+On your local computer, open a new Shell and type:
 ~~~
-$ mkdir  ~/fastqc
-~~~
-{: .bash}
-
-
-~~~
-$ docker cp bioinfo:/home/fastqc/ ~/Desktop/fastqc_html
+$ mkdir  ~/Desktop/fastqc
+$ cd ~/Desktop/fastqc
 ~~~
 {: .bash}
 
-This will transfer all files in the folder home/fastqc/ to your Desktop.
-
-bioinfo refers to the name of the container.
-The second part starts with a `:` and then gives the absolute path of the files you want to transfer.
-The third part of the command gives the absolute path of the location
-you want to put the files. This is on your local computer and is the
-directory we just created `~/Desktop/fastqc_html`.
-
-
-When working on a remote computer make use of the following command
+Inside the `Desktop/fastqc/` folder, on your local computer, make use of the following command to download the files to your local computer. 
 
 ~~~
-$ scp -r root@[your machine IP address]:~/home/tutorial/fastqc/*.html ~/Desktop/fastqc_html
+$ scp -r root@[your machine IP address]:/workspace/fastqc/*.html ~/Desktop/fastqc/
 ~~~
 {: .bash}
 
@@ -409,22 +396,22 @@ the HTML files.
 
 The third part of the command gives the absolute path of the location
 you want to put the files. This is on your local computer and is the
-directory we just created `~/Desktop/fastqc_html`.
+directory we just created `~/Desktop/fastqc/`.
 
-The -r option is used to tell scp to recursively copy the source directory and its contents.
+The `-r` option is used to tell scp to recursively copy the source directory and its contents.
 
 You should see a status output like this:
 
 ~~~
 Arabidopsis_sample1_fastqc.html                      100%  249KB 152.3KB/s   00:01    
-Arabidopsis_sample2_fastqc.html                       100%  254KB 219.8KB/s   00:01      
+Arabidopsis_sample2_fastqc.html                      100%  254KB 219.8KB/s   00:01      
 ~~~
 {: .output}
 
 Now we can go to our new directory and open the HTML files.
 
 ~~~
-$ cd ~/Desktop/fastqc_html/
+$ cd ~/Desktop/fastqc/
 $ open *.html
 ~~~
 {: .bash}
@@ -437,7 +424,6 @@ tabs in a single window or six separate browser windows.
 ### 3.2.1. Decoding the FastQC outputs
 Upon opening the file Below we have provided a brief overview of interpretations for each of these plots. It's important to keep in mind
 Now that we have run FASTQC and downloaded the report, we can take a look at the metrics and assess the quality of our sequencing data!
-
 
 
 + **Per tile sequence quality**: the machines that perform sequencing are divided into tiles. This plot displays patterns in base quality along these tiles. Consistently low scores are often found around the edges, but hot spots can also occur in the middle if an air bubble was introduced at some point during the run.
@@ -559,13 +545,17 @@ After exploring the quality of the data, we determine from which gene or transcr
 ## 3.3. Working with the FastQC text output
 
 Now that we've looked at our HTML reports to get a feel for the data,
-let's look more closely at the other output files. Go back to the tab
-in your terminal program that is connected to your AWS instance
-(the tab lab will start with `dcuser@ip`) and make sure you're in
-our results subdirectory.   
+let's look more closely at the other output files. 
+
+Go back to the tab in your Shell and get back inside your container. 
 
 ~~~
-$ cd home/fastqc/
+$ docker start -a -i bioinfo
+~~~
+{: .bash}
+
+~~~
+$ cd /workspace/fastqc/
 $ ls
 ~~~
 {: .bash}
@@ -737,7 +727,7 @@ To start off make a directory trimmed for the output and then back to the rawRea
 ~~~
 $ cd /workspace/
 $ mkdir trimmed
-$ cd /home/
+$ cd datasets/
 ~~~
 {: .bash}
 
@@ -767,7 +757,7 @@ $ trimmomatic SE -phred33 -threads 1 Arabidopsis_sample1.fq.gz /workspace/trimme
 {: .bash}
 
 
-Of cource we don't want to do this for all the reads seperately so lets create a loop through all the fastq files.
+Of course, we don't want to do this for all the reads seperately so lets create a loop through all the fastq files.
 
 When doing the fastqc only input files needed to be specified. In this case both the input and a matching output filenames need to be given.
 this can be done with the help of 'basename'
@@ -1114,8 +1104,10 @@ $ gunzip AtChromosome1.fa.gz
 $ hisat2-build -p 2 AtChromosome1.fa AtChromosome1
 ~~~
 {: .bash}
+
 <br>
 Create a directory to store the alignment files and go into the directory trimmed where the trimmed files are located.
+
 ~~~
 $ cd /workspace/
 
@@ -1126,6 +1118,7 @@ $ cd trimmed
 {: .bash}
 <br>
 Mapping is done in two steps. Hisat2 produces the alignments, samtools is used to compress them and write them to a file. More on how samtools works and what it does in the next lesson. For now this will do.
+
 ~~~
 $ hisat2  -p 2 -x ../AtChromosome1 -U Arabidopsis_sample1_qc.fq | samtools view -Sb -o ../mapped/Arabidopsis_sample1.bam
 ~~~
@@ -1140,6 +1133,7 @@ $ hisat2  -p 2 -x ../AtChromosome1 -U Arabidopsis_sample1_qc.fq | samtools view 
 ~~~
 {: .output}
 <br>
+
 A loop to go through all the files
 ~~~
 $ for fastq in *.fq
