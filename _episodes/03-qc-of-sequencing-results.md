@@ -1,5 +1,5 @@
 ---
-title: "From fastq files to alignments"
+title: "03 From fastq files to alignments"
 teaching: 45
 exercises: 0 
 questions:
