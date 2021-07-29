@@ -1,5 +1,5 @@
 ---
-title: "Assessing the quality of RNA-seq experiments"
+title: "05 Assessing the quality of RNA-seq experiments"
 teaching: 80	
 exercises: 20 
 questions:
