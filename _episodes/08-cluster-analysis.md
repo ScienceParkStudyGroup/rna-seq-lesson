@@ -1,5 +1,5 @@
 ---
-title: "Cluster analysis"
+title: "08 Cluster analysis"
 teaching: 90
 exercises: 0
 questions:
