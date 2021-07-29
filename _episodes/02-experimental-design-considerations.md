@@ -1,5 +1,5 @@
 ---
-title: "Statistics & Experimental design"
+title: "02 Statistics & Experimental design"
 teaching: 90
 exercises: 30
 questions:
