@@ -1,5 +1,5 @@
 ---
-title: "Visualizing and counting of the alignments"
+title: "04 Visualizing and counting of the alignments"
 teaching: 45
 exercises: 15
 questions:
