@@ -179,6 +179,8 @@ p2
 
 <img src="../img/02-normal-hist.png" alt="Histogram of HSFA2 gene expression value in normal conditions (n = 1000)" height="400px">
 
+Note: we are using ggplot's geom_density() function here to plot the distribution. The area under the curve adds up to 1 (which corresponds to 100% of your data). To make the plot display percentage on the y axis instead add this line in ```+ scale_y_continuous(labels = percent_format())```.
+
 Let's now create the data for another gene. 
 ~~~
 xp_heat_stress <- tibble(expression = rnorm(n = 1000, mean = 4, sd = 0.5),
