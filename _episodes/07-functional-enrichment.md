@@ -1,5 +1,5 @@
 ---
-title: "Functional enrichment analysis"
+title: "07 Functional enrichment analysis"
 teaching: 60
 exercises: 15 
 questions:
