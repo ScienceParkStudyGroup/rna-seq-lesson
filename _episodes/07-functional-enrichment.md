@@ -37,13 +37,13 @@ keypoints:
 - [4.Gene Ontology Over Representation Analysis with AgriGO \(webtool\)](#4gene-ontology-over-representation-analysis-with-agrigo-webtool)
   - [4.1 Single Enrichment Analysis](#41-single-enrichment-analysis)
   - [4.2 Parametric Analysis of Gene Set Enrichment](#42-parametric-analysis-of-gene-set-enrichment)
-  - [3.3 Metascape \(webtool\)](#33-metascape-webtool)
-  - [3.4 Gene Set Enrichment Analysis \(GSEA\)](#34-gene-set-enrichment-analysis-gsea)
+  - [4.3 Metascape \(webtool\)](#33-metascape-webtool)
+  - [4.4 Gene Set Enrichment Analysis \(GSEA\)](#34-gene-set-enrichment-analysis-gsea)
 - [5. Gene Set Enrichment Analysis \(GSEA\) with ClusterProfiler](#5-gene-set-enrichment-analysis-gsea-with-clusterprofiler)
 - [6. Troubleshooting](#6-troubleshooting)
 - [7. Going further](#7-going-further)
-  - [6.1 Useful links](#61-useful-links)
-  - [6.2. References](#62-references)
+  - [7.1 Useful links](#61-useful-links)
+  - [7.2. References](#62-references)
 
 <!-- /MarkdownTOC -->
 
@@ -535,7 +535,7 @@ diff_genes %>%
 
 
 
-## 3.3 Metascape (webtool)
+## 4.3 Metascape (webtool)
 Left to the reader. The basic usage is to copy-paste a list of gene identifiers (preferably Entrez id) inside the box.
 Visit the [Metascape website here](https://metascape.org/gp/index.html#/main/step1). 
 
@@ -548,7 +548,7 @@ Visit the [Metascape website here](https://metascape.org/gp/index.html#/main/ste
 > Then write the `pos_diff_genes` to a text file and copy-paste the list of genes.
 {: .callout}
 
-## 3.4 Gene Set Enrichment Analysis (GSEA)
+## 4.4 Gene Set Enrichment Analysis (GSEA)
 
 The Gene Set Enrichment Analysis (GSEA) is another way to investigate functional enrichment of genes and pathways using the Gene Ontology classification. 
 Please refer to [the following section](https://yulab-smu.github.io/clusterProfiler-book/chapter2.html) in Prof. Guangchuang Yu book for a clear explanation of GSEA and how to implement it with `clusterProfiler`.
@@ -572,12 +572,12 @@ This will clean the cache memory and allow to perform the Ensembl query again.
 
 # 7. Going further 
 
-## 6.1 Useful links
+## 7.1 Useful links
 - [BiomartR](https://docs.ropensci.org/biomartr/)
 - [Arabidopsis.org (TAIR) list of data mining tools](https://www.arabidopsis.org/portals/expression/microarray/microarrayExpressionV2.jsp)
 - [ResearchGate related question](https://www.researchgate.net/post/How_can_I_analyze_a_set_of_DEGs_differentially_expressed_genes_to_obtain_information_from_them)	
 
-## 6.2. References
+## 7.2. References
 * [The Cluster Profiler companion book, a great place to start](https://yulab-smu.github.io/clusterProfiler-book/chapter2.html)
 * Zhou et al. (2019). Metascape provides a biologist-oriented resource for the analysis of systems-level datasets. Nat Commun 10, 1523 (2019). [link](https://doi.org/10.1038/s41467-019-09234-6)
 * Yates et al. (2020) Ensembl 2020, Nucleic Acids Research, Volume 48, Issue D1, 08 January 2020, Pages D682–D688, [Link](https://doi.org/10.1093/nar/gkz966)
