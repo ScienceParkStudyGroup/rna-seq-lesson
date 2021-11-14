@@ -1,5 +1,5 @@
 ---
-title: "Assessing the quality of RNA-seq experiments"
+title: "05 Assessing the quality of RNA-seq experiments"
 teaching: 80	
 exercises: 20 
 questions:
@@ -453,7 +453,7 @@ To get an idea of how much variation can be explained by PC1, PC2, PC3, etc., a 
 First, the PCA is computed using the `mypca()` function. This returns a list with three objects, the `scores`, `loadings` and `explained_var` dataframes. 
 ~~~
 # transpose the data because in variance_stabilised_counts the rows are the variables and the columns correspond to the samples
-t_variance_stabilised_counts <- variance_stabilised_counts
+t_variance_stabilised_counts <- t(variance_stabilised_counts)
 
 # before computing the PCA, check that samples are in rows and genes in columns
 pca_results <- mypca(t_variance_stabilised_counts), 

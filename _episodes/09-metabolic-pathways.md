@@ -1,5 +1,5 @@
 ---
-title: "Transcriptomic and metabolomic data integration"
+title: "09 Transcriptomic and metabolomic data integration"
 teaching: 45
 exercises: 15 
 questions:

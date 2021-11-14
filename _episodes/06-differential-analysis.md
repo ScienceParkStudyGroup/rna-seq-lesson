@@ -1,5 +1,5 @@
 ---
-title: "Differential expression analysis"
+title: "06 Differential expression analysis"
 teaching: 30
 exercises: 60 
 questions:
