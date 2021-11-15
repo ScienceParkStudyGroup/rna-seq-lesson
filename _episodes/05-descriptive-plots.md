@@ -184,12 +184,13 @@ The summary of the iris data set display the content of the data. In this case t
 
 For convenience we use a very rudimentary (own) implementation implementation of PCA. Source this code to load this function into your environment and use it later on.
 
-
 ~~~
-#Load custom PCA function
+# Load custom PCA function
 source("scripts/mypca.R")
 ~~~
 {: .language-r}
+
+The whole function is available here in the [extra functions page](/extra_functions/index.html#1-custom-pca-function).  
 
 Now we have everything in our R environment into place, we can actually perform the PCA analysis and create the plots.  
 Since the four first principal components catch most if not all 
