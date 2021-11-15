@@ -491,7 +491,7 @@ You can find an [extensive manual available here](http://systemsbiology.cau.edu.
 
 
 > ### Agrigo Alternatives for other organisms
-> Agrigo is developed for agricultural data, as the name suggests. If you are working human or animal data there are  alternative webtools that can be used. For example [Panther](http://www.pantherdb.org/)
+> Agrigo is developed for agricultural data, as the name suggests. If you are working human or animal data there are  alternative webtools that can be used. For example [Panther](http://www.pantherdb.org/). This works with similar gene ID input.
 
 
 ## 4.1 Single Enrichment Analysis
@@ -566,9 +566,32 @@ Visit the [Metascape website here](https://metascape.org/gp/index.html#/main/ste
 
 # 5. Gene Set Enrichment Analysis (GSEA) with ClusterProfiler
 The Gene Set Enrichment Analysis (GSEA) is another way to investigate functional enrichment of genes and pathways using the Gene Ontology classification. 
-Please refer to [the following section](https://yulab-smu.github.io/clusterProfiler-book/chapter2.html) in Prof. Guangchuang Yu book for a clear explanation of GSEA and how to implement it with `clusterProfiler`.
+Please refer to [the following section](https://yulab-smu.top/biomedical-knowledge-mining-book/enrichment-overview.html#gsea-algorithm) in Prof. Guangchuang Yu book for a clear explanation of GSEA and how to implement it with `clusterProfiler`.
 
-Under construction. 
+
+> The above sections can of course be run on species other than arabidopsis. In most cases it is sufficient to change the initial biomartr query from [section 2.3](#23-querying-ensembl-databases-using-biomartr) to the species you are investigating.
+>For example with tomato:
+> ~~~
+>biomartr::organismBM(organism = "solanum lycopersicum")
+> ~~~
+> {: .language-r}
+> ~~~
+> tomato_attributes = 
+  biomartr::organismAttributes("solanum lycopersicum") %>% 
+  filter(dataset == "slycopersicum_eg_gene")
+> tomato_attributes
+> ~~~
+> {: .language-r}
+> Of course with these changes, you should also change the variables associated with the organism.
+
+
+> In some species, however, this method leads to quite a reduction in the number of genes that get translated to GO terms or KEGG IDs.
+
+
+
+
+
+
 
 # 6. Troubleshooting
 
