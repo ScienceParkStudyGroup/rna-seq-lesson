@@ -474,6 +474,8 @@ dotplot(ora_analysis_kegg_modules,
 {: .discussion}
 
 
+
+
 # 4.Gene Ontology Over Representation Analysis with AgriGO (webtool)
 
 AgriGO v2.0 is a webtool [accessible here](http://systemsbiology.cau.edu.cn/agriGOv2/index.php) to perform gene ontology analyses. Two papers describe it extensively (see [8.2. References](#82-references)).
@@ -487,6 +489,11 @@ You can find an [extensive manual available here](http://systemsbiology.cau.edu.
 > ## Important note
 > There are two versions of AgriGO currently online, versions 1.x and version 2.0. Make sure you go to the [latest 2.0 version url](http://systemsbiology.cau.edu.cn/agriGOv2/index.php).
 {: .callout} 
+
+
+> ### Agrigo Alternatives for other organisms
+> Agrigo is developed for agricultural data, as the name suggests. If you are working human or animal data there are  alternative webtools that can be used. For example [Panther](http://www.pantherdb.org/)
+
 
 ## 4.1 Single Enrichment Analysis
 
@@ -514,6 +521,9 @@ Open this list using a text editor and copy-paste it into the "input a gene list
 You will then have to choose a background (your "universe") to perform the SEA/ORA analysis. For _Arabidopsis thaliana_, you can choose the suggested background (TAIR10). 
 
 <img src="../img/07-agrigo-2.png" alt="choice of the background and statistical test" height="400px">
+
+
+> This step is exactly the same for Panther with other oranisms.
 
 I suggest to use the hypergeometric distribution and the Yekutieli False Discovery Rate correction. The significance threshold and the minimum number of entries can be changed depending on the size of your input gene list. 
 
