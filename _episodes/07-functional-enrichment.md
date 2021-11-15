@@ -38,7 +38,6 @@ keypoints:
   - [4.1 Single Enrichment Analysis](#41-single-enrichment-analysis)
   - [4.2 Parametric Analysis of Gene Set Enrichment](#42-parametric-analysis-of-gene-set-enrichment)
   - [4.3 Metascape \(webtool\)](#33-metascape-webtool)
-  - [4.4 Gene Set Enrichment Analysis \(GSEA\)](#34-gene-set-enrichment-analysis-gsea)
 - [5. Gene Set Enrichment Analysis \(GSEA\) with ClusterProfiler](#5-gene-set-enrichment-analysis-gsea-with-clusterprofiler)
 - [6. Troubleshooting](#6-troubleshooting)
 - [7. Going further](#7-going-further)
@@ -523,7 +522,7 @@ You will then have to choose a background (your "universe") to perform the SEA/O
 <img src="../img/07-agrigo-2.png" alt="choice of the background and statistical test" height="400px">
 
 
-> This step is exactly the same for Panther with other oranisms.
+> This step is exactly the same for Panther with other organisms.
 
 I suggest to use the hypergeometric distribution and the Yekutieli False Discovery Rate correction. The significance threshold and the minimum number of entries can be changed depending on the size of your input gene list. 
 
@@ -553,7 +552,7 @@ Left to the reader. The basic usage is to copy-paste a list of gene identifiers 
 Visit the [Metascape website here](https://metascape.org/gp/index.html#/main/step1). 
 
 > ## Important note
-> Metascape is restricted to 3000 genes so you will have to split our big list first into chuncks less < 3000 genes.
+> Metascape is restricted to 3000 genes so you will have to split your big list first into chunks < 3000 genes.
 > ~~~
 > pos_diff_genes = diff_genes %>% filter(log2FoldChange > 0) 
 > ~~~
@@ -561,15 +560,13 @@ Visit the [Metascape website here](https://metascape.org/gp/index.html#/main/ste
 > Then write the `pos_diff_genes` to a text file and copy-paste the list of genes.
 {: .callout}
 
-## 4.4 Gene Set Enrichment Analysis (GSEA)
-
-The Gene Set Enrichment Analysis (GSEA) is another way to investigate functional enrichment of genes and pathways using the Gene Ontology classification. 
-Please refer to [the following section](https://yulab-smu.github.io/clusterProfiler-book/chapter2.html) in Prof. Guangchuang Yu book for a clear explanation of GSEA and how to implement it with `clusterProfiler`.
 
 <br>
 
 
 # 5. Gene Set Enrichment Analysis (GSEA) with ClusterProfiler
+The Gene Set Enrichment Analysis (GSEA) is another way to investigate functional enrichment of genes and pathways using the Gene Ontology classification. 
+Please refer to [the following section](https://yulab-smu.github.io/clusterProfiler-book/chapter2.html) in Prof. Guangchuang Yu book for a clear explanation of GSEA and how to implement it with `clusterProfiler`.
 
 Under construction. 
 
