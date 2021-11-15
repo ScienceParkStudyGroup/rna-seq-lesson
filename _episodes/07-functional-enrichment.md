@@ -585,10 +585,6 @@ Please refer to [the following section](https://yulab-smu.top/biomedical-knowled
 > Of course with these changes, you should also change the variables associated with the organism.
 
 
-> In some species, however, this method leads to quite a reduction in the number of genes that get translated to GO terms or KEGG IDs.
-
-
-
 
 
 
