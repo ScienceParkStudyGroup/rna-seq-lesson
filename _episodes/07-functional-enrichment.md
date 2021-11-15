@@ -156,6 +156,7 @@ We are going to load the required library first.
 library("biomartr")
 library("clusterProfiler")
 library("tidyverse")
+library("enrichplot")
 suppressPackageStartupMessages(library("org.At.tair.db"))
 library("biomaRt")  # only use to remove cache bug
 ~~~
@@ -379,8 +380,10 @@ dotplot(ora_analysis_all_go)
 You can also create an enrichment map that connects GO terms with edges between overlapping gene sets. 
 This makes it easier to identify functional modules. 
 
+
 ~~~
-emapplot(ora_analysis_bp, color = "qvalue", size = "Count")
+ora_analysis_bp <- pairwise_termsim(ora_analysis_bp, method = "JC")
+emapplot(ora_analysis_bp, color = "qvalue")
 ~~~
 {: .language-r}
 
