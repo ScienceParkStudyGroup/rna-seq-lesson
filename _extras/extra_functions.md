@@ -1,7 +1,81 @@
 ---
-title: " Median of ratios manual normalization"
+title: " Extra functions"
 ---
 
+# Table of contents
+
+<!-- MarkdownTOC autolink="true" -->
+
+- [1. Custom PCA function](#1-custom-pca-function)
+    - [1.1 Credits](#11-credits)
+    - [1.2 Usage](#12-usage)
+- [2. Custom median of ratios manual normalization](#2-custom-median-of-ratios-manual-normalization)
+    - [2.1 Credits](#21-credits)
+    - [2.2 Step-by-step procedure](#22-step-by-step-procedure)
+        - [Step 1: Upload data](#step-1-upload-data)
+        - [Step 2: Take the log of all values](#step-2-take-the-log-of-all-values)
+        - [Step 3: Take the average of each row](#step-3-take-the-average-of-each-row)
+        - [Step 4: Filter out all of the genes with -Inf as their average](#step-4-filter-out-all-of-the-genes-with--inf-as-their-average)
+        - [Step 5: Subtract the gene pseudo-references from log counts](#step-5-subtract-the-gene-pseudo-references-from-log-counts)
+        - [Step 6: Find the median of the ratios for each sample](#step-6-find-the-median-of-the-ratios-for-each-sample)
+        - [Step 7: Convert medians to scaling factors](#step-7-convert-medians-to-scaling-factors)
+        - [Step 8: Divide the original counts \(not log version\) by the scaling factors](#step-8-divide-the-original-counts-not-log-version-by-the-scaling-factors)
+    - [2.3 Function to normalize the DESeq2 way](#23-function-to-normalize-the-deseq2-way)
+    - [2.4 Section 3: sanity check](#24-section-3-sanity-check)
+    - [2.5 References](#25-references)
+
+<!-- /MarkdownTOC -->
+
+
+# 1. Custom PCA function
+
+## 1.1 Credits
+A huge thanks to [Frans van der Kloet](https://bioinformaticslaboratory.eu/team/frans-van-der-kloet/) for his custom function to perform a Principal Component Analysis (PCA). 
+
+This function is used in [episode 05](/05-descriptive-plots/index.html#23-the-iris-data-set).
+
+## 1.2 Usage
+Here is the function. To access it in your R environment, two options are available:  
+- Option 1: copy and paste the code below in your R console and execute it.   
+- Option 2: save the code below as a script called `mypca.R` and source it inside the console `source(mypca.R)` to load the `mypca()` function.  
+
+
+```bash
+# define a custom R function called "mypca()""
+mypca <- function(x, center = TRUE, scale = TRUE){
+  # Samples should be in rows
+  # Variables in the columns
+
+  # remove constant variables
+  constant_val = apply(x,2,'sd')
+  x_reduced = x[,constant_val>0]
+  
+  # perform SVD
+  SVD <- svd(scale(x_reduced,center = center, scale = scale))
+  
+  # create scores data frame
+  scores <- as.data.frame(SVD$u %*% diag(SVD$d))
+  rownames(scores) <- rownames(x)
+  colnames(scores) <- paste0("PC", c(1:dim(scores)[2]))
+  
+  # create loadings data frams
+  loadings <- data.frame(SVD$v)
+  colnames(loadings) <- paste0("PC", c(1:dim(loadings)[2]))
+  rownames(loadings) <- colnames(x_reduced)
+  
+  # create data frame for explained variances
+  explained_var <- as.data.frame(round((SVD$d^2) / sum(SVD$d^2)*100, digits = 1))
+  rownames(explained_var) <- paste0("PC", c(1:dim(loadings)[2]))
+  colnames(explained_var) <- "exp_var"
+  
+  # return result
+  return (list("scores" = scores, "loadings" = loadings, "explained_var" = explained_var))
+}
+```
+
+# 2. Custom median of ratios manual normalization
+
+## 2.1 Credits 
 A huge thanks to [Jolanta Szkodon](https://github.com/jszkodon) for her custom function to reproduce DESeq2 normalization. 
 
 The median of ratios method is a normalization method used to account for sequencing differences in library size and RNA composition of samples. This makes it a suitable method to use when comparing between samples. It does not account for differences in gene length, making it unsuitable for within sample comparisons.
@@ -14,28 +88,9 @@ In [Section 1](#section-1-step-by-step-procedure), steps of the median of ratios
 In [Section 2](#section-two-a-function-to-normalize-the-deseq2-way), a function including all steps is shown.   
 In [Section 3](#section-3-sanity-check), the normalized counts are compared with the DESeq2 method to ensure the results are the same. References used are listed at the end. 
 
-# Table of Contents
+## 2.2 Step-by-step procedure 
 
-<!-- MarkdownTOC autolink="True" levels="1,2" -->
-
-- [Section 1: step-by-step procedure](#section-1-step-by-step-procedure)
-  - [Step 1: Upload data](#step-1-upload-data)
-  - [Step 2: Take the log of all values](#step-2-take-the-log-of-all-values)
-  - [Step 3: Take the average of each row](#step-3-take-the-average-of-each-row)
-  - [Step 4: Filter out all of the genes with -Inf as their average](#step-4-filter-out-all-of-the-genes-with--inf-as-their-average)
-  - [Step 5: Subtract the gene pseudo-references from log counts](#step-5-subtract-the-gene-pseudo-references-from-log-counts)
-  - [Step 6: Find the median of the ratios for each sample](#step-6-find-the-median-of-the-ratios-for-each-sample)
-  - [Step 7: Convert medians to scaling factors](#step-7-convert-medians-to-scaling-factors)
-  - [Step 8: Divide the original counts \(not log version\) by the scaling factors](#step-8-divide-the-original-counts-not-log-version-by-the-scaling-factors)
-- [Section two: a function to normalize the DESeq2 way](#section-two-a-function-to-normalize-the-deseq2-way)
-- [Section 3: sanity check](#section-3-sanity-check)
-- [References](#references)
-
-<!-- /MarkdownTOC -->
-
-# Section 1: step-by-step procedure 
-
-## Step 1: Upload data 
+### Step 1: Upload data 
 Rows (genes) and columns (samples) are seen below. 
 ~~~
 data = read.csv("sample_count_data.csv", row.names = 1)
@@ -56,7 +111,7 @@ A2M          0    1     0     1     1     0     0     0
 
 The following few steps are used to create a pseudo-reference sample for each gene. To do this, we need to calculate the geometric mean for each gene. 
 
-## Step 2: Take the log of all values
+### Step 2: Take the log of all values
 ~~~
 log_data = log(data)
 head(log_data)
@@ -74,7 +129,7 @@ A2M            -Inf 0.0000000     -Inf 0.000000 0.0000000     -Inf     -Inf     
 ~~~
 {: .output}
 
-## Step 3: Take the average of each row
+### Step 3: Take the average of each row
 ~~~
 library(dplyr)
 library(tibble)
@@ -100,7 +155,7 @@ head(log_data)
 {: .output}
 
 
-## Step 4: Filter out all of the genes with -Inf as their average
+### Step 4: Filter out all of the genes with -Inf as their average
 They will not be used to calculate the median.
 ~~~
 filtered_log_data = log_data %>% filter(pseudo_reference != "-Inf")
@@ -119,7 +174,7 @@ head(filtered_log_data)
 ~~~
 {: .output}
 
-## Step 5: Subtract the gene pseudo-references from log counts
+### Step 5: Subtract the gene pseudo-references from log counts
 In this step, you are subtracting the average of the logs from the log of the original data. Log(x/y) is a ratio. 
 ~~~
 ratio_data = sweep(filtered_log_data[,2:9], 1, filtered_log_data[,10], "-")
@@ -138,7 +193,7 @@ head(ratio_data)
 ~~~
 {: .output}
 
-## Step 6: Find the median of the ratios for each sample
+### Step 6: Find the median of the ratios for each sample
 ~~~
 sample_medians = apply(ratio_data, 2, median)
 sample_medians
@@ -151,7 +206,7 @@ sample_medians
 ~~~
 {: .output}
 
-## Step 7: Convert medians to scaling factors
+### Step 7: Convert medians to scaling factors
 ~~~
 # scaling factor = e^median
 scaling_factors = exp(sample_medians)
@@ -165,7 +220,7 @@ scaling_factors
 ~~~
 {: .output}
 
-## Step 8: Divide the original counts (not log version) by the scaling factors 
+### Step 8: Divide the original counts (not log version) by the scaling factors 
 ~~~
 manually_normalized = sweep(data, 2, scaling_factors, "/")
 head(manually_normalized)
@@ -183,7 +238,8 @@ A2M        0.000000  1.046543  0.000000  0.8866487  0.9392361  0.0000000   0.000
 ~~~
 {: .output}
 
-# Section two: a function to normalize the DESeq2 way 
+## 2.3 Function to normalize the DESeq2 way
+
 Below is one function to "manually" normalize data with the median of ratios method. Import data before using the function.
 
 **mor** stands for "median of ratios".
@@ -243,7 +299,7 @@ A2LD1     TRUE TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE
 ~~~
 {: .output}
 
-# Section 3: sanity check
+## 2.4 Section 3: sanity check
 
 A sanity check to see if the normalization within DESeq2 is identical to our manually normalized data. 
 
@@ -304,8 +360,10 @@ A2MP1     TRUE TRUE  TRUE  TRUE  TRUE  TRUE  TRUE  TRUE
 ~~~
 {: .output}
 
-# References
+## 2.5 References
 1. Love et al. (2014) Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2. Genome Biology, 15:550. [doi:10.1186/s13059-014-0550-8](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-014-0550-8).
 2. [Statquest](https://www.youtube.com/watch?v=UFB993xufUU)
 3. [DGE count normalization](https://hbctraining.github.io/DGE_workshop/lessons/02_DGE_count_normalization.html)
+
+
 

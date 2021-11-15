@@ -1,0 +1,21 @@
+cff-version: 1.1.0
+message: "If you use this lesson, please cite it as below."
+authors:
+  - family-names: Bliek
+    given-names: Tijs
+    orcid: https://orcid.org/0000-0002-0488-4873
+  - family-names: Chouaref
+    given-names: Jihed
+    orcid: https://orcid.org/0000-0003-3865-896X
+  - family-names: van der Kloet
+    given-names: Frans
+    orcid: https://orcid.org/0000-0002-8573-2651
+  - family-names: Szkodon
+    given-names: Jolanta
+    orcid: 
+  - family-names: Galland
+    given-names: Marc
+    orcid: https://orcid.org/0000-0003-2161-8689
+title: "Introduction to RNA-seq lesson"
+version: 0.1.0
+doi: 
