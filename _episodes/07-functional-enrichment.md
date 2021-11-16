@@ -664,7 +664,7 @@ $ conda install -c bioconda kofamscan
 
 Download and unzip the required profiles
 ~~~
-# downlaod using wget
+# download using wget
 $ wget ftp://ftp.genome.jp/pub/db/kofam/ko_list.gz
 $ wget ftp://ftp.genome.jp/pub/db/kofam/profiles.tar.gz 
 $ wget ftp://ftp.genome.jp/pub/tools/kofamscan/README.md
@@ -721,7 +721,34 @@ Araport11_genes_ko.txt
 
 ## 6.2 parsing the results
 
-FIXME
+
+
+~~~
+
+transcriptome <- read.table("Araport11_genes_ko.txt", fill = T, sep = "\t", row.names = NULL, header = F)
+
+differential_genes <- read.table("differential_genes.tsv", sep = "\t", header = T)
+~~~
+{: .language-r}
+
+Get rid of duplicate transcripts in "universe" through gsub and regex
+~~~
+
+transcriptome[,1] <- gsub("\\..*","",transcriptome[,1])
+transcriptome <- transcriptome[!duplicated(transcriptome[,1]),]
+~~~
+{: .language-r}
+
+
+~~~
+
+
+
+~~~
+{: .language-r}
+
+
+
 
 # 7. Gene Set Enrichment Analysis (GSEA) with ClusterProfiler :hot_pepper: :hot_pepper:
 
