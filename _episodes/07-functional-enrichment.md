@@ -26,29 +26,29 @@ keypoints:
   - [1.2 Over Representation Analysis \(ORA\)](#12-over-representation-analysis-ora)
   - [1.3 The Gene Ontology \(GO\) resource](#13-the-gene-ontology-go-resource)
   - [1.4 The Kyoto Encyclopedia of Genes and Genomes \(KEGG\) database](#14-the-kyoto-encyclopedia-of-genes-and-genomes-kegg-database)
-- [2. Gene Ontology ORA analysis using AgriGO \(webtool\)](#2-gene-ontology-ora-analysis-using-agrigo-webtool)
+- [2. Gene Ontology ORA analysis using AgriGO \(webtool\) :hot_pepper:](#2-gene-ontology-ora-analysis-using-agrigo-webtool)
   - [2.1 Read and import differential genes](#21-read-and-import-differential-genes)
   - [2.2 Single Enrichment Analysis](#22-single-enrichment-analysis)
   - [2.3 Parametric Analysis of Gene Set Enrichment](#23-parametric-analysis-of-gene-set-enrichment)
-- [3. Gene Ontology ORA analysis using clusterProfiler \(R code\)](#3-gene-ontology-ora-analysis-using-clusterprofiler-r-code)
+- [3. Gene Ontology ORA analysis using clusterProfiler \(R code\) :hot_pepper: :hot_pepper:](#3-gene-ontology-ora-analysis-using-clusterprofiler-r-code)
   - [3.1 Load the table of differential genes](#31-load-the-table-of-differential-genes)
   - [3.2 Annotating your DE genes with Ensembl and biomartr](#32-annotating-your-de-genes-with-ensembl-and-biomartr)
-  - [3.4 ORA with clusterProfiler](#34-ora-with-clusterprofiler)
-  - [3.5 Plots from the Gene Ontology ORA analysis](#35-plots-from-the-gene-ontology-ora-analysis)
-- [4. Gene Ontology ORA using InterProScan and AgriGO](#4-gene-ontology-ora-using-interproscan-and-agrigo)
+  - [3.3 ORA with clusterProfiler](#34-ora-with-clusterprofiler)
+  - [3.4 Plots from the Gene Ontology ORA analysis](#35-plots-from-the-gene-ontology-ora-analysis)
+- [4. Gene Ontology ORA using InterProScan and AgriGO :hot_pepper:](#4-gene-ontology-ora-using-interproscan-and-agrigo)
   - [4.1 Retrieving protein sequences](#41-retrieving-protein-sequences)
   - [4.2 InterProScan](#42-interproscan)
   - [4.3 Parsing the retrieve GO categories](#43-parsing-the-retrieve-go-categories)
   - [4.4 Performing the Gene Ontology ORA analysis](#44-performing-the-gene-ontology-ora-analysis)
   - [4.5 Back to AgriGO for plotting](#45-back-to-agrigo-for-plotting)
-- [5. KEGG Over Representation Analysis using clusterProfiler \(R code\)](#5-kegg-over-representation-analysis-using-clusterprofiler-r-code)
+- [5. KEGG Over Representation Analysis using clusterProfiler \(R code\) :hot_pepper: :hot_pepper:](#5-kegg-over-representation-analysis-using-clusterprofiler-r-code)
   - [5.1 Retrieving species-specific KEGG information](#51-retrieving-species-specific-kegg-information)
   - [5.2 KEGG ORA analysis](#52-kegg-ora-analysis)
   - [5.3 KEGG Modules ORA](#53-kegg-modules-ora)
-- [6. KEGG ORA analysis for species without a KEGG classification](#6-kegg-ora-analysis-for-species-without-a-kegg-classification)
+- [6. KEGG ORA analysis for species without a KEGG classification :hot_pepper: :hot_pepper: :hot_pepper:](#6-kegg-ora-analysis-for-species-without-a-kegg-classification)
   - [6.1 kofamscan](#61-kofamscan)
   - [6.2 parsing the results](#62-parsing-the-results)
-- [7. Gene Set Enrichment Analysis \(GSEA\) with ClusterProfiler](#7-gene-set-enrichment-analysis-gsea-with-clusterprofiler)
+- [7. Gene Set Enrichment Analysis \(GSEA\) with ClusterProfiler :hot_pepper: :hot_pepper:](#7-gene-set-enrichment-analysis-gsea-with-clusterprofiler)
 - [8. Going further](#8-going-further)
   - [8.1 Useful links](#81-useful-links)
   - [8.2. References](#82-references)
@@ -155,7 +155,7 @@ transcriptomic response of an organism. KEGG is not restricted to metabolic func
 
 <br>
 
-# 2. Gene Ontology ORA analysis using AgriGO (webtool)
+# 2. Gene Ontology ORA analysis using AgriGO (webtool) :hot_pepper:
 
 AgriGO v2.0 is a webtool [accessible here](http://systemsbiology.cau.edu.cn/agriGOv2/index.php) to perform gene ontology analyses. Two papers describe it extensively (see [8.2. References](#82-references)).
 
@@ -245,7 +245,7 @@ diff_genes %>%
 
 <br>
 
-# 3. Gene Ontology ORA analysis using clusterProfiler (R code)
+# 3. Gene Ontology ORA analysis using clusterProfiler (R code) :hot_pepper: :hot_pepper:
 
 This section can be used for non-model species that have genomic information [Ensembl](https://www.ensembl.org). At the time of writing (November 2021), there are 114 plant species available on [EnsemblPlants](https://plants.ensembl.org/species.html). 
 
@@ -379,7 +379,7 @@ We now have our original gene identifiers (column `ensembl_gene_id`) with the re
 > This will retrieve the information available for your species on Ensembl. 
 {: .callout}
 
-## 3.4 ORA with clusterProfiler
+## 3.3 ORA with clusterProfiler
 
 To perform the ORA within R, we will use the [clusterProfiler Bioconductor package](https://bioconductor.org/packages/release/bioc/html/clusterProfiler.html) that has an [extensive documentation available here](https://yulab-smu.github.io/clusterProfiler-book/index.html). 
 
@@ -471,7 +471,7 @@ GO:0072657       BP GO:0072657    protein localization to membrane  200/3829 377
 ~~~
 {: .output}
 
-## 3.5 Plots from the Gene Ontology ORA analysis
+## 3.4 Plots from the Gene Ontology ORA analysis
 
 Nice to have all this textual information but an image is worth a thousand words so let's create some visual representations. 
 
@@ -507,7 +507,7 @@ related to metabolism (upper left) and one related to jasmonic acid and wounding
 
 <br>
 
-# 4. Gene Ontology ORA using InterProScan and AgriGO
+# 4. Gene Ontology ORA using InterProScan and AgriGO :hot_pepper:
 
 In this section, we assume that you do not dispose of a Gene Ontology classification of your species genes. Therefore, you will have to obtain it using the predicted protein sequences as a starting point. 
 
@@ -557,7 +557,7 @@ FIXME
 
 FIXME
 
-# 5. KEGG Over Representation Analysis using clusterProfiler (R code)
+# 5. KEGG Over Representation Analysis using clusterProfiler (R code) :hot_pepper: :hot_pepper:
 
 ## 5.1 Retrieving species-specific KEGG information
 
@@ -649,7 +649,7 @@ dotplot(ora_analysis_kegg_modules,
 > Compare the two KEGG plots. Can you identify differences? Which metabolic functions have been grouped together?
 {: .discussion}
 
-# 6. KEGG ORA analysis for species without a KEGG classification
+# 6. KEGG ORA analysis for species without a KEGG classification :hot_pepper: :hot_pepper: :hot_pepper:
 
 ## 6.1 kofamscan
 
@@ -723,7 +723,7 @@ Araport11_genes_ko.txt
 
 FIXME
 
-# 7. Gene Set Enrichment Analysis (GSEA) with ClusterProfiler
+# 7. Gene Set Enrichment Analysis (GSEA) with ClusterProfiler :hot_pepper: :hot_pepper:
 
 The Gene Set Enrichment Analysis (GSEA) is another way to investigate functional enrichment of genes and pathways using the Gene Ontology classification. Please refer to [the following section](https://yulab-smu.top/biomedical-knowledge-mining-book/enrichment-overview.html#gsea-algorithm) in Prof. Guangchuang Yu book for a clear explanation of GSEA and how to implement it with `clusterProfiler`.
 
