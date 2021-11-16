@@ -653,7 +653,71 @@ dotplot(ora_analysis_kegg_modules,
 
 ## 6.1 kofamscan
 
-FIXME 
+If you want to do an overrepresentation analysis on a species that in not in cluded in the KEGG databases, it is posible to manually get ko ids from a protein fasta of the organism you are working on. This can be done using a tool called kofamscan.
+This tool runs in bash and is available in conda. Not included in this conda tool are the profiles it needs to run. These need to be loaded separately.
+
+create a new conda environment, or run the following in an existing one
+~~~
+$ conda install -c bioconda kofamscan
+~~~
+{: .language-bash}
+
+Download and unzip the required profiles
+~~~
+# downlaod using wget
+$ wget ftp://ftp.genome.jp/pub/db/kofam/ko_list.gz
+$ wget ftp://ftp.genome.jp/pub/db/kofam/profiles.tar.gz 
+$ wget ftp://ftp.genome.jp/pub/tools/kofamscan/README.md
+
+# unzip
+$ gunzip ko_list.gz
+$ tar xf profiles.tar.gz
+$ tar xf kofamscan.tar.gz
+~~~
+{: .language-bash}
+
+Run the following on your protein_pep.fasta (in this example I'm using an arabidopsis peptide fasta)
+~~~
+$ exec_annotation --cpu 8 -p profiles -f mapper -k ko_list -o Araport11_genes_ko.txt Araport11_genes.201606.pep.fasta
+~~~
+{: .language-bash}
+
+The file Araport11_genes_ko.txt should have been created. and shoul look something like:
+
+~~~
+$ less Araport11_genes_ko.txt
+~~~
+{: .language-bash}
+
+~~~
+AT1G01010.1
+AT1G01020.1     K21848
+AT1G01020.2     K21848
+AT1G01020.3     K21848
+AT1G01020.4     K21848
+AT1G01020.5     K21848
+AT1G01020.6     K21848
+AT1G01030.1     K09287
+AT1G01030.2     K09287
+AT1G01040.1     K11592
+AT1G01040.2     K11592
+AT1G01050.1     K01507
+AT1G01050.2     K01507
+AT1G01060.1     K12133
+AT1G01060.2     K12133
+AT1G01060.3     K12133
+AT1G01060.4     K12133
+AT1G01060.5     K12133
+AT1G01060.6     K12133
+AT1G01060.7     K12133
+AT1G01060.8     K12133
+AT1G01070.1
+AT1G01070.2
+AT1G01080.1
+AT1G01080.2
+Araport11_genes_ko.txt
+~~~
+{: .output}
 
 ## 6.2 parsing the results
 
