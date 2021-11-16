@@ -26,29 +26,30 @@ keypoints:
   - [1.2 Over Representation Analysis \(ORA\)](#12-over-representation-analysis-ora)
   - [1.3 The Gene Ontology \(GO\) resource](#13-the-gene-ontology-go-resource)
   - [1.4 The Kyoto Encyclopedia of Genes and Genomes \(KEGG\) database](#14-the-kyoto-encyclopedia-of-genes-and-genomes-kegg-database)
-- [2. Gene Ontology ORA analysis using AgriGO \(webtool\) :hot_pepper:](#2-gene-ontology-ora-analysis-using-agrigo-webtool)
+- [2. Gene Ontology ORA analysis using AgriGO \(webtool\) :hot_pepper:](#2-gene-ontology-ora-analysis-using-agrigo-webtool-hot_pepper)
   - [2.1 Read and import differential genes](#21-read-and-import-differential-genes)
   - [2.2 Single Enrichment Analysis](#22-single-enrichment-analysis)
   - [2.3 Parametric Analysis of Gene Set Enrichment](#23-parametric-analysis-of-gene-set-enrichment)
-- [3. Gene Ontology ORA analysis using clusterProfiler \(R code\) :hot_pepper: :hot_pepper:](#3-gene-ontology-ora-analysis-using-clusterprofiler-r-code)
+- [3. Gene Ontology ORA analysis using clusterProfiler \(R code\) :hot_pepper: :hot_pepper:](#3-gene-ontology-ora-analysis-using-clusterprofiler-r-code-hot_pepper-hot_pepper)
   - [3.1 Load the table of differential genes](#31-load-the-table-of-differential-genes)
   - [3.2 Annotating your DE genes with Ensembl and biomartr](#32-annotating-your-de-genes-with-ensembl-and-biomartr)
-  - [3.3 ORA with clusterProfiler](#34-ora-with-clusterprofiler)
-  - [3.4 Plots from the Gene Ontology ORA analysis](#35-plots-from-the-gene-ontology-ora-analysis)
-- [4. Gene Ontology ORA using InterProScan and AgriGO :hot_pepper:](#4-gene-ontology-ora-using-interproscan-and-agrigo)
+  - [3.3 ORA with clusterProfiler](#33-ora-with-clusterprofiler)
+  - [3.4 Plots from the Gene Ontology ORA analysis](#34-plots-from-the-gene-ontology-ora-analysis)
+- [4. Gene Ontology ORA using InterProScan and AgriGO :hot_pepper:](#4-gene-ontology-ora-using-interproscan-and-agrigo-hot_pepper)
   - [4.1 Retrieving protein sequences](#41-retrieving-protein-sequences)
   - [4.2 InterProScan](#42-interproscan)
-  - [4.3 Parsing the retrieve GO categories](#43-parsing-the-retrieve-go-categories)
+  - [4.3 Running InterProScan on your proteins](#43-running-interproscan-on-your-proteins)
+  - [4.3 Parsing the retrieved GO categories](#43-parsing-the-retrieved-go-categories)
   - [4.4 Performing the Gene Ontology ORA analysis](#44-performing-the-gene-ontology-ora-analysis)
   - [4.5 Back to AgriGO for plotting](#45-back-to-agrigo-for-plotting)
-- [5. KEGG Over Representation Analysis using clusterProfiler \(R code\) :hot_pepper: :hot_pepper:](#5-kegg-over-representation-analysis-using-clusterprofiler-r-code)
+- [5. KEGG Over Representation Analysis using clusterProfiler \(R code\) :hot_pepper: :hot_pepper:](#5-kegg-over-representation-analysis-using-clusterprofiler-r-code-hot_pepper-hot_pepper)
   - [5.1 Retrieving species-specific KEGG information](#51-retrieving-species-specific-kegg-information)
   - [5.2 KEGG ORA analysis](#52-kegg-ora-analysis)
   - [5.3 KEGG Modules ORA](#53-kegg-modules-ora)
-- [6. KEGG ORA analysis for species without a KEGG classification :hot_pepper: :hot_pepper: :hot_pepper:](#6-kegg-ora-analysis-for-species-without-a-kegg-classification)
+- [6. KEGG ORA analysis for species without a KEGG classification :hot_pepper: :hot_pepper: :hot_pepper:](#6-kegg-ora-analysis-for-species-without-a-kegg-classification-hot_pepper-hot_pepper-hot_pepper)
   - [6.1 kofamscan](#61-kofamscan)
   - [6.2 parsing the results](#62-parsing-the-results)
-- [7. Gene Set Enrichment Analysis \(GSEA\) with ClusterProfiler :hot_pepper: :hot_pepper:](#7-gene-set-enrichment-analysis-gsea-with-clusterprofiler)
+- [7. Gene Set Enrichment Analysis \(GSEA\) with ClusterProfiler :hot_pepper: :hot_pepper:](#7-gene-set-enrichment-analysis-gsea-with-clusterprofiler-hot_pepper-hot_pepper)
 - [8. Going further](#8-going-further)
   - [8.1 Useful links](#81-useful-links)
   - [8.2. References](#82-references)
@@ -87,13 +88,15 @@ Usually, ORA makes use of so-called gene ontologies (abbreviated GO) where each 
 
 The ORA analysis rely on this mathematical equation to compute a p-value for a given gene set classified under a certain GO. 
 
+Source: [Wikipedia](https://en.wikipedia.org/wiki/Hypergeometric_distribution)
+
 $$p = 1 - {\sum_{i=0}^{k-1} {M \choose i}{N - M \choose n - i} \over {N \choose n}}$$  
 
 In this formula: 
 - **N** is the total number of genes in the background distribution. Also called the "universe" of our transcriptome.
 - **M** is the number of genes within that distribution that are annotated (either directly or indirectly) to the gene set of interest.
 - **n** is the size of the list of genes of interest (the size of your "drawing").
-- **k** and k is the number of genes within that list which are annotated to the gene set. 
+- **k** is the number of genes "drawn" within that list which are annotated to the gene set. 
 
 The background distribution by default is by default all genes that have annotation. You can change it to your specific background if you have a good reason for that (only genes with a detectable expression in your expression for instance). Also, p-values should be adjusted for multiple comparison.
 
@@ -543,11 +546,165 @@ FFRIV
 
 ## 4.2 InterProScan 
 
-FIXME
 
-## 4.3 Parsing the retrieve GO categories
+### Overview 
+[InterProScan](https://interproscan-docs.readthedocs.io/en/latest/Introduction.html) is a standalone software that scans protein sequences against a database of protein functions. These are retrieved using information about protein domains. 
 
-FIXME
+Provided a FASTA file of protein sequences, one can use InterProScan to retrieve information about the proteins. In detail, InterProScan looks inside these databases: 
+
+~~~
+TIGRFAM (XX.X) : TIGRFAMs are protein families based on Hidden Markov Models or HMMs
+SFLD (X.X) : SFLDs are protein families based on Hidden Markov Models or HMMs
+amap (XXXXXX.XX) : High-quality Automated and Manual Annotation of Microbial Proteomes
+SMART (X.X) : SMART allows the identification and analysis of domain architectures based on Hidden Markov Models or HMMs
+CDD (X.XX) : Prediction of CDD domains in Proteins
+ProSiteProfiles (XX.XXX) : PROSITE consists of documentation entries describing protein domains, families and functional sites as well as associated patterns and profiles to identify them
+ProSitePatterns (XX.XXX) : PROSITE consists of documentation entries describing protein domains, families and functional sites as well as associated patterns and profiles to identify them
+SUPERFAMILY (X.XX) : SUPERFAMILY is a database of structural and functional annotation for all proteins and genomes.
+PRINTS (XX.X) : A fingerprint is a group of conserved motifs used to characterise a protein family
+PANTHER (X.X) : The PANTHER (Protein ANalysis THrough Evolutionary Relationships) Classification System is a unique resource that classifies genes by their functions, using published scientific experimental evidence and evolutionary relationships to predict function even in the absence of direct experimental evidence.
+Gene3D (X.X.X) : Structural assignment for whole genes and genomes using the CATH domain structure database
+PIRSF (X.XX) : The PIRSF concept is being used as a guiding principle to provide comprehensive and non-overlapping clustering of UniProtKB sequences into a hierarchical order to reflect their evolutionary relationships.
+Pfam (XX.X) : A large collection of protein families, each represented by multiple sequence alignments and hidden Markov Models (HMMs)
+Coils (X.X) : Prediction of Coiled Coil Regions in Proteins
+MobiDBLite (X.X) : Prediction of disordered domains Regions in Proteins
+~~~
+{: .output}
+
+### Interproscan installation
+To install InterProScan locally on a Linux server, follow the [installation instructions](https://interproscan-docs.readthedocs.io/en/latest/InstallationRequirements.html). 
+
+Specically, you have to run: 
+~~~
+mkdir my_interproscan
+cd my_interproscan
+wget https://ftp.ebi.ac.uk/pub/software/unix/iprscan/5/5.52-86.0/interproscan-5.52-86.0-64-bit.tar.gz
+wget https://ftp.ebi.ac.uk/pub/software/unix/iprscan/5/5.52-86.0/interproscan-5.52-86.0-64-bit.tar.gz.md5
+
+# Recommended checksum to confirm the download was successful:
+md5sum -c interproscan-5.52-86.0-64-bit.tar.gz.md5
+# Must return *interproscan-5.52-86.0-64-bit.tar.gz: OK*
+# If not - try downloading the file again as it may be a corrupted copy.
+~~~
+{: .language-bash}
+
+You will probably need a custom installation of Java to make sure you have Java version 11. One way is to install it through conda/mamba.  Mamba is a fast re-implementation of conda. For complete info, see this blog post. 
+
+~~~
+wget -O Mambaforge.sh <https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-$(uname)-$>(uname -m).sh
+bash Mambaforge.sh -b
+source mambaforge/bin/activate
+~~~
+{: .language-bash}
+
+Follow the instructions. 
+
+To install the Java and Python dependencies of InterProScan, you can run:
+~~~
+mamba install python=3.8 openjdk=11.0.1 -c conda-forge --yes
+~~~
+{: .language-bash}
+
+## 4.3 Running InterProScan on your proteins
+
+You are now ready to run InterProScan on your FASTA file.
+
+~~~
+ ./interproscan.sh -d results_dir/ -goterms -i arabidopsis/Araport11_genes.201606.pep.parsed.fasta --tempdir temp_dir/ --cpu 16 -f TSV -dra --appl PANTHER,Pfam,CDD
+~~~
+{: .language-bash}
+
+Here, the databases searched were restricted to PANTHER, Pfam and the CDD (Conserved Domain Database) to speed up the application. 
+
+Some other useful options:
+
+| option short name | option long name             | suggestion                                                                     |
+|------------------ |----------------------------  |--------------------------------------------------------------------------------|
+| -dp               | disable pre-lookup           | do not use this option but rather use the precalculated match lookup service.  |
+| -goterms          | look for GO terms            | lookup of corresponding Gene Ontology annotation (based on InterPro annotation)|
+| -cpu              | number of threads            | make sure you also have enough memory (RAM) for the number of CPUs choosen     |
+| -dra              | disable residue annotation   | prevent InterProScan from calculating the residue level annotations            |
+
+
+> ## CPU and Memory
+> The more CPU you request, the more memory you will need. 
+> See [the InterProScan documentation on this point](https://interproscan-docs.readthedocs.io/en/latest/ImprovingPerformance.html) to make sure 
+> that you have enough memory to perform the InterProScan run. 
+{: .callout}
+
+> ## Special characters
+> Make sure that your protein sequences do not have any special characters within their sequence such as "\*". To remove them, you can use [Biopython](https://biopython.org/DIST/docs/tutorial/Tutorial.html) for instance. 
+> ~~~
+> from Bio import SeqIO
+> with open("Araport11_genes.201606.pep.fasta","r") as filin: 
+>     recs = [rec for rec in SeqIO.parse(filin, "fasta")] 
+> 
+> with open("Araport11_genes.201606.pep.parsed.fasta", "w") as fileout: 
+>     for rec in recs: 
+>         if "*" in str(rec.seq): 
+>             print("skip this sequence") 
+>     else: 
+>         fileout.write(">" + str(rec.id) + "\n" + str(rec.seq) + "\n") 
+> ~~~
+> {: .language-python}
+{: .callout}
+
+## 4.3 Parsing the retrieved GO categories
+
+An example result file based on the complete Arabidopsis proteome and from the above InterProScan run is available on [Zenodo](https://zenodo.org/record/5705449/files/interproscan_results.tsv?download=1). 
+
+This result file needs to be transformed before we can use it. 
+
+~~~
+interpro <- read.delim("00.tutorial/interproscan_results.tsv", header = F, stringsAsFactors = F, row.names = NULL)
+
+new_colnames <- c("protein_id",
+                  "md5",
+                  "seq_len",
+                  "analysis",
+                  "signature_accession",
+                  "signature_description",
+                  "start",
+                  "stop",
+                  "score",
+                  "status",
+                  "date",
+                  "interpro_accession",
+                  "interpro_description",
+                  "go")
+colnames(interpro) <- new_colnames
+
+interpro_go <- 
+  interpro %>% 
+  dplyr::select(protein_id, go) %>% 
+  dplyr::filter(go != "-") %>% 
+  dplyr::filter(go != "")
+tail(interpro_go, n = 10)
+~~~
+{: .language-r}
+
+~~~
+       protein_id                    go
+53735 AT1G79550.2 GO:0004618|GO:0006096
+53736 AT3G23700.1            GO:0003676
+53737 AT3G23700.1            GO:0003676
+53738 AT2G46610.1 GO:0000398|GO:0005681
+53739 AT2G46610.1            GO:0003676
+53740 AT2G46610.1            GO:0003676
+53741 AT5G48560.1            GO:0046983
+53742 AT5G48560.1            GO:0006355
+53743 AT1G08720.1 GO:0004672|GO:0006468
+53744 AT5G57290.3 GO:0003735|GO:0005840
+~~~
+{: .output}
+
+~~~
+splitted_interpro_go <- cSplit(indt = interpro_go, splitCols = "go", sep = "|", direction = "long")
+deduplicated_splitted_interpro_go <- splitted_interpro_go %>% distinct()
+tail(deduplicated_splitted_interpro_go)
+write.csv(x = deduplicated_splitted_interpro_go, file = "gene_ontologies_all_genes.csv", row.names = F)
+~~~
+{: .language-r}
 
 ## 4.4 Performing the Gene Ontology ORA analysis
 

@@ -24,10 +24,14 @@ result_BM <- biomartr::biomart( genes      = diff_genes$genes,                  
                                 dataset    = "athaliana_eg_gene",               # datasets were selected with biomartr::getDatasets()
                                 attributes = attributes_to_retrieve,            # attributes were selected with biomartr::getAttributes()
                                 filters = 	"ensembl_gene_id" )# query key
-#head(result_BM)  
+
 
 ##########################
 # 03. ORA Cluster Profiler
 ##########################
 
+
+##############################
+# 03. ORA with interproscan GO
+##############################
 
