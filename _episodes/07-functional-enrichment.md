@@ -39,8 +39,8 @@ keypoints:
   - [4.1 Retrieving protein sequences](#41-retrieving-protein-sequences)
   - [4.2 InterProScan](#42-interproscan)
   - [4.3 Running InterProScan on your proteins](#43-running-interproscan-on-your-proteins)
-  - [4.3 Parsing the retrieved GO categories](#43-parsing-the-retrieved-go-categories)
-  - [4.4 Performing the Gene Ontology ORA analysis](#44-performing-the-gene-ontology-ora-analysis)
+  - [4.3 Parsing the retrieved GO categories for all proteins](#43-parsing-the-retrieved-go-categories-for-all-proteins)
+  - [4.4 Getting the Gene Ontology ORA analysis](#44-getting-the-gene-ontology-ora-analysis)
   - [4.5 Back to AgriGO for plotting](#45-back-to-agrigo-for-plotting)
 - [5. KEGG Over Representation Analysis using clusterProfiler \(R code\) :hot_pepper: :hot_pepper:](#5-kegg-over-representation-analysis-using-clusterprofiler-r-code-hot_pepper-hot_pepper)
   - [5.1 Retrieving species-specific KEGG information](#51-retrieving-species-specific-kegg-information)
@@ -649,7 +649,7 @@ Some other useful options:
 > {: .language-python}
 {: .callout}
 
-## 4.3 Parsing the retrieved GO categories
+## 4.3 Parsing the retrieved GO categories for all proteins
 
 An example result file based on the complete Arabidopsis proteome and from the above InterProScan run is available on [Zenodo](https://zenodo.org/record/5705449/files/interproscan_results.tsv?download=1). 
 
@@ -702,13 +702,41 @@ tail(interpro_go, n = 10)
 splitted_interpro_go <- cSplit(indt = interpro_go, splitCols = "go", sep = "|", direction = "long")
 deduplicated_splitted_interpro_go <- splitted_interpro_go %>% distinct()
 tail(deduplicated_splitted_interpro_go)
+~~~
+{: .language-r}
+
+This gives you a nicely formatted dataframe with your genes and their corresponding GO categories (one or more).
+~~~
+    protein_id         go
+1: AT5G48560.1 GO:0046983
+2: AT5G48560.1 GO:0006355
+3: AT1G08720.1 GO:0004672
+4: AT1G08720.1 GO:0006468
+5: AT5G57290.3 GO:0003735
+6: AT5G57290.3 GO:0005840
+~~~
+{: .output}
+
+~~~
 write.csv(x = deduplicated_splitted_interpro_go, file = "gene_ontologies_all_genes.csv", row.names = F)
 ~~~
 {: .language-r}
 
-## 4.4 Performing the Gene Ontology ORA analysis
+> ## Universe
+> This long list of gene identifiers and GO terms is our universe ("the urn").
+{: .callout}
 
-FIXME 
+## 4.4 Getting the Gene Ontology ORA analysis
+
+All we need to do now is to retrieve the GO terms for our list of differential genes. 
+
+If not done already, import the list of differential genes again:
+~~~
+diff_genes <- read_delim(file = "differential_genes.tsv", delim = "\t")
+~~~
+{: .language-r}
+
+
 
 ## 4.5 Back to AgriGO for plotting
 
@@ -839,7 +867,7 @@ $ exec_annotation --cpu 8 -p profiles -f mapper -k ko_list -o Araport11_genes_ko
 ~~~
 {: .language-bash}
 
-The file Araport11_genes_ko.txt should have been created. and shoul look something like:
+The file `Araport11_genes_ko.txt` should have been created. and shoul look something like:
 
 ~~~
 $ less Araport11_genes_ko.txt
@@ -876,21 +904,19 @@ Araport11_genes_ko.txt
 ~~~
 {: .output}
 
+The `Araport11_genes_ko.txt` file can be downloaded on [Zenodo](https://zenodo.org/record/5705590/files/Araport11_genes_ko.txt?download=1).
+
 ## 6.2 parsing the results
 
-
-
 ~~~
-
 transcriptome <- read.table("Araport11_genes_ko.txt", fill = T, sep = "\t", row.names = NULL, header = F)
 
 differential_genes <- read.table("differential_genes.tsv", sep = "\t", header = T)
 ~~~
 {: .language-r}
 
-Get rid of duplicate transcripts in "universe" through gsub and regex
+Get rid of duplicate transcripts in "universe" through `gsub` and `regex`.
 ~~~
-
 transcriptome[,1] <- gsub("\\..*","",transcriptome[,1])
 transcriptome <- transcriptome[!duplicated(transcriptome[,1]),]
 ~~~
@@ -903,7 +929,6 @@ transcriptome <- transcriptome[!duplicated(transcriptome[,1]),]
 
 ~~~
 {: .language-r}
-
 
 
 
