@@ -191,7 +191,7 @@ source("scripts/mypca.R")
 {: .language-r}
 
 The whole function is available here in the [extra functions page](/extra_functions/index.html#1-custom-pca-function).  
-
+	
 Now we have everything in our R environment into place, we can actually perform the PCA analysis and create the plots.  
 Since the four first principal components catch most if not all 
 

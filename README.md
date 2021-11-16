@@ -58,6 +58,7 @@ Current maintainers of this lesson are
 
 * Marc Galland, Data analyst and manager (University of Amsterdam, SILS, Plant Physiology Department).
 * Tijs Bliek, research technician (University of Amsterdam, SILS, Plant Development and Epigenetics).
+* Fred White, bioinformatician (University of Amsterdam, SILS, Plant Hormone Biology).
 
 ## Authors
 
