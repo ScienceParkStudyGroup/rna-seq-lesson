@@ -45,10 +45,13 @@ keypoints:
   - [5.1 Retrieving species-specific KEGG information](#51-retrieving-species-specific-kegg-information)
   - [5.2 KEGG ORA analysis](#52-kegg-ora-analysis)
   - [5.3 KEGG Modules ORA](#53-kegg-modules-ora)
-- [6. Gene Set Enrichment Analysis \(GSEA\) with ClusterProfiler](#6-gene-set-enrichment-analysis-gsea-with-clusterprofiler)
-- [7. Going further](#7-going-further)
-  - [7.1 Useful links](#71-useful-links)
-  - [7.2. References](#72-references)
+- [6. KEGG ORA analysis for species without a KEGG classification](#6-kegg-ora-analysis-for-species-without-a-kegg-classification)
+  - [6.1 kofamscan](#61-kofamscan)
+  - [6.2 parsing the results](#62-parsing-the-results)
+- [7. Gene Set Enrichment Analysis \(GSEA\) with ClusterProfiler](#7-gene-set-enrichment-analysis-gsea-with-clusterprofiler)
+- [8. Going further](#8-going-further)
+  - [8.1 Useful links](#81-useful-links)
+  - [8.2. References](#82-references)
 
 <!-- /MarkdownTOC -->
 
@@ -646,9 +649,17 @@ dotplot(ora_analysis_kegg_modules,
 > Compare the two KEGG plots. Can you identify differences? Which metabolic functions have been grouped together?
 {: .discussion}
 
+# 6. KEGG ORA analysis for species without a KEGG classification
 
+## 6.1 kofamscan
 
-# 6. Gene Set Enrichment Analysis (GSEA) with ClusterProfiler
+FIXME 
+
+## 6.2 parsing the results
+
+FIXME
+
+# 7. Gene Set Enrichment Analysis (GSEA) with ClusterProfiler
 
 The Gene Set Enrichment Analysis (GSEA) is another way to investigate functional enrichment of genes and pathways using the Gene Ontology classification. Please refer to [the following section](https://yulab-smu.top/biomedical-knowledge-mining-book/enrichment-overview.html#gsea-algorithm) in Prof. Guangchuang Yu book for a clear explanation of GSEA and how to implement it with `clusterProfiler`.
 
@@ -672,14 +683,14 @@ Of course with these changes, you should also change the variables associated wi
 
 <br>
 
-# 7. Going further 
+# 8. Going further 
 
-## 7.1 Useful links
+## 8.1 Useful links
 - [BiomartR](https://docs.ropensci.org/biomartr/)
 - [Arabidopsis.org (TAIR) list of data mining tools](https://www.arabidopsis.org/portals/expression/microarray/microarrayExpressionV2.jsp)
 - [ResearchGate related question](https://www.researchgate.net/post/How_can_I_analyze_a_set_of_DEGs_differentially_expressed_genes_to_obtain_information_from_them)	
 
-## 7.2. References
+## 8.2. References
 * [The Cluster Profiler companion book, a great place to start](https://yulab-smu.github.io/clusterProfiler-book/chapter2.html)
 * Zhou et al. (2019). Metascape provides a biologist-oriented resource for the analysis of systems-level datasets. Nat Commun 10, 1523 (2019). [link](https://doi.org/10.1038/s41467-019-09234-6)
 * Yates et al. (2020) Ensembl 2020, Nucleic Acids Research, Volume 48, Issue D1, 08 January 2020, Pages D682–D688, [Link](https://doi.org/10.1093/nar/gkz966)
