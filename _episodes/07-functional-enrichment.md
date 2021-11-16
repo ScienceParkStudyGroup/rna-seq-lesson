@@ -735,18 +735,71 @@ Get rid of duplicate transcripts in "universe" through gsub and regex
 ~~~
 
 transcriptome[,1] <- gsub("\\..*","",transcriptome[,1])
-transcriptome <- transcriptome[!duplicated(transcriptome[,1]),]
+transcriptome <- distinct(transcriptome)
+~~~
+{: .language-r}
+
+Calculate the total KO IDs found in the "universe"
+~~~
+KITotal <- as.data.frame(table(transcriptome$V2))
+KITotal <- KITotal[-1,]
+
+bgTotal <- sum(KITotal[,2])
+
 ~~~
 {: .language-r}
 
 
+This gives us 11606 total KO IDs. They are not necessarily unique as some genes map to multiple KO IDs just as some genes do not have a KO ID currently labelled.
+
+
+1 - phyper(q = 433, m = 9448, n = 28362 - 9448, k = 883)
+
+
+Now to calculate the total number of KO IDs present in our gene list of interest:
+
+First we filter our "universe" with our gene list, and then calculate the KO ID number similarly.
+~~~
+transcriptome_diff_filt <- transcriptome[which(transcriptome$V1 %in% differential_genes$genes),]
+
+KIquery <- as.data.frame(table(transcriptome_diff_filt$V2))
+KIquery <- KIquery[-1,]
+
+queryTotal <- sum(KIquery[,2])
+~~~
+{: .language-r}
+
+
+queryitem	querytotal	bgitem	bgtotal	pvalue	  FDR
+433	      883	        9448	  28362	  1.7E-20	  7.5E-17
+135	      883	        2022	  28362	  3.5E-15	  7.5E-12
+313	      883	        6591	  28362	  5.9E-15	  8.4E-12
+
+
+~~~
+tableForPhyper <- merge(KIquery, KItotal, by.x = "Var1", by.y = "Var1")
+
+tableForPhyper$queryTotal <- queryTotal
+
+tableForPhyper$bgTotal <- bgTotal
+
+
+colnames(tableForPhyper)[1:3] <- c("KOID","queryItem","bgItem")
+~~~
+{: .language-r}
+
+
+
+Run hypergeometric test using phyper() function
 ~~~
 
+res <- tableForPhyper %>%                                   # Apply rowwise function
+  rowwise() %>% 
+  mutate(p_val = phyper(queryItem, bgItem, bgTotal-queryTotal, queryTotal))
 
 
 ~~~
 {: .language-r}
-
 
 
 
