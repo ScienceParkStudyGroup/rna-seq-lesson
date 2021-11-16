@@ -49,6 +49,8 @@ keypoints:
 - [6. KEGG ORA analysis for species without a KEGG classification :hot_pepper: :hot_pepper: :hot_pepper:](#6-kegg-ora-analysis-for-species-without-a-kegg-classification-hot_pepper-hot_pepper-hot_pepper)
   - [6.1 kofamscan](#61-kofamscan)
   - [6.2 parsing the results](#62-parsing-the-results)
+  - [6.3 Creating a table ready for hypergeometric p-value calculation](#63-creating-a-table-ready-for-hypergeometric-p-value-calculation)
+  - [6.4 Calculate the hypergeometric p-value](#64-calculate-the-hypergeometric-p-value)
 - [7. Gene Set Enrichment Analysis \(GSEA\) with ClusterProfiler :hot_pepper: :hot_pepper:](#7-gene-set-enrichment-analysis-gsea-with-clusterprofiler-hot_pepper-hot_pepper)
 - [8. Going further](#8-going-further)
   - [8.1 Useful links](#81-useful-links)
@@ -700,8 +702,8 @@ tail(interpro_go, n = 10)
 
 ~~~
 splitted_interpro_go <- cSplit(indt = interpro_go, splitCols = "go", sep = "|", direction = "long")
-deduplicated_splitted_interpro_go <- splitted_interpro_go %>% distinct()
-tail(deduplicated_splitted_interpro_go)
+dedup_go  <- splitted_interpro_go %>% distinct()
+tail(dedup_go)
 ~~~
 {: .language-r}
 
@@ -717,8 +719,21 @@ This gives you a nicely formatted dataframe with your genes and their correspond
 ~~~
 {: .output}
 
+A few extra things are required to prepare the next steps. 
 ~~~
-write.csv(x = deduplicated_splitted_interpro_go, file = "gene_ontologies_all_genes.csv", row.names = F)
+# change column name
+dedup_go <- dedup_go %>% 
+  dplyr::rename("genes" = "protein_id") %>% 
+  mutate(genes = substr(genes, 1, 9))
+tail(dedup_go)
+~~~
+{: .language-r}
+
+Write to a `.csv` file for further analysis.  
+~~~
+write.csv(x = dedup_go, 
+          file = "gene_ontologies_all_genes.csv", 
+          row.names = F)
 ~~~
 {: .language-r}
 
@@ -737,10 +752,43 @@ diff_genes <- read_delim(file = "differential_genes.tsv", delim = "\t")
 {: .language-r}
 
 
+~~~
+diff_genes_go <- inner_join(x = dedup_go, y = diff_genes)
+head(diff_genes_go)
+~~~
+{: .language-r}
+
+This gives us the GO term associated with each of our differential gene. 
+~~~
+       genes         go   baseMean log2FoldChange      lfcSE      stat       pvalue         padj
+1: AT4G26850 GO:0080048 22485.3423      1.2128249 0.17894147  6.777774 1.220414e-11 4.557702e-10
+2: AT5G23980 GO:0016491   314.9837     -0.9275218 0.20884912 -4.441110 8.949619e-06 9.361972e-05
+3: AT1G70070 GO:0003676  2279.0575     -0.5180395 0.11799985 -4.390171 1.132617e-05 1.150921e-04
+4: AT1G70070 GO:0005524  2279.0575     -0.5180395 0.11799985 -4.390171 1.132617e-05 1.150921e-04
+5: AT5G66400 GO:0009415  2405.2748     -0.4386227 0.10170489 -4.312700 1.612727e-05 1.562633e-04
+6: AT1G54360 GO:0006367   904.5027     -0.2470180 0.06825266 -3.619171 2.955483e-04 1.904780e-03
+~~~
+{: .output}
+
+We only keep the gene identifier and the GO term for further analysis and write it to a `.csv` file.
+
+~~~
+diff_genes_go %>% 
+  select(genes, go) %>% 
+  write.csv(file = "gene_ontologies_diff_genes.csv", row.names = F)
+~~~
+{: .language-r}
 
 ## 4.5 Back to AgriGO for plotting
 
-FIXME
+Using these two list of genes and GO terms, we can perform the [AgriGO custom analysis tool](http://systemsbiology.cau.edu.cn/agriGOv2/c_SEA.php) using our own GO classification.  
+
+Here is the screenshot of the provided example from AgriGO: 
+
+<img src="../img/07-agrigo-custom-tool.png" width="600px">
+
+Perform the analysis using the hypergeometric test with the Yekutieli FDR correction for instance. 
+
 
 # 5. KEGG Over Representation Analysis using clusterProfiler (R code) :hot_pepper: :hot_pepper:
 
@@ -922,26 +970,43 @@ transcriptome <- distinct(transcriptome)
 ~~~
 {: .language-r}
 
-Calculate the total KO IDs found in the "universe"
+~~~
+head(transcriptome)
+~~~
+
+We obtain a list of genes with their corresponding KO term.  
+~~~
+         V1     V2
+1 AT1G01010       
+2 AT1G01020 K21848
+3 AT1G01030 K09287
+4 AT1G01040 K11592
+5 AT1G01050 K01507
+6 AT1G01060 K12133
+~~~
+{: .output}
+
+## 6.3 Creating a table ready for hypergeometric p-value calculation
+
+To calculate the p-value associated with each term, we need to calculate:
+* `q`: the number of genes classified in a given KO term e.g. 10 genes from the list of differentials in K09287.  
+* `m`: the total number of genes from the genome classified in this precise KO term e.g. 105 genes from the genome belong to K09287.  
+* `n`: the total number of genes from the genome MINUS the number of gene in the given KO term e.g. all genes - the 105 genes from K09287.  
+* `k`: the number of genes "drawn" that is the total number of differential genes.  
+
+Calculate the total KO term found in the "universe" (i.e. genome). This will be used to calculate the `n` further.  
 ~~~
 KITotal <- as.data.frame(table(transcriptome$V2))
 KITotal <- KITotal[-1,]
-
 bgTotal <- sum(KITotal[,2])
-
 ~~~
 {: .language-r}
 
+This gives us a total number of 11,606 KO terms. They are not necessarily unique as some genes map to multiple KO terms just as some genes do not have a KO term assigned to them.
 
-This gives us 11606 total KO IDs. They are not necessarily unique as some genes map to multiple KO IDs just as some genes do not have a KO ID currently labelled.
+Now to calculate `m`, the total number of KO terms present in our gene list of interest:
 
-
-1 - phyper(q = 433, m = 9448, n = 28362 - 9448, k = 883)
-
-
-Now to calculate the total number of KO IDs present in our gene list of interest:
-
-First we filter our "universe" with our gene list, and then calculate the KO ID number similarly.
+First we filter our "universe" with our gene list, and then calculate the total number of KO terms similarly.
 ~~~
 transcriptome_diff_filt <- transcriptome[which(transcriptome$V1 %in% differential_genes$genes),]
 
@@ -952,38 +1017,63 @@ queryTotal <- sum(KIquery[,2])
 ~~~
 {: .language-r}
 
-
-queryitem	querytotal	bgitem	bgtotal	pvalue	  FDR
-433	      883	        9448	  28362	  1.7E-20	  7.5E-17
-135	      883	        2022	  28362	  3.5E-15	  7.5E-12
-313	      883	        6591	  28362	  5.9E-15	  8.4E-12
-
+This gives us 2439 KO terms. 
 
 ~~~
-tableForPhyper <- merge(KIquery, KItotal, by.x = "Var1", by.y = "Var1")
-
+tableForPhyper <- merge(KIquery, KITotal, by = "Var1")
 tableForPhyper$queryTotal <- queryTotal
-
 tableForPhyper$bgTotal <- bgTotal
 
-
 colnames(tableForPhyper)[1:3] <- c("KOID","queryItem","bgItem")
+
+head(tableForPhyper)
 ~~~
 {: .language-r}
 
+This gives us the following table, ready to calculate the hypergeometric p-value. 
 
-
-Run hypergeometric test using phyper() function
 ~~~
+KOID     queryItem bgItem queryTotal bgTotal
+K00001         3      3       2439   11606
+K00002         0      3       2439   11606
+K00006         2      2       2439   11606
+K00008         1      1       2439   11606
+K00012         1      4       2439   11606
+K00013         0      1       2439   11606
+~~~
+{: .output}
 
-res <- tableForPhyper %>%                                   # Apply rowwise function
+## 6.4 Calculate the hypergeometric p-value 
+
+Run hypergeometric test using the `phyper()` function and to perform multiple test correction at the same time. 
+~~~
+res <- tableForPhyper %>%                                  
   rowwise() %>% 
-  mutate(p_val = phyper(queryItem, bgItem, bgTotal-queryTotal, queryTotal))
-
-
+  mutate(p_val = phyper(q = queryItem, m = bgItem, n = bgTotal-queryTotal, k = queryTotal)) %>%
+  mutate(p_adj = p.adjust(p = p_val, method = "fdr"))
 ~~~
 {: .language-r}
 
+~~~
+head(res)
+~~~
+{: .language-r}
+
+~~~
+  KOID   queryItem bgItem queryTotal bgTotal p_val p_adj
+   <fct>      <int>  <int>      <int>   <int> <dbl> <dbl>
+ 1 K00001         3      3       2439   11606 1     1    
+ 2 K00002         0      3       2439   11606 0.395 0.996
+ 3 K00006         2      2       2439   11606 1     1    
+ 4 K00008         1      1       2439   11606 1     1    
+ 5 K00012         1      4       2439   11606 0.711 0.996
+ 6 K00013         0      1       2439   11606 0.734 0.996
+ 7 K00014         1      1       2439   11606 1     1    
+ 8 K00016         0      1       2439   11606 0.734 0.996
+ 9 K00020         1      7       2439   11606 0.406 0.996
+10 K00021         1      2       2439   11606 0.929 1    
+~~~
+{: .output}
 
 # 7. Gene Set Enrichment Analysis (GSEA) with ClusterProfiler :hot_pepper: :hot_pepper:
 
