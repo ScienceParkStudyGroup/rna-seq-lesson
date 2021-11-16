@@ -737,7 +737,7 @@ biomartr::organismBM(organism = "solanum lycopersicum")
 
 ~~~
 tomato_attributes = 
-niomartr::organismAttributes("solanum lycopersicum") %>% 
+biomartr::organismAttributes("solanum lycopersicum") %>% 
 filter(dataset == "slycopersicum_eg_gene")
 tomato_attributes
 ~~~
