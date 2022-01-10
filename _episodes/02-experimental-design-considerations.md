@@ -140,6 +140,7 @@ Imagine you would be the best scientist ever and you would be capable of samplin
 :seedling: x 1000
 ~~~
 library(tidyverse)
+set.seed(1234) # to have the same graph everytime you run this code
 
 xp_normal_conditions <- tibble(
   expression = rnorm(             # randomly sample numbers from a normal distribution
@@ -156,13 +157,13 @@ head(xp_normal_conditions)
 ~~~
 # A tibble: 6 x 2
   expression condition
-       <dbl> <chr>    
-1       1.98 normal   
-2       2.04 normal   
-3       1.99 normal   
-4       2.03 normal   
-5       2.03 normal   
-6       2.03 normal  
+       <dbl> <chr>      
+1       1.88 normal   
+2       2.03 normal   
+3       2.11 normal   
+4       1.77 normal   
+5       2.04 normal   
+6       2.05 normal  
 ~~~
 {: .output}
 
@@ -241,7 +242,7 @@ xp2 = bind_rows(xp_normal_conditions_more_spread, xp_heat_stress) # heat stress 
 
 p4 <- ggplot(xp2, aes(x = expression, fill = condition)) +
   ggtitle("Distribution of HSF2A expression levels in 1000 samples") +
-  geom_histogram(color = "black", bins = 30) + 
+  geom_density(color = "black", alpha = 0.4) + 
   scale_x_continuous(limits = c(1,6))
 p4
 
