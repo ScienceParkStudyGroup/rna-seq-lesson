@@ -37,6 +37,7 @@ keypoints:
 	- [3.4 Infected versus mock score plot](#34-infected-versus-mock-score-plot)
 	- [3.5 Seed inoculation score plot](#35-seed-inoculation-score-plot)
 	- [3.6 Time after infection score plot](#36-time-after-infection-score-plot)
+	- [3.7 Is my RNA-seq experiment successful?](#37-is-my-rna-seq-experiment-successful)
 - [4. Bonus: Gene count normalization theory](#4-bonus-gene-count-normalization-theory)
 	- [4.1 Common normalization methods](#41-common-normalization-methods)
 	- [4.2 RPKM/FPKM \(not recommended for between sample comparisons\)](#42-rpkmfpkm-not-recommended-for-between-sample-comparisons)
@@ -641,6 +642,18 @@ Let's plot them side by side:
 {: .discussion}
 
 <br>
+
+## 3.7 Is my RNA-seq experiment successful?
+
+Based on the previous PCA scree plot and score plots, we can answer these questions:   
+- Are the samples from the same condition grouped together?  
+- Are the first two principal components (PC1, PC2) explaining a major percentage of the 
+total variation present in the dataset?  
+- Are the samples from different experimental conditions well separated by PC1 and PC2?  
+
+> ## Conclusion
+> If "yes" is the answer to these questions, then the experiment can be considered a success.
+{: .callout}
 
 # 4. Bonus: Gene count normalization theory
 
