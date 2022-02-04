@@ -1,4 +1,4 @@
-﻿Geneid,root_control_1,root_control_2,root_control_3,root_auxin_1,root_auxin_2,root_auxin_3,root_ABA_1,root_ABA_2,root_ABA_3,root_MeJas_1,root_MeJas_2,root_MeJas_3,root_ACC_1,root_ACC_2,root_ACC_3
+﻿gene,root_control_1,root_control_2,root_control_3,root_IAA_1,root_IAA_2,root_IAA_3,root_ABA_1,root_ABA_2,root_ABA_3,root_MeJA_1,root_MeJA_2,root_MeJA_3,root_ACC_1,root_ACC_2,root_ACC_3
 AT1G01010,2029,1481,2694,2450,1767,2166,1353,1174,1404,1634,1239,1428,2625,1419,2290
 AT1G01020,1626,1608,1895,1816,2429,1716,1068,1413,1342,1384,1764,1198,1575,1542,1973
 AT1G01030,150,230,375,149,175,260,108,232,223,242,281,388,142,153,246

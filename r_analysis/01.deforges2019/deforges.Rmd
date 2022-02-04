@@ -66,8 +66,28 @@ raw_counts <- read.csv("raw_gene_counts_arabidopsis_root_auxin.csv",
   column_to_rownames("gene")
 
 # first five rows
-knitr::kable(raw_counts[1:5,])
+head(raw_counts, n = 5)
 ```
+
+Q5: Can you determine how many genes are present in the table? 
+
+```{r}
+nrow(raw_counts)
+```
+There are `r nrow(raw_counts)` genes in the "IAA_raw_counts.csv" table. 
+
+
+Q6: what is the minimum and maximum gene expression in the control and auxin-treated conditions?
+
+```{r}
+raw_counts %>% 
+  rownames_to_column("gene") %>% 
+  pivot_longer(- gene, values_to = "counts", names_to = "sample") %>% 
+  separate(sample, into = c("tissue","condition","rep"), sep = "_") %>% 
+  group_by(condition) %>% 
+  summarise(minimum = min(counts), maximum = max(counts))
+```
+
 
 ```{r import sample to condition correspondence}
 sample2condition <- read.csv("sample2condition_arabidopsis_root_auxin.csv", 
@@ -75,7 +95,7 @@ sample2condition <- read.csv("sample2condition_arabidopsis_root_auxin.csv",
                              stringsAsFactors = FALSE)
 
 # first five rows
-knitr::kable(sample2condition)
+head(sample2condition)
 ```
 
 ## Create the DESeqDataSet object
