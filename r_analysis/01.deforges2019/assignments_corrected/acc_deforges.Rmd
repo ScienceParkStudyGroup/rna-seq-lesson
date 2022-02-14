@@ -1,5 +1,5 @@
 ---
-title: "Auxin dataset analysis from Deforges 2019"
+title: "ACC dataset analysis from Deforges 2019"
 author: "Marc Galland"
 date: "`r Sys.Date()`"
 output: 
@@ -62,14 +62,14 @@ suppressPackageStartupMessages(library("DESeq2"))
 ## Import gene counts 
 ```{r import raw gene counts, echo=TRUE}
 raw_counts <- read.csv(
-  file = "../gene_counts_and_samples2conditions/dataset01_IAA_arabidopsis_root_raw_counts.csv",
+  file = "../gene_counts_and_samples2conditions/dataset03_ACC_arabidopsis_root_raw_counts.csv",
   header = TRUE, 
   stringsAsFactors = FALSE) %>% 
   # for DESeq subsequent data import 
   column_to_rownames("gene")
 
 # first five rows
-knitr::kable(head(raw_counts, n = 5))
+head(raw_counts, n = 5)
 ```
 
 Q5: Can you determine how many genes are present in the table? 
@@ -91,9 +91,9 @@ raw_counts %>%
   pivot_longer(- gene, values_to = "counts", names_to = "sample") %>% 
   separate(sample, into = c("tissue","condition","rep"), sep = "_") %>% 
   group_by(condition) %>% 
-  summarise(minimum = min(counts), maximum = max(counts)) %>% 
-  knitr::kable()
+  summarise(minimum = min(counts), maximum = max(counts))
 ```
+Gene max in control condition. 
 ```{r}
 # 519267
 raw_counts %>% 
@@ -101,6 +101,14 @@ raw_counts %>%
   pivot_longer(- gene, values_to = "counts", names_to = "sample") %>% 
   separate(sample, into = c("tissue","condition","rep"), sep = "_") %>% 
   filter(counts == "519267")
+```
+Gene max in ACC-treated condition. 
+```{r}
+raw_counts %>% 
+  rownames_to_column("gene") %>% 
+  pivot_longer(- gene, values_to = "counts", names_to = "sample") %>% 
+  separate(sample, into = c("tissue","condition","rep"), sep = "_") %>% 
+  filter(counts == "452411")
 ```
 
 ## Distribution of counts
@@ -147,24 +155,22 @@ Q8 (0.5 point) Upload the “arabidopsis_root_hormones_samples_to_condition.csv�
 ```{r}
 samples_to_conditions <- read.csv(
   file = "../gene_counts_and_samples2conditions/arabidopsis_root_hormones_sample2conditions.csv",
-  stringsAsFactors = F)
+  stringsAsFactors = F) %>% 
+  filter(condition == "ACC" | condition == "control") %>% 
+  mutate(condition = factor(condition, levels = c("control","ACC")))
 
 table(samples_to_conditions$condition)
 ```
 
-
 ```{r}
-samples_to_conditions_filtered <- filter(
-  samples_to_conditions, 
-  condition == "IAA" | condition == "control")
+levels(samples_to_conditions$condition)
 ```
-
 
 ## Create the DESeqDataSetFromMatrix object
 
 ```{r}
 dds <- DESeqDataSetFromMatrix(countData = raw_counts, 
-                              colData = samples_to_conditions_filtered, 
+                              colData = samples_to_conditions, 
                               design = ~ condition)
 ```
 
@@ -186,11 +192,12 @@ dds <- DESeq(dds)
 ```
 
 ```{r}
-diff_genes <- results(dds, contrast = c("condition", "IAA", "control")) %>% 
+diff_genes <- results(dds, contrast = c("condition", "ACC", "control")) %>% 
   as.data.frame() %>% 
   filter(padj < 0.01)
 head(diff_genes)
 ```
+
 ## Number of diff genes and max log2FC
 
 Q10 (0.5 point): how many genes are differentially expressed (adjusted p-value < 0.01)? 
@@ -214,10 +221,11 @@ top20 <-
   diff_genes %>% 
   arrange(desc(log2FoldChange)) %>% 
   head(n = 20)
-knitr::kable(top20)
+top20
+#knitr::kable(top20)
 ```
 
-Max log2 fold change is equal to 8.6. This corresponds to a fold change of 2^8.6 = 388. Therefore the AT3G23635 gene is 388 more expressed in auxin-treated seedlings than in control conditions. 
+Max log2 fold change is equal to 3.7 This corresponds to a fold change of 2^3.7 = 13. Therefore the AT5G38930 gene is 13 times more expressed in ACC-treated seedlings than in control conditions. 
 
 \newpage
 
@@ -229,12 +237,9 @@ Q12 (0.5 point): Shrink the log2 fold changes in order to shrink high log2 fold 
 - Then shrink the log2 fold changes with the “lfcShrink()” function and the “normal” shrinkage estimator. Call this new object res_shrink. 
 
 ```{r shrink fold changes coming from low-expressed genes}
-diff_genes <- results(dds, contrast = c("condition", "IAA", "control")) 
-
 resLFC <- lfcShrink(dds = dds, 
-                    res = diff_genes,
                     type = "apeglm",
-                    coef = 2) 
+                    coef = "condition_ACC_vs_control") 
 ```
 
 
@@ -248,11 +253,11 @@ EnhancedVolcano(toptable = resLFC,
                 x = "log2FoldChange",
                 y = "padj",
                 lab = rownames(resLFC),
-                xlim = c(-7, +8),
+                xlim = c(-4, +4),
                 ylim = c(0,100),
                 pCutoff = 0.01,
                 transcriptPointSize = 2.0,
-                FCcutoff = 1, 
+                FCcutoff = 0.5, 
                 title = "Volcano plot",
                 legend=c(
                   'Not significant',
@@ -278,7 +283,6 @@ Select based on:
 2. Highest baseMean  
 
 ```{r}
-diff_genes <- results(dds, contrast = c("condition", "IAA", "control")) 
 diff_genes %>% 
   as.data.frame() %>% 
   filter(log2FoldChange > 0) %>% 
@@ -286,52 +290,99 @@ diff_genes %>%
   head(n = 20) %>% 
   arrange(desc(baseMean)) 
 ```
-AT2G23170 = GH3.3  
-AT4G37390 = AUR3 Auxin upregulated 3 GH3-2  
-AT3G58190 = SYMMETRIC LEAVES 2-LIKE 16  
-AT3G10870 = ARABIDOPSIS THALIANA METHYL ESTERASE 17  
-AT2G45420 =  LOB DOMAIN-CONTAINING PROTEIN 18  
 
+1. AT3G59900 = ARGOS = AUXIN-REGULATED GENE INVOLVED IN ORGAN SIZE = involved in Ethylene sensitivity    
+2. AT2G41230 = OSR1 = ARGOS like 2 = involved in Ethylene sensitivity 
+3. AT3G03660 = WOX11 = WUSCHEL related homeobox 11 = involved in de novo root organogenesis  
+4. 
+5. 
 
-## AT2G23170
-**Names:** Auxin-responsive GRETCHEN HAGEN3.3 (GH3.3) protein 	
-Description: conjugates amino acids to auxin and regulates its homeostasis. 
+# Selected genes Q18, Q19 and Q20
 
-> "The production of amide-linked IAA-amino acid conjugates is catalysed by Group II
-> GRETCHEN HAGEN3 (GH3) acyl amido synthetases"
+## AT3G59900 ARGOS
+log2 FC = +2.8
+**Names:** AUXIN-REGULATED GENE INVOLVED IN ORGAN SIZE = ARGOS.  
+Description: Promotes cell proliferation-dependent organ growth. Takes part in the AXR1-dependent auxin signaling pathway that requires ANT during organogenesis.  
 
 **Papers**:
-- Paper 1: Di DW, Li G, Sun L, Wu J, Wang M, Kronzucker HJ, Fang S, Chu J, Shi W. High ammonium inhibits root growth in Arabidopsis thaliana by promoting auxin conjugation rather than inhibiting auxin biosynthesis. J Plant Physiol. 2021 Apr 18;261:153415. doi: 10.1016/j.jplph.2021.153415. Epub ahead of print. PMID: 33894579.
-- Paper 2: Staswick PE, Serban B, Rowe M, Tiryaki I, Maldonado MT, Maldonado MC, Suza W. Characterization of an Arabidopsis enzyme family that conjugates amino acids to indole-3-acetic acid. Plant Cell. 2005 Feb;17(2):616-27. doi: 10.1105/tpc.104.026690. Epub 2005 Jan 19. PMID: 15659623; PMCID: PMC548830.
+- Paper 1: Hu, Y., Xie, Q., & Chua, N. H. (2003). The Arabidopsis auxin-inducible gene ARGOS controls lateral organ size. The Plant cell, 15(9), 1951–1961. https://doi.org/10.1105/tpc.013557
+- Paper 2: Feng, G., Qin, Z., Yan, J., Zhang, X., & Hu, Y. (2011). Arabidopsis ORGAN SIZE RELATED1 regulates organ growth and final organ size in orchestration with ARGOS and ARL. The New phytologist, 191(3), 635–646. https://doi.org/10.1111/j.1469-8137.2011.03710.x
+- Paper 3: Markakis, M. N., De Cnodder, T., Lewandowski, M., Simon, D., Boron, A., Balcerowicz, D., Doubbo, T., Taconnat, L., Renou, J. P., Höfte, H., Verbelen, J. P., & Vissenberg, K. (2012). Identification of genes involved in the ACC-mediated control of root cell elongation in Arabidopsis thaliana. BMC plant biology, 12, 208. https://doi.org/10.1186/1471-2229-12-208
+
+Table 1 of Markakis shows that ARGOS is induced after 3h of ACC treatment.  
 
 **Images**
 ```{r figure 7,out.height="30%", echo=FALSE}
-knitr::include_graphics("../images/figure7_di_2021.jpg")
+knitr::include_graphics("../images/table1_markakis2012.png")
 ```
 
-This figure shows that ammonium (NH4+) induces the expression of GH3.3 in the elongation
-zone. This in turn reduces the amount of biologically active auxin. 
+Markakis 2012:  
+> "The most up regulated gene identified by the microarray is the ARGOS gene (Auxin-Regulated Gene Involved in Organ Size), which was shown to control aerial organ size by influencing the number of cells, and not the size of cells. Further experiments suggested that this gene provides a link between hormone control and cell cycle activity through ANT and CYCD3;1 [23]. Besides expression in the aerial organs, ARGOS was also detected in the root tip and the pericycle, but no root phenotype was observed in plants with experimentally induced changes in expression levels [24]. As ACC/ethylene stimulate auxin biosynthesis and transport [11], it makes sense that upon addition, a highly auxin-responsive gene like ARGOS was detected in the microarray."
 
-## AT3G58190
-**Names:**
-* ASYMMETRIC LEAVES 2-LIKE 16 
-* LATERAL ORGAN BOUNDARIES DOMAIN 29 (LBD29)
+## AT2G41230 = OSR1
 
-**Papers:** 
-- Paper 1: Zhang F, Tao W, Sun R, Wang J, Li C, et al. (2020) PRH1 mediates ARF7-LBD dependent auxin signaling to regulate lateral root development in Arabidopsis thaliana. PLOS Genetics 16(2): e1008044. https://doi.org/10.1371/journal.pgen.1008044. 
-- Paper 2: Okushima Y, Fukaki H, Onoda M, Theologis A, Tasaka M. ARF7 and ARF19 regulate lateral root formation via direct activation of LBD/ASL genes in Arabidopsis. Plant Cell. 2007;19(1):118-130. doi:10.1105/tpc.106.047761. https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1820965/
+**Names**: ORGAN SIZE RELATED 1
 
-Quotes:   
+Description: Promotes cell proliferation-dependent organ growth. Takes part in the AXR1-dependent auxin signaling pathway that requires ANT during organogenesis.  
 
-> "The development of lateral roots in Arabidopsis thaliana is strongly dependent 
-> on signaling directed by the AUXIN RESPONSE FACTOR7 (ARF7), which in turn activates 
-> LATERAL ORGAN BOUNDARIES DOMAIN (LBD) transcription factors (LBD16, LBD18 and LBD29)" 
+**Papers**:
+- Paper 1: Hu, Y., Xie, Q., & Chua, N. H. (2003). The Arabidopsis auxin-inducible gene ARGOS controls lateral organ size. The Plant cell, 15(9), 1951–1961. https://doi.org/10.1105/tpc.013557
+- Paper 2: Feng, G., Qin, Z., Yan, J., Zhang, X., & Hu, Y. (2011). Arabidopsis ORGAN SIZE RELATED1 regulates organ growth and final organ size in orchestration with ARGOS and ARL. The New phytologist, 191(3), 635–646. https://doi.org/10.1111/j.1469-8137.2011.03710.x
+- Paper 3: Markakis, M. N., De Cnodder, T., Lewandowski, M., Simon, D., Boron, A., Balcerowicz, D., Doubbo, T., Taconnat, L., Renou, J. P., Höfte, H., Verbelen, J. P., & Vissenberg, K. (2012). Identification of genes involved in the ACC-mediated control of root cell elongation in Arabidopsis thaliana. BMC plant biology, 12, 208. https://doi.org/10.1186/1471-2229-12-208
+
+Table 1 of Markakis shows that OSR1 is induced after 3h of ACC treatment.  
 
 **Images**
+```{r figure 7,out.height="30%", echo=FALSE}
+knitr::include_graphics("../images/table1_markakis2012.png")
+```
 
-```{r figure 6, out.height="30%", echo=FALSE}
-knitr::include_graphics("../images/figure6_okushima_2007.jpeg")
+Feng 2011:  
+> "These observations indicate that OSR1 has a role in regulation of organ growth and final organ size."  
+> "Here, we identified the OSR1 gene, which regulates organ growth by affecting both cell proliferation and cell expansion, and functions through prolonged expression of ANT, as does ARGOS."   
+> "Furthermore, OSR1 is up-regulated by ethylene but repressed by ABA and BR."   
+> "OSR1 predominantly regulates cell proliferation but also affects expansion. In addition, overexpression of OSR1 or ARGOS suppresses the expression of ARGOS and/or ARL, suggesting that these genes are co-regulated in plants. Therefore, our results, together with the recent work on OsARGOS (Wang et al., 2009), suggest that the members of the OSR family may be co-evolved factors that are involved in the coordination of cell proliferation and expansion in plant development."  
+
+**Images**   
+Cell subcellular localisation of OSR1. The predicted localisation is not precise.
+```{r figure 7,out.height="30%", echo=FALSE}
+knitr::include_graphics("../images/cell_AT2G41230.png")
+```
+
+While the actual localisation is in the Endoplasmic reticulum.
+```{r figure 7,out.height="30%", echo=FALSE}
+knitr::include_graphics("../images/feng2011_fig6.gif")
 ```
 
 
+## AT3G03660 = WOX11
 
+**Names**: WUSCHEL related homeobox 11
+
+Description: Encodes a WUSCHEL-related homeobox gene family member with 65 amino acids in its homeodomain. Together with WOX12, WOX11 is involved in de novo root organogenesis.
+
+**Papers**:
+- Paper 1: Liu, J., Sheng, L., Xu, Y., Li, J., Yang, Z., Huang, H., & Xu, L. (2014). WOX11 and 12 are involved in the first-step cell fate transition during de novo root organogenesis in Arabidopsis. The Plant cell, 26(3), 1081–1093. https://doi.org/10.1105/tpc.114.122887
+
+- Paper 2: Liu, J., Hu, X., Qin, P., Prasad, K., Hu, Y., & Xu, L. (2018). The WOX11-LBD16 Pathway Promotes Pluripotency Acquisition in Callus Cells During De Novo Shoot Regeneration in Tissue Culture. Plant & cell physiology, 59(4), 734–743. https://doi.org/10.1093/pcp/pcy010
+
+- Paper 3: Hu, X., & Xu, L. (2016). Transcription Factors WOX11/12 Directly Activate WOX5/7 to Promote Root Primordia Initiation and Organogenesis. Plant physiology, 172(4), 2363–2373. https://doi.org/10.1104/pp.16.01067
+
+**Images**
+```{r figure 7,out.height="30%", echo=FALSE}
+knitr::include_graphics("../images/table1_markakis2012.png")
+```
+
+Liu 2018:  
+> "Auxin activates WUSCHEL RELATED HOMEOBOX11 (WOX11) and WOX12 for the first step of cell fate transition from the regeneration-competent cell to the founder cell."
+
+**Images**   
+Cell subcellular localisation of OSR1. The predicted localisation is not precise.
+```{r figure 7,out.height="30%", echo=FALSE}
+knitr::include_graphics("../images/cell_AT2G41230.png")
+```
+
+While the actual localisation is in the Endoplasmic reticulum.
+```{r figure 7,out.height="30%", echo=FALSE}
+knitr::include_graphics("../images/feng2011_fig6.gif")
+```
