@@ -148,12 +148,21 @@ This is the second way to install softwares and packages. It _should_ work but t
 
 ## 2.2 Data files 
 
-https://zenodo.org/badge/DOI/10.5281/zenodo.5082718.svg
+> ## What you need to download for the part completed in the Shell (fastq QC, alignment, counting)
+> [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3804519.svg)](https://doi.org/10.5281/zenodo.3804519)
+> Please download the necessary data files for the lesson [from the Zenodo archive](https://doi.org/10.5281/zenodo.3804519).  
+>
+> - **Arabidopsis_sample1/2/3/4.fq.gz**: A `FASTQ` file containing a sample sequenced mRNA-seq reads in the FASTQ format.
+> - **AtChromosome1.fa.gz**: the gzipped chromosome 1 sequence of the Arabidopsis thaliana genome in `FASTA` format.  
+> - **ath_annotation.gff3.gz**: the gzipped genome annotation of Arabidopsis thaliana for chromosome 1 in the `GFF3` format. This indicates the positions of genes, their exons and 5' or 3' UTR on the chromosome and is used to generate the gene counts.   
+> - **adapters.fasta**: the Illumina adapter sequences used for read trimming using Trimmomatic. 
+{: .prereq}
 
+<br>
 
-> ## What you need to download.
-> [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4555551.svg)](https://doi.org/10.5281/zenodo.4555551)
-> Please download the necessary data files for the lesson [from the Zenodo archive](https://doi.org/10.5281/zenodo.5082718).  
+> ## What you need to download for the part completed in R (PCA, DEseq2, Clustering)
+> [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3804519.svg)](https://doi.org/10.5281/zenodo.3804519)
+> Please download the necessary data files for the lesson [from the Zenodo archive](https://doi.org/10.5281/zenodo.3804519).  
 >
 > - **Counts**: A `raw_counts.csv` dataframe of the sample raw counts. It is a tab separated file therefore data are in tabulated separated columns.
 > - **Samples to experimental conditions**: the `samples_to_conditions.csv` dataframe indicates the correspondence between samples and experimental conditions (e.g. control, treated).  
