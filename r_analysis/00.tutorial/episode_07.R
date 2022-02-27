@@ -81,7 +81,7 @@ diff_genes_go <- inner_join(x = dedup_go, y = diff_genes)
 head(diff_genes_go)
 
 diff_genes_go %>% 
-  select(genes, go) %>% 
+  dplyr::select(genes, go) %>% 
   write.csv(file = "00.tutorial/gene_ontologies_diff_genes.csv", row.names = F)
 
 #################################################
@@ -112,3 +112,4 @@ tableForPhyper$bgTotal <- bgTotal
 res <- tableForPhyper %>%                                  
   rowwise() %>% 
   mutate(p_val = phyper(q = queryItem, m = bgItem, n = bgTotal-queryTotal, k = queryTotal))
+
