@@ -90,7 +90,8 @@ of Arabidopsis plants whose seeds were MgCl2 treated and whose plants were infec
 The corresponding code is available below.
 
 ~~~
-library(DESeq2)
+library("DESeq2")
+library("tidyverse")
 
 # filter design file (mock versus P. syringae at 7 dpi)
 xp_design_mock_vs_infected = xp_design %>% filter(seed == "MgCl2" & dpi == "7")
