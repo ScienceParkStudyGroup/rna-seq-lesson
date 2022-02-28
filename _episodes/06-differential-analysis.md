@@ -71,7 +71,7 @@ xp_design <- read.csv("tutorial/samples_to_conditions.csv",
                         stringsAsFactors = F, 
                         colClasses = rep("character",4))
 # change col names
-colnames(xp_design) <- c("sample", "seed", "infected", "dpi")
+colnames(xp_design) <- c("sample", "growth", "infected", "dpi")
 
 
 counts <- read.csv("raw_counts.csv", header = T, stringsAsFactors = F)
