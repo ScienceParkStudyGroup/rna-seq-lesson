@@ -66,7 +66,7 @@ You should still have the `counts` and `xp_design` objects in your R environment
 
 ~~~
 # read the xp design file if not available in your environment 
-xp_design <- read.delim("experimental_design_modified.txt", 
+xp_design <- read.csv("samples_to_conditions.csv", 
                         header = T, 
                         stringsAsFactors = F, 
                         colClasses = rep("character",4))
@@ -74,7 +74,7 @@ xp_design <- read.delim("experimental_design_modified.txt",
 colnames(xp_design) <- c("sample", "seed", "infected", "dpi")
 
 
-counts <- read.delim("counts.txt", header = T, stringsAsFactors = F)
+counts <- read.csv("raw_counts.csv", header = T, stringsAsFactors = F)
 genes <- counts[,1]
 counts <- counts[,-1]
 row.names(counts) <- genes
