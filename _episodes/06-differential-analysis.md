@@ -74,7 +74,7 @@ xp_design <- read.csv("tutorial/samples_to_conditions.csv",
 colnames(xp_design) <- c("sample", "growth", "infected", "dpi")
 
 
-counts <- read.csv("raw_counts.csv", header = T, stringsAsFactors = F)
+counts <- read.csv("tutorial/raw_counts.csv", header = T, stringsAsFactors = F)
 genes <- counts[,1]
 counts <- counts[,-1]
 row.names(counts) <- genes
