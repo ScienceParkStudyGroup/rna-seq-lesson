@@ -430,7 +430,41 @@ When using the Docker image (see [Setup](../setup.html)), the function is alread
 Otherwise, navigate to [the median_of_ratios_manual_normalization page](http://0.0.0.0:4000/median_of_ratios_manual_normalization/index.html#section-two-a-function-to-normalize-the-deseq2-way), copy-paste it into the R console, it is then ready to use.  
 ~~~
 # import custom function
-source("scripts/normalization_function.R")
+# copy-paste and execute this code in your console to get the mor_normalization() function
+
+mor_normalization = function(data){
+  library(dplyr)
+  library(tibble)
+
+  # take the log
+  log_data = log(data) 
+  
+  # find the psuedo-references per sample by taking the geometric mean
+  log_data = log_data %>% 
+               rownames_to_column('gene') %>% 
+               mutate (gene_averages = rowMeans(log_data)) %>% 
+               filter(gene_averages != "-Inf")
+  
+  # the last columns is the pseudo-reference column 
+  pseudo_column = ncol(log_data)
+  
+  # where to stop before the pseudo column 
+  before_pseduo = pseudo_column - 1
+  
+  # find the ratio of the log data to the pseudo-reference
+  ratios = sweep(log_data[,2:before_pseduo], 1, log_data[,pseudo_column], "-")
+  
+  # find the median of the ratios
+  sample_medians = apply(ratios, 2, median)
+  
+  # convert the median to a scaling factor
+  scaling_factors = exp(sample_medians)
+  
+  # use scaling factors to scale the original data
+  manually_normalized = sweep(data, 2, scaling_factors, "/")
+  return(manually_normalized)
+}
+
 ~~~
 {: .language-r}
 
