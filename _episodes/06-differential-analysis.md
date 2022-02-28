@@ -94,7 +94,7 @@ library("DESeq2")
 library("tidyverse")
 
 # filter design file (mock versus P. syringae at 7 dpi)
-xp_design_mock_vs_infected = xp_design %>% filter(seed == "MgCl2" & dpi == "7")
+xp_design_mock_vs_infected = xp_design %>% filter(growth == "MgCl2" & dpi == "7")
 
 # Filter count file accordingly (to keep only samples present in the filtered xp_design file)
 counts_filtered = counts[, colnames(counts) %in% xp_design_mock_vs_infected$sample]
