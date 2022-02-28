@@ -66,7 +66,7 @@ You should still have the `counts` and `xp_design` objects in your R environment
 
 ~~~
 # read the xp design file if not available in your environment 
-xp_design <- read.csv("samples_to_conditions.csv", 
+xp_design <- read.csv("tutorial/samples_to_conditions.csv", 
                         header = T, 
                         stringsAsFactors = F, 
                         colClasses = rep("character",4))
