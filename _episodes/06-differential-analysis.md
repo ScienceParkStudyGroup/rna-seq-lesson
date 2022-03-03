@@ -53,7 +53,7 @@ This will yield a table containing genes $$log_{2}$$ fold change and their corre
 
 > ## Important note
 > For differential expression analysis, you should use the __raw__ counts and __not__ the scaled counts. 
-> As the DESeq2 model fit requires raw counts (integers), make sure that you use the `counts.txt` file. 
+> As the DESeq2 model fit requires raw counts (integers), make sure that you use the `raw_counts.csv` file. 
 {: .callout}
 
 # 2. Differential expression analysis
@@ -203,10 +203,10 @@ The theory beyond DESeq2 differential gene expression analysis is beyond this co
 The complete explanation comes from the [DESeq2 vignette](http://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#differential-expression-analysis):
 > Results tables are generated using the function results, which extracts a results table with log2 fold changes, p values and adjusted p values. With no additional arguments to results, the log2 fold change and Wald test p value will be for the last variable in the design formula, and if this is a factor, the comparison will be the last level of this variable over the reference level (see previous note on factor levels). However, the order of the variables of the design do not matter so long as the user specifies the comparison to build a results table for, using the name or contrast arguments of results.
 
-A possible preferred way is to specify the comparison of interest explicitly. We are going to name this new result object `res2` and compare it with the previous one called `res`.
+A possible preferred way is to specify the comparison of interest explicitly. We are going to name this new result object `all_genes_results` and compare it with the previous one called `res`.
 
 ~~~
-all_genes_results <- results(dds2, contrast = c("infected",                      # name of the factor
+all_genes_results <- results(dds, contrast = c("infected",                      # name of the factor
                                   "Pseudomonas_syringae_DC3000",    # name of the numerator level for fold change
                                   "mock"))                          # name of the denominator level    
 
@@ -223,7 +223,7 @@ If not, that means that you should check your factor ordering.
 
 ## 2.3 Extracting the table of differential genes 
 
-We can now have a look at the result table that contains all information necessary to explore the results.  
+We can now have a look at the result table that contains all information on _all_ genes (p-value, fold changes, etc).  
 
 Let's take a peek at the first lines.
 ~~~
@@ -283,7 +283,7 @@ So in our case, since we specified `contrast = c("infected", "Pseudomonas_syring
 
 Additional information on the DESeqResult columns is available using the `mcols` function. 
 ~~~
-mcols(res)
+mcols(all_genes_results)
 ~~~
 {: .language-r}
 
@@ -317,13 +317,13 @@ We can count the number of genes that are differentially regulated at a certain 
 library(dplyr)
 
 # threshold of p = 0.01
-res %>% 
+all_genes_results %>% 
   as.data.frame() %>% 
   filter(padj < 0.01) %>% 
   dim()
 
 # threshold of p = 0.001
-res %>% 
+all_genes_results %>% 
   as.data.frame() %>% 
   filter(padj < 0.001) %>% 
   dim()
@@ -336,7 +336,7 @@ Histogram p-values
 This [blog post](http://varianceexplained.org/statistics/interpreting-pvalue-histogram/) explains in detail what you can expect from each p-value distribution profile.
 ~~~
 # distribution of adjusted p-values
-hist(res$padj, col="lightblue", main = "Adjusted p-value distribution")
+hist(all_genes_results$padj, col="lightblue", main = "Adjusted p-value distribution")
 ~~~
 {: .language-r}
 
@@ -344,7 +344,7 @@ hist(res$padj, col="lightblue", main = "Adjusted p-value distribution")
 
 ~~~
 # distribution of non-adjusted p-values
-hist(res$pvalue, col="grey", main = "Non-adjusted p-value distribution")
+hist(all_genes_results$pvalue, col="grey", main = "Non-adjusted p-value distribution")
 ~~~
 {: .language-r}
 
