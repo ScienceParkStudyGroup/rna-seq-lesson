@@ -183,15 +183,45 @@ The summary of the iris data set display the content of the data. In this case t
 {: .output}
 
 
-For convenience we use a very rudimentary (own) implementation implementation of PCA. Source this code to load this function into your environment and use it later on.
+For convenience we use a very rudimentary (own) implementation implementation of PCA. Copy-paste this code in your console and execute it to load this function into your environment and use it later on.
+
 
 ~~~
-# Load custom PCA function
-source("scripts/mypca.R")
+# define a custom R function called "mypca()"
+mypca <- function(x, center = TRUE, scale = TRUE){
+  # Samples should be in rows
+  # Variables in the columns
+
+  # remove constant variables
+  constant_val = apply(x,2,'sd')
+  x_reduced = x[,constant_val>0]
+  
+  # perform SVD
+  SVD <- svd(scale(x_reduced,center = center, scale = scale))
+  
+  # create scores data frame
+  scores <- as.data.frame(SVD$u %*% diag(SVD$d))
+  rownames(scores) <- rownames(x)
+  colnames(scores) <- paste0("PC", c(1:dim(scores)[2]))
+  
+  # create loadings data frams
+  loadings <- data.frame(SVD$v)
+  colnames(loadings) <- paste0("PC", c(1:dim(loadings)[2]))
+  rownames(loadings) <- colnames(x_reduced)
+  
+  # create data frame for explained variances
+  explained_var <- as.data.frame(round((SVD$d^2) / sum(SVD$d^2)*100, digits = 1))
+  rownames(explained_var) <- paste0("PC", c(1:dim(loadings)[2]))
+  colnames(explained_var) <- "exp_var"
+  
+  # return result
+  return (list("scores" = scores, "loadings" = loadings, "explained_var" = explained_var))
+}
 ~~~
 {: .language-r}
 
-The whole function is available here in the [extra functions page](/extra_functions/index.html).  
+The whole function is available here in the [extra functions page]({{page.root}}{%link _extras/extra_functions.md %}).  
+
 	
 Now we have everything in our R environment into place, we can actually perform the PCA analysis and create the plots.  
 Since the four first principal components catch most if not all 
@@ -327,10 +357,10 @@ First, we need to import the **raw gene counts**, the **sample to condition corr
 ## 3.1 Data import
 
 ~~~
-counts <- read.delim("00.tutorial/counts.txt", header = T, stringsAsFactors = F) %>% 
+counts <- read.csv("tutorial/counts.csv", header = T, stringsAsFactors = F) %>% 
   column_to_rownames("Geneid")
 
-xp_design <- read.delim("00.tutorial/experimental_design_modified.txt", 
+xp_design <- read.delim("tutorial/samples_to_conditions.csv", 
                         header = T, 
                         stringsAsFactors = F, 
                         colClasses = rep("character",4))

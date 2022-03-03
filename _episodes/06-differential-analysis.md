@@ -31,7 +31,7 @@ keypoints:
   - [Extracting the table of differential genes](#extracting-the-table-of-differential-genes)
 - [3. Volcano plot](#3-volcano-plot)
 - [4. Heatmap](#4-heatmap)
-  - [4.1 Filtering steps](#41-filtering-steps)
+  - [4.1 Function to scale the raw counts](#41-function-to-scale-the-raw-counts)
   - [4.2 First version](#42-first-version)
   - [4.2 Second version with scaling](#42-second-version-with-scaling)
   - [4.3 Third version with genes and samples grouped by profiles](#43-third-version-with-genes-and-samples-grouped-by-profiles)
@@ -62,58 +62,84 @@ This will yield a table containing genes $$log_{2}$$ fold change and their corre
 
 Since we do not want to work on all comparisons, we will filter out the samples and conditions that we do not need. Only the mock growth and the _P. syringae_ infected condition will remain.  
 
-You should still have the `counts` and `xp_design` objects in your R environment. If not, please run the following code. 
-
 ~~~
-# read the xp design file if not available in your environment 
+# Import libraries
+library("DESeq2")
+library("tidyverse")
+
+# import the samples to conditions correspodence
 xp_design <- read.csv("tutorial/samples_to_conditions.csv", 
                         header = T, 
                         stringsAsFactors = F, 
                         colClasses = rep("character",4))
-# change col names
-colnames(xp_design) <- c("sample", "growth", "infected", "dpi")
 
-
-counts <- read.csv("tutorial/raw_counts.csv", header = T, stringsAsFactors = F)
-genes <- counts[,1]
-counts <- counts[,-1]
-row.names(counts) <- genes
-
-# reorder counts columns according to the experimental design file
-counts <- counts[, xp_design$sample]
+# filter design file to keep only "mock" and the "infected P. syringae at 7 dpi" conditions.
+xp_design_mock_vs_infected = xp_design %>% 
+  filter(growth == "MgCl2" & dpi == "7")
 ~~~
 {: .language-r}
 
-We will now filter both the `counts` and `xp_design` objects to keep a one-factor comparison and investigate the leaf transcriptome
-of Arabidopsis plants whose seeds were MgCl2 treated and whose plants were infected or not with Pseudomonas syringae DC3000 at 7dpi.
+We then import the gene counting values and call it `raw_counts`.   
+The gene names have to be changed to the names of the rows of the table for compatibility with `DESeq2`. This is done using the `column_to_rownames()` function from the `tibble` package (contained in `tidyverse` suite of packages).
+
+~~~
+# Import the gene raw counts
+raw_counts <- read.csv("tutorial/raw_counts.csv", header = T, stringsAsFactors = F) %>% 
+  column_to_rownames("Geneid")
+
+
+# reorder counts columns according to the complete list of samples 
+raw_counts <- raw_counts[ , xp_design$sample]
+~~~
+{: .language-r}
+
+We will now filter both the `raw_counts` and `xp_design` objects to keep a one-factor comparison and investigate the leaf transcriptome
+of Arabidopsis plants whose seeds were MgCl2 treated and whose plants were infected or not with Pseudomonas syringae DC3000 at 7 dpi.
 
 The corresponding code is available below.
 
 ~~~
-library("DESeq2")
-library("tidyverse")
-
-# filter design file (mock versus P. syringae at 7 dpi)
-xp_design_mock_vs_infected = xp_design %>% filter(growth == "MgCl2" & dpi == "7")
-
 # Filter count file accordingly (to keep only samples present in the filtered xp_design file)
-counts_filtered = counts[, colnames(counts) %in% xp_design_mock_vs_infected$sample]
+raw_counts_filtered = raw_counts[, colnames(raw_counts) %in% xp_design_mock_vs_infected$sample]
 
 ## Creation of the DESeqDataSet
-dds2 <- DESeqDataSetFromMatrix(countData = counts_filtered, 
+dds <- DESeqDataSetFromMatrix(countData = raw_counts_filtered, 
                               colData = xp_design_mock_vs_infected, 
                               design = ~ infected)
 
 ~~~
 {: .language-r}
 
-It is important to make sure that levels are properly ordered so we are indeed using the _mock_ group as our reference level. A positive gene fold change will for instance signify that the gene is upregulated in the _P. syringae_ condition relatively to the _mock_ condition.  
+You can have a glimpse at the DESeqDataSet `dds` object that you have created. It gives some useful information already. 
+
+~~~
+dds
+~~~
+{: .language-r}
+
+~~~
+class: DESeqDataSet 
+dim: 33768 8 
+metadata(1): version
+assays(1): counts
+rownames(33768): AT1G01010 AT1G01020 ... ATMG01400 ATMG01410
+rowData names(0):
+colnames(8): ERR1406305 ERR1406306 ... ERR1406265 ERR1406266
+colData names(4): sample growth infected dpi
+~~~
+{: .output}
+
+<br>
+
+> ## Important note on factor levels
+> It is important to make sure that levels are properly ordered so we are indeed using the _mock_ group as our reference level. A positive gene fold change means that the gene is upregulated in the _P. syringae_ condition relatively to the _mock_ condition.  
+{: .callout}
 
 Please consult [the dedicated section of the DESeq2 vignette](http://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html#factorlevels) on factor levels. 
 
 One way to see how levels are interpreted within the DESeqDataSet object is to display the factor levels. 
 ~~~
-dds2$infected
+dds$infected
 ~~~
 {: .language-r}
 
@@ -134,7 +160,7 @@ Differential gene expression analysis will consist of simply two lines of code:
 2. Then, results are extracted using the `results` function on the `dds` object and results will be extracted as a table under the name `res` (short for results). 
 
 ~~~
-dds2 <- DESeq(dds2)
+dds <- DESeq(dds)
 ~~~
 {: .language-r}
 
@@ -180,20 +206,20 @@ The complete explanation comes from the [DESeq2 vignette](http://bioconductor.or
 A possible preferred way is to specify the comparison of interest explicitly. We are going to name this new result object `res2` and compare it with the previous one called `res`.
 
 ~~~
-res2 <- results(dds2, contrast = c("infected",                      # name of the factor
+all_genes_results <- results(dds2, contrast = c("infected",                      # name of the factor
                                   "Pseudomonas_syringae_DC3000",    # name of the numerator level for fold change
                                   "mock"))                          # name of the denominator level    
 
 ~~~
 {: .language-r}
 
-If we now compare the `res` and `res2` DESeqResults objects, they should be exactly the same and return a `TRUE` value.
-
+If we now compare the `res` and `all_genes_results` DESeqResults objects, they should be exactly the same and return a `TRUE` value.
 ~~~
-all_equal(res, res2)
+all_equal(res, all_genes_results)
 ~~~
 {: .language-r}
 
+If not, that means that you should check your factor ordering. 
 
 ## 2.3 Extracting the table of differential genes 
 
@@ -201,10 +227,9 @@ We can now have a look at the result table that contains all information necessa
 
 Let's take a peek at the first lines.
 ~~~
-res
+head(all_genes_results)                
 ~~~
 {: .language-r}
-
 
 ~~~
 log2 fold change (MLE): infected Pseudomonas_syringae_DC3000 vs mock 
@@ -305,7 +330,7 @@ res %>%
 ~~~
 {: .language-r}
 
-You should obtain 4979 differentially expressed genes at 1% and 3249 at 0.1% which are quite important numbers: indeed, it corresponds to respectively \~15% and \~10% of the whole number transcriptome (total number of mRNA is 33,768).    
+You should obtain __4979__ differentially expressed genes at 0.01 and __3249__ at 0.001 which are quite important numbers: indeed, it corresponds to respectively \~15% and \~10% of the whole number transcriptome (total number of mRNA is 33,768).    
 
 Histogram p-values
 This [blog post](http://varianceexplained.org/statistics/interpreting-pvalue-histogram/) explains in detail what you can expect from each p-value distribution profile.
@@ -332,19 +357,25 @@ suggests that a good proportion of these will be true positives (genes truly dif
 Ok, here's the moment you've been waiting for. How can I extract a nicely filtered final table of differential genes? Here it is!
 
 ~~~
-diff = res %>% 
+diff_genes = all_genes_results %>% 
   as.data.frame() %>% 
   rownames_to_column("genes") %>% 
   filter(padj < 0.01) %>% 
   arrange(desc(log2FoldChange), 
           desc(padj))
-head(diff)
+head(diff_genes)
 ~~~
 {: .language-r}
 
-You could write this file on your disk with `write.csv()` for instance to save a comma-separated text file containing your results. 
-<br>
 
+> ## Choosing thresholds
+> Getting a list of differentially expressed genes means that you need to choose an __absolute__ threshold for the log2 fold change (column `log2FoldChange`) and the adjusted p-value (column `_padj_`). Therefore you can make different list of differential genes based on your selected thresholds. It is common to choose a log2 fold change threshold of |1| or |2| and an adjusted p-value of 0.01 for instance. 
+{: .callout}
+
+You could write this file on your disk with `write.csv()` for instance to save a comma-separated text file containing your results. 
+
+<br>
+<br>
 
 # 3. Volcano plot
 For each gene, this plot shows the gene fold change on the x-axis against the p-value plotted on the y-axis. 
@@ -354,14 +385,30 @@ Here, we make use of a library called _EnhancedVolcano_ which is available throu
 
 First, we are going to "shrink" the $$\log2$$ fold changes to remove the noise associated with fold changes coming from genes with low count levels. Shrinkage of effect size (LFC estimates) is useful for visualization and ranking of genes. This helps to get more meaningful log2 fold changes for all genes independently of their expression level.
 
+Which 
+  
+the name or number of the coefficient (LFC) to shrink
 ~~~
-resLFC <- lfcShrink(dds = dds2, 
-                  res = res,
+library("apeglm")
+
+resLFC <- lfcShrink(dds = dds, 
+                  res = all_genes_results,
                   type = "normal",
-                  coef = 2) # corresponds to "infected_Pseudomonas_syringae_DC3000_vs_mock" comparison
+                  coef = "infected_Pseudomonas_syringae_DC3000_vs_mock") # name or number of the coefficient (LFC) to shrink
 ~~~
 {: .language-r}
 
+To see what coefficients can be extracted, type: 
+~~~
+resultsNames(dds)
+~~~
+{: .language-r}
+
+~~~
+[1] "Intercept"                                   
+[2] "infected_Pseudomonas_syringae_DC3000_vs_mock"
+~~~
+{: .output}
 
 We can build the Volcano plot rapidly without much customization. 
 ~~~
@@ -377,7 +424,7 @@ EnhancedVolcano(toptable = resLFC,              # We use the shrunken log2 fold 
 ~~~
 {: .language-r}
 
-<img src="../img/volcano_plot_default.png" width="600px" alt="default volcano plot" >
+<img src="../img/volcano_plot_default.png" width="800px" alt="default volcano plot" >
 
 Alternatively, the plot can be heavily customized to become a publication-grade figure.  
 ~~~
@@ -401,7 +448,7 @@ EnhancedVolcano(toptable = resLFC,
 
 ~~~
 {: .language-r}
-<img src="../img/volcano_plot.png" width="600px" alt="customized volcano plot" >
+<img src="../img/volcano_plot.png" width="800px" alt="customized volcano plot" >
 
 # 4. Heatmap
 Heatmap is a representation where values are represented on a color scale. It is usually one of the classic figures part of a transcriptomic study. 
@@ -422,12 +469,15 @@ pheatmap(df)
 {: .callout}
 
 
-## 4.1 Filtering steps
+## 4.1 Function to scale the raw counts
 
-Let's work on the global `counts` object that contains the _unscaled_ counts for our genes. We will first normalize it using a custom function that mimics DESeq2 normalization procedure in one line.
+Let's work on the global `raw_counts` object that contains the _unscaled_ raw counts for our genes. We will first normalize it using a custom function that mimics DESeq2 normalization procedure in one line.
 
-When using the Docker image (see [Setup](../setup.html)), the function is already in the working space ready to be imported. 
-Otherwise, navigate to [the median_of_ratios_manual_normalization page](http://0.0.0.0:4000/median_of_ratios_manual_normalization/index.html#section-two-a-function-to-normalize-the-deseq2-way), copy-paste it into the R console, it is then ready to use.  
+The function is called `mor_normalization` and stands for "median of ratios normalization" method. 
+It is explained in details [in the previous episode section 'Bonus: DESeq2 count normalization'](/05-descriptive-plots/index.html#5-bonus-deseq2-count-normalization).
+
+The whole function is available here in the [extra functions page]({{page.root}}{%link _extras/extra_functions.md %}) and below.   
+
 ~~~
 # import custom function
 # copy-paste and execute this code in your console to get the mor_normalization() function
@@ -468,17 +518,63 @@ mor_normalization = function(data){
 ~~~
 {: .language-r}
 
+Let's scale/normalise the _raw unscaled_ counts and display the first lines.
+
+~~~
+scaled_counts <- mor_normalization(raw_counts_filtered)
+head(scaled_counts)
+~~~
+{: .language-r}
+
+~~~
+          ERR1406305  ERR1406306  ERR1406307 ERR1406308 ERR1406263 ERR1406264 ERR1406265 ERR1406266
+AT1G01010   85.83575   90.910197   69.891325   59.41828   74.15774  114.25728  106.48797   98.40356
+AT1G01020  452.20786  456.549010  398.076675  426.22715  511.29812  588.94434  454.57769  529.34329
+AT1G03987   13.95703    4.995066    5.064589    6.33795   16.91317   20.77405   21.75561   27.14581
+AT1G01030  153.52736  168.833223  118.511376   97.44598  183.44284  404.05529  229.00639  197.93820
+AT1G03993  174.46291  189.812499  190.428537  176.67036  148.31549  162.03760  158.01441  208.11788
+AT1G01040 1811.62285 1800.221699 1874.910751 1689.85596 1592.43995 1698.27864 1745.02871 1883.24056
+~~~
+{: .output}
+
+This scaling procedure does not fundamentally change our gene count values. You can verify this by executing this code: 
+~~~
+long_scaled_counts = 
+  scaled_counts %>% 
+  rownames_to_column("gene") %>% 
+  pivot_longer(-gene, names_to = "sample", values_to = "counts") %>% 
+  mutate(scaled = "yes")
+
+long_raw_counts = 
+  raw_counts %>% 
+  rownames_to_column("gene") %>% 
+  pivot_longer(-gene, names_to = "sample", values_to = "counts") %>% 
+  mutate(scaled = "no")
+
+long_raw_and_scaled_counts = bind_rows(long_raw_counts, long_scaled_counts)
+
+ggplot(long_raw_and_scaled_counts, 
+       aes(x = scaled, y = counts + 1, fill = scaled)) +
+  geom_violin() +
+  scale_y_log10() +
+  labs(x = "Gene counts scaled/normalised?", y = "Gene counts (raw or scaled)")
+~~~
+{: .language-r}
+
+<img src="../img/06-raw-vs-scaled.png" alt="raw vs scaled counts" width="600px">
+
+
 ## 4.2 First version
 
 ~~~
 counts_normalised_only_diff_genes = 
-  mor_normalization(counts) %>%                 # normalize the counts using our custom function
+  mor_normalization(raw_counts) %>%             # normalize the counts using our custom function
   rownames_to_column("genes") %>%               
-  pivot_longer(- genes,                         # pivot_longer() is an update version of gather() since tidyr version 1.0
+  pivot_longer(- genes,                         
                names_to = "sample", 
                values_to = "counts") %>% 
   filter(genes %in% diff$genes) %>%             
-  pivot_wider(names_from = "sample",            # pivot_wider() is an updated approach to spread()
+  pivot_wider(names_from = "sample",            
               values_from = "counts")  %>%      
   column_to_rownames("genes")                   # the gene column is converted back to row names to create a matrix usable with pheatmap
 
@@ -609,10 +705,6 @@ pheatmap(counts_scaled,
 After applying the scaling procedure, the gene expression levels become more comparable. Still, this heatmap isn't really useful so far. 
 
 <img src="../img/06-heatmap-2.png" width="400px" alt="second heatmap (scaled)"  >
-
-This is the original heatmap.
-
-<img src="../img/06-heatmap-1.png" alt="first heatmap version" width="400px">
 
 > ## Notice
 > Have you noticed the two different color scales? 
