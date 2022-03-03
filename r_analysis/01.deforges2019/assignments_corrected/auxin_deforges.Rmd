@@ -33,7 +33,11 @@ What are the full names of each of the 4 hormones used?
 “””
 Arabidopsis thaliana seeds were germinated on agar-solidified half-strength MS medium for 10 d, after which the seedlings were flooded with a solution of half-strength MS containing 5 µM IAA, 10 µM ABA, 10 µM MeJA, 10 µM ACC, or no hormone for the untreated control. After 3 h of incubation, roots and shoots were split and harvested separately. For each of the 12 experimental conditions, 3 independent biological replicates were carried out at different times.
 “””
-Names are: IAA auxin, ABA abscissic acid, ACC 1-amino-1-cyclopropane and MeJA methyljasmonate.  
+Names are: 
+- IAA: auxin,  
+- ABA: abscisic acid, 
+- ACC: 1-amino-1-cyclopropane,
+- MeJA: methyl jasmonate.  
 
 Q2 (0.5 point): Can you name 3 different types of RNA that can be studied using RNA sequencing?
 - Long non-coding RNAs.  
@@ -77,7 +81,7 @@ Q5: Can you determine how many genes are present in the table?
 ```{r}
 nrow(raw_counts)
 ```
-There are `r nrow(raw_counts)` genes in the "dataset_01_IAA_arabidopsis_root_raw_counts.csv" table. 
+There are __`r nrow(raw_counts)`__ genes in the "dataset_01_IAA_arabidopsis_root_raw_counts.csv" table. 
 
 
 Q6 (1 point): determine the minimum and maximum gene expression in the control condition and in the hormone-treated condition. 	
@@ -91,9 +95,12 @@ raw_counts %>%
   pivot_longer(- gene, values_to = "counts", names_to = "sample") %>% 
   separate(sample, into = c("tissue","condition","rep"), sep = "_") %>% 
   group_by(condition) %>% 
-  summarise(minimum = min(counts), maximum = max(counts)) %>% 
+  summarise(minimum = min(counts), 
+            maximum = max(counts)) %>% 
   knitr::kable()
 ```
+
+Gene with maximum expression in control condition. 
 ```{r}
 # 519267
 raw_counts %>% 
@@ -102,6 +109,18 @@ raw_counts %>%
   separate(sample, into = c("tissue","condition","rep"), sep = "_") %>% 
   filter(counts == "519267")
 ```
+Gene with maximum expression in auxin-treated condition. 
+```{r}
+# 444483
+raw_counts %>% 
+  rownames_to_column("gene") %>% 
+  pivot_longer(- gene, values_to = "counts", names_to = "sample") %>% 
+  separate(sample, into = c("tissue","condition","rep"), sep = "_") %>% 
+  filter(counts == "444483")
+```
+__Conclusion:__ the same gene has the maximum expression in both conditions. 
+From the TAIR website, it says: 
+> "Encodes beta-glucosidase.The major constituent of ER bodies. One of the most abundant proteins in Arabidopsis seedlings." 
 
 ## Distribution of counts
 
@@ -129,6 +148,16 @@ raw_counts %>%
   ggplot(., aes(x = log10(counts + 1))) + # log10 transform with offset
   geom_histogram()
 ```
+Bonus: all samples overlaid.
+```{r, out.height="30%"}
+raw_counts %>% 
+  rownames_to_column("gene") %>% 
+  pivot_longer(- gene, values_to = "counts", names_to = "sample") %>% 
+  ggplot(., aes(x = log10(counts + 1), fill = sample)) + # log10 transform with offset
+  geom_density(alpha=0.3)
+```
+
+__Conclusion:__ this means that the samples have comparable count distributions. 
 
 # Exercise 2: differential expression
 
@@ -157,6 +186,7 @@ table(samples_to_conditions$condition)
 samples_to_conditions_filtered <- filter(
   samples_to_conditions, 
   condition == "IAA" | condition == "control")
+samples_to_conditions_filtered
 ```
 
 
@@ -198,13 +228,14 @@ How many genes are positively regulated in response to the hormone treatment?
 How many genes are negatively regulated in response to the hormone treatment?   
 
 ```{r}
+n_diff <- diff_genes %>% nrow()
 pos <- diff_genes %>% filter(log2FoldChange > 0) %>% nrow()
 neg <- diff_genes %>% filter(log2FoldChange < 0) %>% nrow()
 ```
 
-- Total number of genes diff. regulated (padj < 0.01) is `r nrow(diff_genes)` genes.  
-- Total number of genes _positively_ & diff. regulated (padj < 0.01) is `r nrow(pos)` genes.  
-- Total number of genes _negatively_ & diff. regulated (padj < 0.01) is `r nrow(neg)` genes.   
+- Total number of genes diff. regulated (padj < 0.01) is `r n_diff` genes.  
+- Total number of genes _positively_ & diff. regulated (padj < 0.01) is `r pos` genes.  
+- Total number of genes _negatively_ & diff. regulated (padj < 0.01) is `r neg` genes.   
 
 Q11 (0.5 point) : display a table of the top 20 positively differentially expressed genes based on their log2 fold change.   
 What is the maximum positive log2fold change? Convert this log2 fold change to the untransformed fold change value = revert the log2 transformation.       
@@ -229,10 +260,10 @@ Q12 (0.5 point): Shrink the log2 fold changes in order to shrink high log2 fold 
 - Then shrink the log2 fold changes with the “lfcShrink()” function and the “normal” shrinkage estimator. Call this new object res_shrink. 
 
 ```{r shrink fold changes coming from low-expressed genes}
-diff_genes <- results(dds, contrast = c("condition", "IAA", "control")) 
+all_gene_results <- results(dds, contrast = c("condition", "IAA", "control")) 
 
 resLFC <- lfcShrink(dds = dds, 
-                    res = diff_genes,
+                    res = all_gene_results,
                     type = "apeglm",
                     coef = 2) 
 ```
@@ -242,13 +273,22 @@ resLFC <- lfcShrink(dds = dds,
 Q13 (1 point): make a volcano plot, a type of scatterplot that shows, for each gene, the magnitude of the shrinked log2 fold change (x-axis) versus statistical significance (adjusted p-value) as seen in the tutorial. Use the “res_shrink” object that you have built in the previous task. 
 Hint: make sure you change the default “FCcutoff” and “pCutoff” values so that they better reflect your min/max log2 fold changes and adjusted p-values. Do not keep the default values for these two parameters.
 
+What are the values to be set for the limits of x and y?
+```{r}
+min(resLFC$log2FoldChange, na.rm = T)
+```
+
+```{r}
+max(resLFC$log2FoldChange, na.rm = T)
+```
+
 ```{r volcano plot, out.height="70%"}
 library("EnhancedVolcano")
 EnhancedVolcano(toptable = resLFC,
                 x = "log2FoldChange",
                 y = "padj",
                 lab = rownames(resLFC),
-                xlim = c(-7, +8),
+                xlim = c(-9, +9),
                 ylim = c(0,100),
                 pCutoff = 0.01,
                 transcriptPointSize = 2.0,

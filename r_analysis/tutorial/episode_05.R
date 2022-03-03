@@ -14,16 +14,12 @@ dir.create("00.tutorial/figures/")
 ###############################
 
 ## Data import
-counts <- read.delim("00.tutorial/counts.txt", header = T, stringsAsFactors = F) %>% 
-  column_to_rownames("Geneid")
+counts <- read.csv("00.tutorial/raw_counts.csv", header = T, stringsAsFactors = F) %>% 
+  column_to_rownames("Geneid") # this makes sure that only numeric values are present inside the table
 
-xp_design <- read.delim("00.tutorial/experimental_design_modified.txt", 
+xp_design <- read.csv("00.tutorial/samples_to_conditions.csv", 
                         header = T, 
-                        stringsAsFactors = F, 
-                        colClasses = rep("character",4))
-
-# change col names
-colnames(xp_design) <- c("sample", "seed", "infected", "dpi")
+                        stringsAsFactors = F)
 
 # reorder counts columns according to the experimental design file
 counts <- counts[,xp_design$sample]
