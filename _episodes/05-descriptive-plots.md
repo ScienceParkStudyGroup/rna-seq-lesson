@@ -185,7 +185,6 @@ The summary of the iris data set display the content of the data. In this case t
 
 For convenience we use a very rudimentary (own) implementation implementation of PCA. Copy-paste this code in your console and execute it to load this function into your environment and use it later on.
 
-
 ~~~
 # define a custom R function called "mypca()"
 mypca <- function(x, center = TRUE, scale = TRUE){
@@ -220,8 +219,7 @@ mypca <- function(x, center = TRUE, scale = TRUE){
 ~~~
 {: .language-r}
 
-The whole function is available here in the [extra functions page]({{page.root}}{%link _extras/extra_functions.md %}).  
-
+The whole function is available here in the [extra functions page]({{page.root}}{%link _extras/extra_functions.md %}).    
 	
 Now we have everything in our R environment into place, we can actually perform the PCA analysis and create the plots.  
 Since the four first principal components catch most if not all 
@@ -357,22 +355,20 @@ First, we need to import the **raw gene counts**, the **sample to condition corr
 ## 3.1 Data import
 
 ~~~
-counts <- read.csv("tutorial/counts.csv", header = T, stringsAsFactors = F) %>% 
+raw_counts <- read.csv("tutorial/raw_counts.csv", 
+                   header = T, 
+                   stringsAsFactors = F) %>% 
   column_to_rownames("Geneid")
 
 xp_design <- read.delim("tutorial/samples_to_conditions.csv", 
                         header = T, 
-                        stringsAsFactors = F, 
-                        colClasses = rep("character",4))
-
-# change col names
-colnames(xp_design) <- c("sample", "seed", "infected", "dpi")
+                        stringsAsFactors = F)
 
 # reorder counts columns according to the experimental design file
-counts <- counts[,xp_design$sample]
+counts <- counts[, xp_design$sample]
 
 # first five rows and five columns
-counts[1:5, 1:5]
+raw_counts[1:5, 1:5]
 ~~~
 {: .language-r}
 
@@ -394,15 +390,15 @@ Let's perform a last check before this. We should always make sure that we have 
 
 ~~~
 ## Check that sample names match in both files
-all(colnames(counts) %in% xp_design$sample)
-all(colnames(counts) == xp_design$sample)
+all(colnames(raw_counts) %in% xp_design$sample)
+all(colnames(raw_counts) == xp_design$sample)
 ~~~
 {: .language-r}
 
 If all is well, then create the `dds` object. 
 ~~~
 ## Creation of the DESeqDataSet object
-dds <- DESeqDataSetFromMatrix(countData = counts, 
+dds <- DESeqDataSetFromMatrix(countData = raw_counts, 
                               colData = xp_design, 
                               design = ~ seed + infected + dpi)
 
@@ -422,7 +418,7 @@ This is easy to visualise in the following plot:
 # Plot of mean - sd comparison
 # Variance - mean plot for all genes
 p_mean_sd_scaled <- 
-  counts %>% 
+  raw_counts %>% 
   as.data.frame() %>% 
   rownames_to_column("gene") %>% 
   pivot_longer(cols = - gene, names_to = "sample", values_to = "counts") %>% 
@@ -829,14 +825,16 @@ Let's see how, in practice, we can use `DESeq2` median-of-ratios method to norma
 
 ~~~
 # Data import 
-counts <- read.delim("counts.txt", header = T, stringsAsFactors = F)
+counts <- read.csv("tutorial/raw_counts.csv", 
+			header = T, 
+			stringsAsFactors = F)
 genes <- counts[,1]
 counts <- counts[,-1]
 row.names(counts) <- genes
-xp_design <- read.delim("experimental_design_modified.txt", header = T, stringsAsFactors = F, colClasses = rep("character",4))
 
-# change col names
-colnames(xp_design) <- c("sample", "seed", "infected", "dpi")
+xp_design <- read.csv("tutorial/samples_to_conditions.csv", 
+			   header = T, 
+			   stringsAsFactors = F)
 
 # reorder counts columns according to the experimental design file
 counts <- counts[, xp_design$sample]

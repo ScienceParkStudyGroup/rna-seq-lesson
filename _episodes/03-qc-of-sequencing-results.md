@@ -341,9 +341,6 @@ For each of the samples there are two files. a .html and a .zip
 If we were working on our local computer, outside of the container, we'd be able to display each of these
 HTML files as a webpage:
 
-If we were working on our local computers, we'd be able to display each of these
-HTML files as a webpage:
-
 ~~~
 $ cd fastqc/
 $ open Arabidopsis_sample1_fastqc.html
