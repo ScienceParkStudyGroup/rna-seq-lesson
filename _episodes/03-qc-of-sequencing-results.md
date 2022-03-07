@@ -93,15 +93,15 @@ Now we will (i) download the required Docker image and (ii) start the Docker con
 Docker does this in one single-step with the `docker run` command. 
 
 ~~~
-$ docker run -v $PWD:/workspace/ --name bioinfo -it scienceparkstudygroup/master-gls:fastq-2021
+$ docker run -v $PWD:/workspace/ --name fastq -it mgalland/docker-for-teaching:fastq-2022
 ~~~
 {: .bash}
 
 Some explanation here:
-* `--name`: our container is named `bioinfo` so you can use this when performing actions on your container.  
+* `--name`: our container is named `fastq` so you can use this when performing actions on your container.  
 * `-it`: starts an interactive bash session inside your container upon start up.
 * `-v $PWD:/workspace/`: this has linked your current working directory (called `tutorial/`) to a new directory inside the container called `workspace/`. We use different names to know where we are.  
-* `scienceparkstudygroup/master-gls:fastq-2021`: this downloads a specific Docker image from an online resource called DockerHub. 
+* `mgalland/docker-for-teaching:fastq-2022`: this downloads a specific Docker image from an online resource called DockerHub. 
 
 Everything that happens inside the container in the `workspace/` folder of your Docker container will be mirrored outside in the `workspace/` folder of your local machine.  
 
