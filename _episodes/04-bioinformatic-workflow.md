@@ -428,4 +428,4 @@ Here is an explanation of the different arguments used:
 * `-t <string>`: Specify feature type in the GTF/GFF annotation to summarise the counts. 
 * `-g <string>`: Specify attribute type in GTF/GFF annotation. This GTF/GFF determines the name of the features.  
 
-The output file produced by `featureCounts` is a tab-delimited file that can be opened in a spreadhseet program like Excel.
+The output file produced by `featureCounts` is a tab-delimited file that can be opened in a spreadsheet program like Excel.
