@@ -7,6 +7,13 @@ output:
     toc: true
     toc_depth: 2
 ---
+
+```{r}
+adj_p_value_threshold <- 0.01
+```
+
+
+
 # Root tissue
 
 ## Add a table of contents
@@ -64,7 +71,7 @@ suppressPackageStartupMessages(library("DESeq2"))
 ### Import gene counts 
 ```{r import raw gene counts, echo=TRUE}
 raw_counts <- read.csv(
-  file = "../gene_counts_and_samples2conditions/dataset03_ACC_arabidopsis_root_raw_counts.csv",
+  file = "../gene_counts_and_samples2conditions/dataset04_MeJA_arabidopsis_root_raw_counts.csv",
   header = TRUE, 
   stringsAsFactors = FALSE) %>% 
   # for DESeq subsequent data import 
@@ -104,13 +111,13 @@ raw_counts %>%
   separate(sample, into = c("tissue","condition","rep"), sep = "_") %>% 
   filter(counts == "519267")
 ```
-Gene max in ACC-treated condition. 
+Gene max in MeJA-treated condition. 
 ```{r}
 raw_counts %>% 
   rownames_to_column("gene") %>% 
   pivot_longer(- gene, values_to = "counts", names_to = "sample") %>% 
   separate(sample, into = c("tissue","condition","rep"), sep = "_") %>% 
-  filter(counts == "452411")
+  filter(counts == "1264807")
 ```
 
 ### Distribution of counts
@@ -158,8 +165,8 @@ Q8 (0.5 point) Upload the â€œarabidopsis_root_hormones_samples_to_condition.csvâ
 samples_to_conditions <- read.csv(
   file = "../gene_counts_and_samples2conditions/arabidopsis_root_hormones_sample2conditions.csv",
   stringsAsFactors = F) %>% 
-  filter(condition == "ACC" | condition == "control") %>% 
-  mutate(condition = factor(condition, levels = c("control","ACC")))
+  filter(condition == "MeJA" | condition == "control") %>% 
+  mutate(condition = factor(condition, levels = c("control","MeJA")))
 
 table(samples_to_conditions$condition)
 ```
@@ -194,22 +201,22 @@ dds <- DESeq(dds)
 ```
 
 ```{r}
-all_gene_results <- results(dds, contrast = c("condition", "ACC", "control"))
+all_gene_results <- results(dds, contrast = c("condition", "MeJA", "control"))
 diff_genes <- all_gene_results %>% 
   as.data.frame() %>% 
-  filter(padj < 0.01) # 0.05
+  filter(padj < adj_p_value_threshold) 
 head(diff_genes)
 ```
 ```{r}
 diff_genes <- all_gene_results %>% 
   as.data.frame() %>% 
-  filter(padj < 0.01)
+  filter(padj < adj_p_value_threshold)
 
 all_gene_results %>% 
   as.data.frame() %>% 
-  filter(padj < 0.05) %>% 
+  filter(padj < adj_p_value_threshold) %>% 
   filter(log2FoldChange > 0) %>% 
-  write.csv(file = "diff_genes_root_ACC_deforges.csv")
+  write.csv(file = "diff_genes_root_MeJA_deforges.csv")
 ```
 
 ### Number of diff genes and max log2FC
@@ -219,14 +226,14 @@ How many genes are positively regulated in response to the hormone treatment?
 How many genes are negatively regulated in response to the hormone treatment?   
 
 ```{r}
-n_diff <- nrow(diff_genes)
 pos <- diff_genes %>% filter(log2FoldChange > 0) %>% nrow()
 neg <- diff_genes %>% filter(log2FoldChange < 0) %>% nrow()
 ```
 
-- Total number of genes diff. regulated (padj < 0.05) is `r nrow(diff_genes)` genes.  
-- Total number of genes _positively_ & diff. regulated (padj < 0.05) is `r nrow(pos)` genes.  
-- Total number of genes _negatively_ & diff. regulated (padj < 0.05) is `r nrow(neg)` genes.   
+Adj p-value threshold = `r adj_p_value_threshold`.  
+- Total number of genes diff. regulated is `r nrow(diff_genes)` genes.  
+- Total number of genes _positively_ & diff. regulated is `r nrow(pos)` genes.  
+- Total number of genes _negatively_ & diff. regulated  is `r nrow(neg)` genes.   
 
 Q11 (0.5 point) : display a table of the top 20 positively differentially expressed genes based on their log2 fold change.   
 What is the maximum positive log2fold change? Convert this log2 fold change to the untransformed fold change value = revert the log2 transformation.       
@@ -234,8 +241,8 @@ What is the maximum positive log2fold change? Convert this log2 fold change to t
 ```{r}
 top20 <- 
   diff_genes %>% 
-  arrange(desc(log2FoldChange)) %>%
-  mutate(fold_change = 2^log2FoldChange) %>% 
+  arrange(desc(log2FoldChange)) %>% 
+   mutate(fold_change = 2^log2FoldChange) %>% 
   relocate(fold_change, .before = lfcSE) %>% 
   head(n = 20)
 top20
@@ -256,7 +263,7 @@ Q12 (0.5 point): Shrink the log2 fold changes in order to shrink high log2 fold 
 ```{r shrink fold changes coming from low-expressed genes}
 resLFC <- lfcShrink(dds = dds, 
                     type = "normal",
-                    coef = "condition_ACC_vs_control") 
+                    coef = 2) 
 ```
 
 

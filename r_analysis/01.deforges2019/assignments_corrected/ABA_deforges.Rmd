@@ -66,7 +66,7 @@ suppressPackageStartupMessages(library("DESeq2"))
 ## Import gene counts 
 ```{r import raw gene counts, echo=TRUE}
 raw_counts <- read.csv(
-  file = "../gene_counts_and_samples2conditions/dataset01_IAA_arabidopsis_root_raw_counts.csv",
+  file = "../gene_counts_and_samples2conditions/dataset02_ABA_arabidopsis_root_raw_counts.csv",
   header = TRUE, 
   stringsAsFactors = FALSE) %>% 
   # for DESeq subsequent data import 
@@ -109,14 +109,14 @@ raw_counts %>%
   separate(sample, into = c("tissue","condition","rep"), sep = "_") %>% 
   filter(counts == "519267")
 ```
-Gene with maximum expression in auxin-treated condition. 
+Gene with maximum expression in ABA-treated condition. 
 ```{r}
-# 444483
+# 267156
 raw_counts %>% 
   rownames_to_column("gene") %>% 
   pivot_longer(- gene, values_to = "counts", names_to = "sample") %>% 
   separate(sample, into = c("tissue","condition","rep"), sep = "_") %>% 
-  filter(counts == "444483")
+  filter(counts == "267156")
 ```
 __Conclusion:__ the same gene has the maximum expression in both conditions. 
 From the TAIR website, it says: 
@@ -185,7 +185,7 @@ table(samples_to_conditions$condition)
 ```{r}
 samples_to_conditions_filtered <- filter(
   samples_to_conditions, 
-  condition == "IAA" | condition == "control")
+  condition == "ABA" | condition == "control")
 samples_to_conditions_filtered
 ```
 
@@ -216,7 +216,7 @@ dds <- DESeq(dds)
 ```
 
 ```{r}
-diff_genes <- results(dds, contrast = c("condition", "IAA", "control")) %>% 
+diff_genes <- results(dds, contrast = c("condition", "ABA", "control")) %>% 
   as.data.frame() %>% 
   filter(padj < 0.01)
 head(diff_genes)
@@ -244,10 +244,10 @@ What is the maximum positive log2fold change? Convert this log2 fold change to t
 top20 <- 
   diff_genes %>% 
   arrange(desc(log2FoldChange)) %>% 
-  head(n = 20) %>% 
   mutate(fold_change = 2^log2FoldChange) %>% 
-  relocate(fold_change, .before = lfcSE)
-head(top20)
+  relocate(fold_change, .before = lfcSE) %>% 
+  head(n = 20)
+top20
 ```
 
 Max log2 fold change is equal to 8.6. This corresponds to a fold change of 2^8.6 = 388. Therefore the AT3G23635 gene is 388 more expressed in auxin-treated seedlings than in control conditions. 
@@ -255,11 +255,11 @@ Max log2 fold change is equal to 8.6. This corresponds to a fold change of 2^8.6
 Select genes positively and differentially regulated for downstream analysis (over-representation analysis for instance.)
 
 ```{r}
-results(dds, contrast = c("condition", "IAA", "control")) %>% 
+results(dds, contrast = c("condition", "ABA", "control")) %>% 
   as.data.frame() %>% 
   filter(padj < 0.01) %>% 
   filter(log2FoldChange > 0) %>% 
-  write.csv(file = "diff_genes_auxin_deforges.csv")
+  write.csv(file = "diff_genes_ABA_deforges.csv")
 ```
 
 \newpage
@@ -272,7 +272,7 @@ Q12 (0.5 point): Shrink the log2 fold changes in order to shrink high log2 fold 
 - Then shrink the log2 fold changes with the “lfcShrink()” function and the “normal” shrinkage estimator. Call this new object res_shrink. 
 
 ```{r shrink fold changes coming from low-expressed genes}
-all_gene_results <- results(dds, contrast = c("condition", "IAA", "control")) 
+all_gene_results <- results(dds, contrast = c("condition", "ABA", "control")) 
 
 resLFC <- lfcShrink(dds = dds, 
                     res = all_gene_results,
@@ -300,7 +300,7 @@ EnhancedVolcano(toptable = resLFC,
                 x = "log2FoldChange",
                 y = "padj",
                 lab = rownames(resLFC),
-                xlim = c(-6, +6),
+                xlim = c(-10, +10),
                 ylim = c(0,100),
                 pCutoff = 0.01,
                 transcriptPointSize = 2.0,
@@ -330,7 +330,7 @@ Select based on:
 2. Highest baseMean  
 
 ```{r}
-diff_genes <- results(dds, contrast = c("condition", "IAA", "control")) 
+diff_genes <- results(dds, contrast = c("condition", "ABA", "control")) 
 diff_genes %>% 
   as.data.frame() %>% 
   filter(log2FoldChange > 0) %>% 

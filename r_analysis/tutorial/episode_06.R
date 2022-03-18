@@ -140,5 +140,51 @@ counts_normalised_only_diff_genes =
 
 dim(counts_normalised_only_diff_genes) 
 
+pheatmap(counts_normalised_only_diff_genes, 
+         cluster_rows = FALSE, 
+         cluster_cols = FALSE, 
+         scale = "none",
+         show_rownames = FALSE, 
+         show_colnames = TRUE)
+counts_scaled = 
+  counts_normalised_only_diff_genes %>% 
+  t(.) %>%                              # transpose to have the genes in columns 
+  scale() %>%                           # scale(x, center = TRUE, scale = TRUE) 
+  t(.)                                  # back in original shape
 
+pheatmap(counts_scaled, 
+         cluster_rows = FALSE, 
+         cluster_cols = FALSE, 
+         show_rownames = FALSE, 
+         scale = "none",            # already done "manually"
+         show_colnames = TRUE)
 
+pheatmap(counts_scaled, 
+         cluster_rows = TRUE,                      
+         cluster_cols = TRUE, 
+         show_rownames = FALSE, 
+         show_colnames = TRUE,
+         main = "Clustering on")
+
+counts_scaled_filtered = 
+  counts_scaled %>% 
+  as.data.frame() %>%
+  dplyr::select(xp_design_mock_vs_infected$sample) # keep the 8 samples
+
+anno_col_info = xp_design_mock_vs_infected %>% column_to_rownames("sample")
+
+anno_info_colors = list(
+  seed = c(MgCl2 = "#d8b365"),
+  infected = c(mock = "lightgrey", 
+               Pseudomonas_syringae_DC3000 = "black"),
+  dpi = c("7" = "dodgerblue4")
+)
+
+pheatmap(counts_scaled_filtered, 
+         cluster_rows = TRUE,                       
+         cluster_cols = TRUE, 
+         show_rownames = FALSE, 
+         show_colnames = TRUE,
+         annotation_col = anno_col_info,
+         annotation_colors = anno_info_colors,
+         main = "Clustering with ward method")

@@ -15,7 +15,7 @@
    id="svg1952"
    inkscape:version="1.0.1 (c497b03c, 2020-09-10)"
    sodipodi:docname="vm_setup_step1_2.svg"
-   inkscape:export-filename="/Users/mgalland/Documents/workspace/2021-07-01-RNA-seq-workshop-summer-school/assets/img/vm_setup.png"
+   inkscape:export-filename="/Users/mgalland/Documents/workspace/rna-seq-lesson/img/vm_setup.png"
    inkscape:export-xdpi="300"
    inkscape:export-ydpi="300">
   <defs
@@ -84,11 +84,11 @@
      inkscape:document-rotation="0"
      showgrid="false"
      inkscape:snap-intersection-paths="true"
-     inkscape:window-width="2048"
-     inkscape:window-height="1107"
-     inkscape:window-x="0"
+     inkscape:window-width="1410"
+     inkscape:window-height="855"
+     inkscape:window-x="2048"
      inkscape:window-y="23"
-     inkscape:window-maximized="1" />
+     inkscape:window-maximized="0" />
   <metadata
      id="metadata1949">
     <rdf:RDF>
@@ -105,6 +105,13 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1">
+    <rect
+       style="fill:#ffffff;stroke-width:1.465;paint-order:markers stroke fill"
+       id="rect1568"
+       width="324.2269"
+       height="227.51945"
+       x="-13.081202"
+       y="-9.3437157" />
     <image
        width="40"
        height="40"
