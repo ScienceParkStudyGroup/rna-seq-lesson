@@ -27,31 +27,31 @@ keypoints:
 
 - [1. Introduction](#1-introduction)
 - [2. Principal Component Analysis](#2-principal-component-analysis)
-	- [2.1 Step by step introduction to PCA \(video\)](#21-step-by-step-introduction-to-pca-video)
-	- [2.2 Worked PCA example](#22-worked-pca-example)
-	- [2.3 The Iris data set](#23-the-iris-data-set)
+       - [2.1 Step by step introduction to PCA \(video\)](#21-step-by-step-introduction-to-pca-video)
+       - [2.2 Worked PCA example](#22-worked-pca-example)
+       - [2.3 The Iris data set](#23-the-iris-data-set)
 - [3. PCA applied to RNA-seq data](#3-pca-applied-to-rna-seq-data)
-	- [3.1 Data import](#31-data-import)
-	- [3.2 Variance stabilisation](#32-variance-stabilisation)
-	- [3.3 RNA-seq scree plot](#33-rna-seq-scree-plot)
-	- [3.4 Infected versus mock score plot](#34-infected-versus-mock-score-plot)
-	- [3.5 Seed inoculation score plot](#35-seed-inoculation-score-plot)
-	- [3.6 Time after infection score plot](#36-time-after-infection-score-plot)
-	- [3.7 Is my RNA-seq experiment successful?](#37-is-my-rna-seq-experiment-successful)
+       - [3.1 Data import](#31-data-import)
+       - [3.2 Variance stabilisation](#32-variance-stabilisation)
+       - [3.3 RNA-seq scree plot](#33-rna-seq-scree-plot)
+       - [3.4 Infected versus mock score plot](#34-infected-versus-mock-score-plot)
+       - [3.5 Seed inoculation score plot](#35-seed-inoculation-score-plot)
+       - [3.6 Time after infection score plot](#36-time-after-infection-score-plot)
+       - [3.7 Is my RNA-seq experiment successful?](#37-is-my-rna-seq-experiment-successful)
 - [4. Bonus: Gene count normalization theory](#4-bonus-gene-count-normalization-theory)
-	- [4.1 Common normalization methods](#41-common-normalization-methods)
-	- [4.2 RPKM/FPKM \(not recommended for between sample comparisons\)](#42-rpkmfpkm-not-recommended-for-between-sample-comparisons)
-	- [4.3 DESeq2-normalized counts: Median of ratios method](#43-deseq2-normalized-counts-median-of-ratios-method)
+       - [4.1 Common normalization methods](#41-common-normalization-methods)
+       - [4.2 RPKM/FPKM \(not recommended for between sample comparisons\)](#42-rpkmfpkm-not-recommended-for-between-sample-comparisons)
+       - [4.3 DESeq2-normalized counts: Median of ratios method](#43-deseq2-normalized-counts-median-of-ratios-method)
 - [5. Bonus: DESeq2 count normalization](#5-bonus-deseq2-count-normalization)
-	- [5.1 Data import](#51-data-import)
-	- [5.2 Match the experimental design and counts data](#52-match-the-experimental-design-and-counts-data)
-	- [5.3 Create the DESeqDataSet object](#53-create-the-deseqdataset-object)
-	- [5.4 Generate normalized counts](#54-generate-normalized-counts)
-	- [5.5 Comparison of raw and normalised counts](#55-comparison-of-raw-and-normalised-counts)
-	- [5.6 Home-made DESeq normalization function](#56-home-made-deseq-normalization-function)
+       - [5.1 Data import](#51-data-import)
+       - [5.2 Match the experimental design and counts data](#52-match-the-experimental-design-and-counts-data)
+       - [5.3 Create the DESeqDataSet object](#53-create-the-deseqdataset-object)
+       - [5.4 Generate normalized counts](#54-generate-normalized-counts)
+       - [5.5 Comparison of raw and normalised counts](#55-comparison-of-raw-and-normalised-counts)
+       - [5.6 Home-made DESeq normalization function](#56-home-made-deseq-normalization-function)
 - [6. References](#6-references)
-	- [6.1 Useful links](#61-useful-links)
-	- [6.2 Photo credits](#62-photo-credits)
+       - [6.1 Useful links](#61-useful-links)
+       - [6.2 Photo credits](#62-photo-credits)
 
 <!-- /MarkdownTOC -->
 
@@ -440,6 +440,10 @@ One can clearly visualise the "heteroscedasticity" of these data: the mean is no
 
 ~~~
 # Variance stabilisation
+# estimation of size factors and dispersions are required before performing the variance stabilisation
+
+dds = estimateSizeFactors(dds)
+
 dds = estimateDispersions(object = dds, 
 	                      fitType = "parametric", 
 	                      quiet = TRUE)
@@ -484,7 +488,7 @@ First, the PCA is computed using the `mypca()` function. This returns a list wit
 t_variance_stabilised_counts <- t(variance_stabilised_counts)
 
 # before computing the PCA, check that samples are in rows and genes in columns
-pca_results <- mypca(t_variance_stabilised_counts), 
+pca_results <- mypca(t_variance_stabilised_counts, 
                      center = TRUE, 
                      scale = TRUE)
 ~~~
