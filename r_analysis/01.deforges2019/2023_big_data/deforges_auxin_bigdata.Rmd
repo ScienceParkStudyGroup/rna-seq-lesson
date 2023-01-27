@@ -1,0 +1,195 @@
+---
+title: "Deforges 2023 rna-seq analysis"
+author: "Marc Galland"
+date: "`r Sys.Date()`"
+output: 
+  pdf_document:
+    toc: true
+    toc_depth: 2
+---
+
+This is the assignment for the Big Data course 2023 given to the students. 
+
+# Assignment objectives
+
+__Goal 1:__ working in R with “big” datasets: reading, filtering, etc.
+__Goal 2:__ working with the "simplified" output of a simple RNA-seq experiment (around 1000 genes). 
+__Goal 3:__ combining info from different tables (gene counts and diff. genes). 
+__Goal 4:__ literate programming = combining code + figures + explanations.
+__Goal 5:__ selecting 10 genes from 1000 genes that you will further explore using dedicated databases (Michel) and related to your biological question/XP design.  
+
+# Setup 
+
+## Add a table of contents
+
+[Link to R Markdown guide (click me)](https://bookdown.org/yihui/rmarkdown/pdf-document.html)
+
+## Disabling warnings and messages
+This will keep your final PDF report clean from execution alarms, unnecessary text, etc.  
+This code chunck sets global options for the execution of each code chunk. You can disable warnings and messages globally this way. 
+
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      warning = FALSE, 
+                      message = FALSE, 
+                      collapse = TRUE)
+```
+
+\newpage
+
+# Exercise 1: Dataset description
+
+We first load the `tidyverse` package that contains most of the data transformation functions we will need. 
+```{r}
+library("tidyverse") 
+suppressPackageStartupMessages(library("DESeq2"))
+```
+
+
+## Import gene counts 
+- Use the following code to import your data.
+```{r import raw gene counts, echo=TRUE}
+gene_counts <- read.csv("gene_counts.csv", 
+                       header = TRUE, 
+                       stringsAsFactors = FALSE) %>% 
+  # for DESeq subsequent data import 
+  column_to_rownames("gene") %>% 
+  as.matrix()
+
+# first five rows
+head(gene_counts, n = 5)
+```
+
+## Descriptive metrics
+**Q1: compute a series of basic descriptive metrics on a given RNA-seq dataset:**
+- What is the maximum gene count value? 
+- What is the minimum gene count value?
+- What is the median gene count value?
+```{r}
+max(gene_counts)
+min(gene_counts)
+median(gene_counts)
+```
+
+**Q2: produce a distribution of the count values.**   
+- How is the data distributed for all samples? Create a histogram of gene count values distribution. 
+- What transformation could you do to normalize this data distribution (i.e. to make it more Gaussian)?
+- Overlay the distribution of the three control samples. Are they comparable?
+
+```{r}
+plot(density(gene_counts), main = "Density plot of all samples")
+
+# overlay three samples
+plot(density(log10(gene_counts[,1]+1)), col="red")
+lines(density(log10(gene_counts[,2]+1)), col="blue")
+lines(density(log10(gene_counts[,3]+1)), col="orange")
+```
+
+# Exercise 2: Volcano plot
+
+A Volcano plot is a classic figure used to display the result of a differential expression analysis.
+
+## Get results for all genes
+```{r import sample to condition correspondence}
+sample2condition <- read.csv("../gene_counts_and_samples2conditions/arabidopsis_root_hormones_sample2conditions.csv", 
+                             header = TRUE, 
+                             stringsAsFactors = FALSE) %>% 
+  filter(condition == "IAA" | condition == "control")
+```
+
+
+```{r dds}
+dds <- DESeqDataSetFromMatrix(countData = gene_counts, 
+                              colData = sample2condition, 
+                              design = ~ condition)
+dds <- DESeq(dds)
+```
+
+```{r get results for all genes}
+all_genes <- results(dds) %>% as.data.frame() %>% rownames_to_column("gene") %>% filter(baseMean > median(baseMean))
+write.csv(x = all_genes, file = "results_all_genes.csv", row.names = FALSE)
+```
+
+## Volcano plot
+
+Q3: volcano plot
+- Why a Volcano plot is often used in differential gene expression analysis?   
+- What do you place on the x-axis and the y-axis?  
+- Make a Volcano plot based on the all_genes object. Select two thresholds that you could use to identify genes differentially regulated in response to auxin (one threshold for the x-axis and one for the y-axis).
+
+```{r make volcano plot}
+minus_log10_padj <- -10*log10(all_genes$padj)
+plot(x = all_genes$log2FoldChange, y = minus_log10_padj)
+```
+
+
+# Exercise 3: enrichment analysis
+
+In this exercise, the list of genes up-regulated in response to auxin is searched for statistically enriched Gene Ontology (GO) categories. In order to interpret the 
+biological pathways and functions that are affected by the auxin treatment. 
+
+## Get the list of up-regulated genes (not part of assignment)
+
+Q4: Import output of diff. gene analysis called "results_all_genes.csv"  
+- How many genes are present in the differential genes?
+- Make a histogram of the log2 fold change values. 
+- Make a histogram of the raw p-values (pvalue column) and adjusted p-values (padj column). 
+
+```{r}
+all_genes <- read.csv("results_all_genes.csv", stringsAsFactors = F)
+nrow(all_genes)
+```
+```{r}
+ggplot(all_genes, aes(x = log2FoldChange)) +
+  geom_histogram() +
+  scale_x_continuous(breaks = seq(-8, +8, 1))
+```
+```{r}
+library("patchwork")
+p1 <- ggplot(all_genes, aes(x = pvalue)) +
+  geom_histogram(fill="grey")
+p2 <- ggplot(all_genes, aes(x = padj)) +
+  geom_histogram(fill="lightblue")
+p1 + p2
+```
+
+
+## Import table of differentially expressed genes
+
+Based on the histogram of log2 fold changes and the volcano plot, a threshold of -1/+1 for the log2FC seems good to select genes. 
+A FDR of 0.01 is often used.
+```{r get diff genes}
+diff_genes <- results(dds) %>% 
+  as.data.frame() %>% 
+  rownames_to_column("gene") %>% 
+  filter(padj < 0.05) %>% 
+  filter(log2FoldChange > +1) %>% 
+  filter(baseMean > 1000)
+write.csv(diff_genes, file = "diff_genes.csv", row.names = FALSE, quote = FALSE)
+
+diff_genes <- read.csv("diff_genes.csv", stringsAsFactors = F)
+```
+
+
+## Exercise 4: select 10 genes and plot them
+
+### Arranged by decreasing fold change
+```{r}
+ten_genes <- diff_genes %>% 
+  arrange(desc(log2FoldChange))
+ten_genes
+```
+### Arrange by smallest adjusted p-value
+```{r}
+ten_genes2 <- diff_genes %>% 
+  arrange(desc(padj))
+ten_genes2
+```
+### Arrange by highest baseMean
+
+```{r}
+ten_genes3 <- diff_genes %>% 
+  arrange(desc(baseMean))
+ten_genes3
+```
+
