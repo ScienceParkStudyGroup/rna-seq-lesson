@@ -121,7 +121,7 @@ $ exit
 
 You can re-enter the container with:
 ~~~
-$ docker start -a -i bioinfo
+$ docker start -a -i fastq
 ~~~
 {: .bash}
 
