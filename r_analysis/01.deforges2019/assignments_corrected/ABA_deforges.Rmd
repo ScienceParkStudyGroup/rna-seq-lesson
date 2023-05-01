@@ -1,5 +1,5 @@
 ---
-title: "Auxin dataset analysis from Deforges 2019"
+title: "ABA dataset analysis from Deforges 2019"
 author: "Marc Galland"
 date: "`r Sys.Date()`"
 output: 
@@ -7,65 +7,54 @@ output:
     toc: true
     toc_depth: 2
 ---
+
+# Instructions 
+
+Welcome to the assignment of the "gene expression / RNA-seq" part of the "Tools in Molecular Biology" Master course. 
+
+This R Markdown file is a template that you will fill with:
+- R code, 
+- normal text answers in English,
+- figures created using R to justify your answer,
+- and your conclusions and interpretation of the figures.
+
+Regularly, you will "knit" (compile) your R Markdown into a PDF using the blue knit button. Once you've completed your assignment, you will have to generate a final PDF and upload it on Canvas. One PDF assignment per student is expected. 
+
+Below you will find some R code sections in grey that are sometimes pre-filled for your convenience (for instance to get the data easily). If you delete this template by error, the original R Markdown file is also available on Canvas. 
+
+Some R code sections have code commented with hastags (#). To run the code, delete the hastags and execute the code section using the green arrow. 
+
 # Setup 
-
-## Add a table of contents
-
-[Link to R Markdown guide (click me)](https://bookdown.org/yihui/rmarkdown/pdf-document.html)
 
 ## Disabling warnings and messages
 This will keep your final PDF report clean from execution alarms, unnecessary text, etc.  
 This code chunck sets global options for the execution of each code chunk. You can disable warnings and messages globally this way. 
 
-```{r setup, include=TRUE}
+```{r knit options}
 knitr::opts_chunk$set(echo = TRUE, 
                       warning = FALSE, 
                       message = FALSE, 
                       collapse = TRUE)
 ```
 
-\newpage
-
-# Introduction
-
-Q1 (0.5 point): In the publication of Deforges et al. 2019, the first paragraph of the “Material and Methods” section describes how plants were sown and treated (see paragraph below). 
-What are the full names of each of the 4 hormones used? 
-“””
-Arabidopsis thaliana seeds were germinated on agar-solidified half-strength MS medium for 10 d, after which the seedlings were flooded with a solution of half-strength MS containing 5 µM IAA, 10 µM ABA, 10 µM MeJA, 10 µM ACC, or no hormone for the untreated control. After 3 h of incubation, roots and shoots were split and harvested separately. For each of the 12 experimental conditions, 3 independent biological replicates were carried out at different times.
-“””
-Names are: 
-- IAA: auxin,  
-- ABA: abscisic acid, 
-- ACC: 1-amino-1-cyclopropane,
-- MeJA: methyl jasmonate.  
-
-Q2 (0.5 point): Can you name 3 different types of RNA that can be studied using RNA sequencing?
-- Long non-coding RNAs.  
-- Messenger RNAs.   
-- microRNAs. 
-
-Q3 (0.5 point): What is the sequencing platform used in this experiment? How many reads were obtain on average per sample?   
-Illumina HiSeq 2500, about 30 million reads per sample.   
-> "The libraries were sequenced on a HiSeq 2500 Illumina sequencer and about 30 million of paired-end reads per sample were obtained."
-
-Q4: (0.5 point): In the article, can you find a good complete one-sentence long definition of cis-NATs?  
->"Cis-Natural Antisense Transcripts (cis-NATs), which overlap protein coding genes and are transcribed from the opposite DNA strand, constitute an important group of noncoding RNAs."
-
-   
-# Exercise 1: data import
+## Library loading
 
 We first load the `tidyverse` package that contains most of the data transformation
-functions we will need. 
-```{r import libraries}
+functions we will need.  
+We will also load the `DESeq2` package to be able to perform the differential gene expression analysis. 
+The `patchwork` library to place plots next to one another for example. 
+```{r libraries}
 suppressPackageStartupMessages(library("tidyverse")) 
-suppressPackageStartupMessages(library("apeglm"))
 suppressPackageStartupMessages(library("DESeq2"))
+suppressPackageStartupMessages(library("patchwork"))
 ```
 
+# Data: import root and shoot gene counts 
 
-## Import gene counts 
-```{r import raw gene counts, echo=TRUE}
-raw_counts <- read.csv(
+We will use gene counts from both root and shoot tissues from plants treated or not with ABA. 
+
+```{r import root gene counts}
+root_counts <- read.csv(
   file = "../gene_counts_and_samples2conditions/dataset02_ABA_arabidopsis_root_raw_counts.csv",
   header = TRUE, 
   stringsAsFactors = FALSE) %>% 
@@ -73,129 +62,87 @@ raw_counts <- read.csv(
   column_to_rownames("gene")
 
 # first five rows
-head(raw_counts, n = 5)
+head(root_counts, n = 5)
 ```
 
-Q5: Can you determine how many genes are present in the table? 
+Same for shoot. 
+
+```{r import shoot gene counts}
+shoot_counts <- read.csv(
+  file = "../gene_counts_and_samples2conditions/dataset06_ABA_arabidopsis_shoot_raw_counts.csv",
+  header = TRUE, 
+  stringsAsFactors = FALSE) %>% 
+  # for DESeq subsequent data import 
+  column_to_rownames("gene")
+
+head(shoot_counts)
+```
+
+# Exercise 1: Characteristics of gene counts coming from RNA-seq
+
+## Question 1
+
+**Q1:** What fraction (percentage) of the genes are not expressed in the roots? 
+Hint: calculate the number of genes that have a sum of 0 (not expressed in any of the samples). You can use the rowSums() function to do so. 
+
+```{r question 1}
+n_genes_0 = root_counts %>% mutate(gene_sum_counts = rowSums(.)) %>% filter(gene_sum_counts == 0) %>% nrow()
+
+# fraction of the genes not expressed in roots
+n_genes_0 / nrow(root_counts) * 100
+```
+
+## Question 2
+
+**Q2:** Select one sample and plot the distribution of gene counts and comment it. Can you think of a transformation to make this distribution more normal?
+
+Answer Q2: the distribution is very skewed with very few highly expressed genes and a lot of little expressed genes.   
+A log10 transformation helps to make it more normal. Here, I use a log10 transformation with an offset of 1 (so that genes with 0 counts become log10(0+1)=0).  
 
 ```{r}
-nrow(raw_counts)
-```
-There are __`r nrow(raw_counts)`__ genes in the "dataset_01_IAA_arabidopsis_root_raw_counts.csv" table. 
+p1 <- 
+  ggplot(root_counts, aes(x = root_control_1)) + 
+  geom_histogram(bins = 100)
 
+p2 <-   ggplot(root_counts, aes(x = log10(root_control_1+1))) + 
+  geom_histogram(bins = 100)
 
-Q6 (1 point): determine the minimum and maximum gene expression in the control condition and in the hormone-treated condition. 	
-Hint: if you use the tidyverse package to do this, use “pivot_longer()” to get your data tidy and create a new column for the biological replicate number. 
-Find the gene that has the maximum count in the control condition and auxin-treated conditions. 
-
-
-```{r}
-raw_counts %>% 
-  rownames_to_column("gene") %>% 
-  pivot_longer(- gene, values_to = "counts", names_to = "sample") %>% 
-  separate(sample, into = c("tissue","condition","rep"), sep = "_") %>% 
-  group_by(condition) %>% 
-  summarise(minimum = min(counts), 
-            maximum = max(counts)) %>% 
-  head()
+p1 + p2
 ```
 
-Gene with maximum expression in control condition. 
-```{r}
-# 519267
-raw_counts %>% 
-  rownames_to_column("gene") %>% 
-  pivot_longer(- gene, values_to = "counts", names_to = "sample") %>% 
-  separate(sample, into = c("tissue","condition","rep"), sep = "_") %>% 
-  filter(counts == "519267")
+```{r bonus of question 2}
+root_counts %>% 
+  rownames_to_column('gene') %>% 
+  pivot_longer(- gene, names_to = "sample") %>% 
+  ggplot(., aes(x = log10(value+1), fill=sample)) +
+  geom_density(alpha=0.2)
 ```
-Gene with maximum expression in ABA-treated condition. 
-```{r}
-# 267156
-raw_counts %>% 
-  rownames_to_column("gene") %>% 
-  pivot_longer(- gene, values_to = "counts", names_to = "sample") %>% 
-  separate(sample, into = c("tissue","condition","rep"), sep = "_") %>% 
-  filter(counts == "267156")
-```
-__Conclusion:__ the same gene has the maximum expression in both conditions. 
-From the TAIR website, it says: 
-> "Encodes beta-glucosidase.The major constituent of ER bodies. One of the most abundant proteins in Arabidopsis seedlings." 
-
-## Distribution of counts
-
-Q7 (1 point):   
-A) plot the distribution of the gene counts of one sample using either the base R hist() function or the ggplot2 geom_histogram() function. What can you say about the distribution of the gene counts?  
-B) How can you display the distribution of an scale that better represents the distribution? Think about data transformation or the axis. 
-
-```{r, out.height="30%"}
-raw_counts %>% 
-  rownames_to_column("gene") %>% 
-  pivot_longer(- gene, values_to = "counts", names_to = "sample") %>% 
-  filter(sample == "root_control_1") %>% 
-  ggplot(., aes(x = counts)) +
-  geom_histogram()
-```
-
-The count distribution is very skewed with a lot of data with counts < 50,000 counts. A few genes have a very high count number with the maximum being 479,700 counts.
-
-We can transform the data before plotting or use a transformed scale. Here, I use a log10 transformation with an offset of 1 (so that genes with 0 counts become log10(0+1)=0).  
-```{r, out.height="30%"}
-raw_counts %>% 
-  rownames_to_column("gene") %>% 
-  pivot_longer(- gene, values_to = "counts", names_to = "sample") %>% 
-  filter(sample == "root_control_1") %>% 
-  ggplot(., aes(x = log10(counts + 1))) + # log10 transform with offset
-  geom_histogram()
-```
-Bonus: all samples overlaid.
-```{r, out.height="30%"}
-raw_counts %>% 
-  rownames_to_column("gene") %>% 
-  pivot_longer(- gene, values_to = "counts", names_to = "sample") %>% 
-  ggplot(., aes(x = log10(counts + 1), fill = sample)) + # log10 transform with offset
-  geom_density(alpha=0.3)
-```
-
 __Conclusion:__ this means that the samples have comparable count distributions. 
 
-# Exercise 2: differential expression
-
-This `DESeqDataSet` object is used to store both data (gene counts) and metadata 
-(sample to experimental condition correspondence) in one unique R object. 
-Functions can be directly be applied to this object and corresponding results stored
-within the same object. 
-
-## Import samples to condition
-
-Q8 (0.5 point) Upload the “arabidopsis_root_hormones_samples_to_condition.csv” file to your R virtual machine. Then import this file into R and name the object samples_to_conditions. 
-- Make a table that shows the number of biological replicates by condition. 
-- Filter this table to keep only “control” samples and the samples related to your hormone of interest. You should have 6 samples in total (3 control and 3 hormone-treated). 
+## Exercise 2: performing a differential expression analysis and exploring the results.
 
 
+
+# Exercise 2: perform, describe and filter the results of a differential expression analysis 
+
+## Extraction of the root sample to condition correspondence
+This is necessary to perform the differential expression analysis later on.
+The experimental conditions will be infered from sample names.
+(Execute the code below).
 ```{r}
-samples_to_conditions <- read.csv(
-  file = "../gene_counts_and_samples2conditions/arabidopsis_root_hormones_sample2conditions.csv",
-  stringsAsFactors = F)
-
-table(samples_to_conditions$condition)
+root_samples_to_conditions <- 
+  root_counts_tidy %>% 
+  select(- value, - gene) %>% 
+  separate(sample, into = c("tissue", "treatment", "rep"), remove = FALSE)
+head(root_samples_to_conditions)
 ```
 
+## Root differential expression analysis 
 
 ```{r}
-samples_to_conditions_filtered <- filter(
-  samples_to_conditions, 
-  condition == "ABA" | condition == "control")
-samples_to_conditions_filtered
-```
-
-
-## Create the DESeqDataSetFromMatrix object
-
-```{r}
-dds <- DESeqDataSetFromMatrix(countData = raw_counts, 
-                              colData = samples_to_conditions_filtered, 
-                              design = ~ condition)
+root_dds <- DESeqDataSetFromMatrix(countData = root_counts, 
+                              colData = root_samples_to_conditions, 
+                              design = ~ treatment)
 ```
 
 You can have a quick peek at the number of genes, number of samples, etc. by calling
@@ -206,9 +153,9 @@ dds
 
 ## Call differential genes
 
-Q9 (0.5 point): using the raw_counts and the samples_to_conditions, create a DESeqDataSet object called dds that will be used for DESeq2 differential analysis. 
+Q9 (0.5 point): using the root_counts and the samples_to_conditions, create a DESeqDataSet object called dds that will be used for DESeq2 differential analysis. 
 Call the differential genes using the DESeq() function and call this object diff_genes. Filter this object to keep only the significantly differentially expressed genes (adjusted p-value < 0.01). 
-Hint 1: the gene identifiers have to be assigned to the row names of raw_counts. 
+Hint 1: the gene identifiers have to be assigned to the row names of root_counts. 
 Hint 2: convert the diff_genes object to a dataframe with “dds = as.data.frame(dds)”.
 
 ```{r call diff genes}

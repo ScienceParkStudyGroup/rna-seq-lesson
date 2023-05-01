@@ -1,0 +1,7 @@
+sample,treatment,tissue,replicate
+shoot_control_1,control,shoot,rep1
+shoot_control_2,control,shoot,rep2
+shoot_control_3,control,shoot,rep3
+shoot_ABA_1,ABA,shoot,rep1
+shoot_ABA_2,ABA,shoot,rep2
+shoot_ABA_3,ABA,shoot,rep3

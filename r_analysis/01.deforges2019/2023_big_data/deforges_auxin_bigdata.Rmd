@@ -171,25 +171,34 @@ diff_genes <- read.csv("diff_genes.csv", stringsAsFactors = F)
 ```
 
 
-## Exercise 4: select 10 genes and plot them
+# Exercise 4: select 10 genes and plot them
 
-### Arranged by decreasing fold change
+## Arranged by decreasing fold change and baseMean
 ```{r}
-ten_genes <- diff_genes %>% 
-  arrange(desc(log2FoldChange))
-ten_genes
+twenty_genes <- diff_genes %>% 
+  arrange(desc(log2FoldChange), desc(baseMean)) %>% 
+  head(n=20)
+print.data.frame(twenty_genes)
 ```
-### Arrange by smallest adjusted p-value
+This is the list for students.r
 ```{r}
-ten_genes2 <- diff_genes %>% 
-  arrange(desc(padj))
-ten_genes2
+twenty_genes %>%  select(gene) %>% print.data.frame()
 ```
-### Arrange by highest baseMean
+
+## Arrange by smallest adjusted p-value
+```{r}
+twenty_genes2 <- diff_genes %>% 
+  arrange(desc(padj)) %>% 
+  head(n=20)
+print.data.frame(twenty_genes2)
+```
+
+## Arrange by highest baseMean
 
 ```{r}
-ten_genes3 <- diff_genes %>% 
-  arrange(desc(baseMean))
-ten_genes3
+twenty_genes3 <- diff_genes %>% 
+  arrange(desc(baseMean)) %>% 
+  head(n = 20)
+twenty_genes3
 ```
 
