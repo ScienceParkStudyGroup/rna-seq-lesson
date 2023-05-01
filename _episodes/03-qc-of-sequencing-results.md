@@ -121,7 +121,7 @@ $ exit
 
 You can re-enter the container with:
 ~~~
-$ docker start -a -i bioinfo
+$ docker start -a -i fastq
 ~~~
 {: .bash}
 
@@ -377,7 +377,7 @@ $ cd ~/Desktop/fastqc
 Inside the `Desktop/fastqc/` folder, on your local computer, make use of the following command to download the files to your local computer. 
 
 ~~~
-$ scp -r root@[your machine IP address]:/workspace/fastqc/*.html ~/Desktop/fastqc/
+$ scp -r root@[your machine IP address]:/home/tutorial/fastqc/*.html ~/Desktop/fastqc/
 ~~~
 {: .bash}
 
